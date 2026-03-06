@@ -1,36 +1,14 @@
 import { useState } from "react";
-import { Plus, X, UserPlus } from "lucide-react";
+import { Plus, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ansatteListe, rangOrder } from "@/data/ansatte";
 import type { Betjent } from "@/types/police";
 
-const demoAnsatte: Betjent[] = [
-  { id: "1", badgeNr: "01", fornavn: "Karlo", efternavn: "Leibrandt", rang: "Rigspolitichef", uddannelser: ["Betjent", "Civil", "Romeo", "Helikopter", "LIMA", "LIMA-A"] },
-  { id: "2", badgeNr: "D1089", fornavn: "Balder", efternavn: "Sørensen", rang: "Politidirektør", uddannelser: ["Betjent", "Civil", "Romeo"] },
-  { id: "3", badgeNr: "Z0999", fornavn: "Klaes", efternavn: "Franc", rang: "Politidirektør", uddannelser: ["Betjent", "Civil"] },
-  { id: "4", badgeNr: "X3009", fornavn: "Birk", efternavn: "Gregersen", rang: "Politimester", uddannelser: ["Betjent", "Civil", "LIMA"] },
-  { id: "5", badgeNr: "Q3037", fornavn: "Jesper", efternavn: "Brøndum", rang: "Chefpolitiinspektør", uddannelser: ["Betjent", "Civil", "Romeo", "Helikopter"] },
-  { id: "6", badgeNr: "X2110", fornavn: "Kalle", efternavn: "Krudt", rang: "Politiinspektør", uddannelser: ["Betjent", "Civil"] },
-  { id: "7", badgeNr: "B1412", fornavn: "Claus", efternavn: "Christensen", rang: "Vicepolitiinspektør", uddannelser: ["Betjent", "Civil", "Romeo", "Helikopter", "LIMA", "LIMA-A"] },
-];
-
-const rangOrder = [
-  "Rigspolitichef",
-  "Politidirektør",
-  "Politimester",
-  "Chefpolitiinspektør",
-  "Politiinspektør",
-  "Vicepolitiinspektør",
-  "Politikommissær",
-  "Politiassistent",
-  "Politibetjent",
-];
-
 const AnsatteListe = () => {
-  const [ansatte] = useState<Betjent[]>(demoAnsatte);
+  const [ansatte] = useState<Betjent[]>(ansatteListe);
   const [valgt, setValgt] = useState<Betjent | null>(null);
 
-  // Group by rang
   const grouped = rangOrder
     .map((rang) => ({
       rang,
@@ -71,7 +49,6 @@ const AnsatteListe = () => {
         ))}
       </div>
 
-      {/* Detail dialog */}
       <Dialog open={!!valgt} onOpenChange={(open) => !open && setValgt(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -80,9 +57,7 @@ const AnsatteListe = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div>
-              <p className="text-lg font-semibold text-foreground">Badge nummer: {valgt?.badgeNr}</p>
-            </div>
+            <p className="text-lg font-semibold text-foreground">Badge nummer: {valgt?.badgeNr}</p>
             <div>
               <h4 className="text-base font-semibold text-foreground mb-2">Uddannelser</h4>
               <ul className="space-y-1">
@@ -92,12 +67,8 @@ const AnsatteListe = () => {
               </ul>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button size="sm" className="bg-success hover:bg-success/90 text-success-foreground">
-                Tjek aktivitet
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setValgt(null)}>
-                Luk menuen
-              </Button>
+              <Button size="sm" className="bg-success hover:bg-success/90 text-success-foreground">Tjek aktivitet</Button>
+              <Button size="sm" variant="secondary" onClick={() => setValgt(null)}>Luk menuen</Button>
             </div>
           </div>
         </DialogContent>

@@ -6,6 +6,7 @@ import AnsatteListe from "@/components/police/AnsatteListe";
 import Bodetakster from "@/components/police/Bodetakster";
 import LoginPage from "@/components/police/LoginPage";
 import { FileText, MapPin, Radio, Settings } from "lucide-react";
+import type { Betjent } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
   <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3">
@@ -28,29 +29,32 @@ const tabTitles: Record<string, { title: string; desc: string }> = {
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("ansatte");
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [badgeNr, setBadgeNr] = useState("");
+  const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
 
-  if (!loggedIn) {
-    return (
-      <LoginPage
-        onLogin={(badge) => {
-          setBadgeNr(badge);
-          setLoggedIn(true);
-        }}
-      />
-    );
+  if (!currentUser) {
+    return <LoginPage onLogin={(betjent) => setCurrentUser(betjent)} />;
   }
 
   const tab = tabTitles[activeTab];
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={() => setLoggedIn(false)} badgeNr={badgeNr} />
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onLogout={() => setCurrentUser(null)}
+        badgeNr={currentUser.badgeNr}
+      />
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
-        <div className="mb-4">
-          <h1 className="text-xl font-bold">{tab?.title}</h1>
-          {tab?.desc && <p className="text-sm text-muted-foreground">{tab.desc}</p>}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">{tab?.title}</h1>
+            {tab?.desc && <p className="text-sm text-muted-foreground">{tab.desc}</p>}
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium text-foreground">{currentUser.fornavn} {currentUser.efternavn}</p>
+            <p className="text-xs text-muted-foreground">{currentUser.rang}</p>
+          </div>
         </div>
         {activeTab === "ansatte" && <AnsatteListe />}
         {activeTab === "boeder" && <Bodetakster />}
