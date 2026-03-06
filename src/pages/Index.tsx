@@ -2,6 +2,9 @@ import { useState } from "react";
 import Sidebar from "@/components/police/Sidebar";
 import KRRegister from "@/components/police/KRRegister";
 import FleetManagement from "@/components/police/FleetManagement";
+import AnsatteListe from "@/components/police/AnsatteListe";
+import Bodetakster from "@/components/police/Bodetakster";
+import LoginPage from "@/components/police/LoginPage";
 import { FileText, MapPin, Radio, Settings } from "lucide-react";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
@@ -12,27 +15,45 @@ const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
   </div>
 );
 
+const tabTitles: Record<string, { title: string; desc: string }> = {
+  ansatte: { title: "Ansatte", desc: "Oversigt over alle betjente" },
+  boeder: { title: "Bødetakster", desc: "Lovgivning og bødebeløb" },
+  kr: { title: "KR — Kriminalregisteret", desc: "Søg og opret personer i registeret" },
+  fleet: { title: "Flådestyring", desc: "Oversigt over patruljekøretøjer" },
+  rapporter: { title: "Rapporter", desc: "" },
+  kort: { title: "Kort & GPS", desc: "" },
+  radio: { title: "Kommunikation", desc: "" },
+  indstillinger: { title: "Indstillinger", desc: "" },
+};
+
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("kr");
+  const [activeTab, setActiveTab] = useState("ansatte");
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [badgeNr, setBadgeNr] = useState("");
+
+  if (!loggedIn) {
+    return (
+      <LoginPage
+        onLogin={(badge) => {
+          setBadgeNr(badge);
+          setLoggedIn(true);
+        }}
+      />
+    );
+  }
+
+  const tab = tabTitles[activeTab];
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={() => setLoggedIn(false)} badgeNr={badgeNr} />
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
         <div className="mb-4">
-          <h1 className="text-xl font-bold">
-            {activeTab === "kr" && "KR — Kriminalregisteret"}
-            {activeTab === "fleet" && "Flådestyring"}
-            {activeTab === "rapporter" && "Rapporter"}
-            {activeTab === "kort" && "Kort & GPS"}
-            {activeTab === "radio" && "Kommunikation"}
-            {activeTab === "indstillinger" && "Indstillinger"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {activeTab === "kr" && "Søg og opret personer i registeret"}
-            {activeTab === "fleet" && "Oversigt over patruljekøretøjer"}
-          </p>
+          <h1 className="text-xl font-bold">{tab?.title}</h1>
+          {tab?.desc && <p className="text-sm text-muted-foreground">{tab.desc}</p>}
         </div>
+        {activeTab === "ansatte" && <AnsatteListe />}
+        {activeTab === "boeder" && <Bodetakster />}
         {activeTab === "kr" && <KRRegister />}
         {activeTab === "fleet" && <FleetManagement />}
         {activeTab === "rapporter" && placeholderTab(FileText, "Rapporter", "Kommer snart")}
