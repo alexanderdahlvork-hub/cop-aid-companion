@@ -1,13 +1,17 @@
-import { Shield, Users, Car, FileText, Radio, MapPin, Settings } from "lucide-react";
+import { Shield, Users, Car, FileText, Radio, MapPin, Settings, BadgeCheck, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onLogout: () => void;
+  badgeNr: string;
 }
 
 const menuItems = [
-  { id: "kr", label: "KR Register", icon: Users },
+  { id: "ansatte", label: "Ansatte", icon: BadgeCheck },
+  { id: "boeder", label: "Bødetakster", icon: Scale },
+  { id: "kr", label: "Kriminalregister", icon: Users },
   { id: "fleet", label: "Flådestyring", icon: Car },
   { id: "rapporter", label: "Rapporter", icon: FileText },
   { id: "kort", label: "Kort", icon: MapPin },
@@ -15,7 +19,7 @@ const menuItems = [
   { id: "indstillinger", label: "Indstillinger", icon: Settings },
 ];
 
-const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
+const Sidebar = ({ activeTab, onTabChange, onLogout, badgeNr }: SidebarProps) => {
   return (
     <div className="w-20 lg:w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-screen">
       {/* Header */}
@@ -49,11 +53,17 @@ const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
       </nav>
 
       {/* Status */}
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-2">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
-          <span className="hidden lg:block text-xs text-muted-foreground">Online — P12</span>
+          <span className="hidden lg:block text-xs text-muted-foreground">Online — {badgeNr}</span>
         </div>
+        <button
+          onClick={onLogout}
+          className="hidden lg:block text-xs text-destructive hover:underline"
+        >
+          Log ud
+        </button>
       </div>
     </div>
   );
