@@ -3,9 +3,11 @@ import { Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { ansatteListe } from "@/data/ansatte";
+import type { Betjent } from "@/types/police";
 
 interface LoginPageProps {
-  onLogin: (badgeNr: string) => void;
+  onLogin: (betjent: Betjent) => void;
 }
 
 const LoginPage = ({ onLogin }: LoginPageProps) => {
@@ -18,8 +20,15 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       setError("Udfyld begge felter");
       return;
     }
+    const betjent = ansatteListe.find(
+      (a) => a.badgeNr.toLowerCase() === badgeNr.toLowerCase()
+    );
+    if (!betjent) {
+      setError("Badge nummer ikke fundet");
+      return;
+    }
     setError("");
-    onLogin(badgeNr);
+    onLogin(betjent);
   };
 
   return (
