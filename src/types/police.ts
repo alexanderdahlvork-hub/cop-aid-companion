@@ -24,3 +24,26 @@ export interface Koeretoej {
   sidstService: string;
   km: number;
 }
+
+export interface Betjent {
+  id: string;
+  badgeNr: string;
+  fornavn: string;
+  efternavn: string;
+  rang: string;
+  uddannelser: string[];
+  afdeling?: string;
+}
+
+export interface Boede {
+  id: string;
+  paragraf: string;
+  beskrivelse: string;
+  beloeb: number;
+  kategori: string;
+}
+
+export interface BoedKategori {
+  navn: string;
+  boeder: Boede[];
+}
