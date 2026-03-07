@@ -33,6 +33,7 @@ export interface Betjent {
   rang: string;
   uddannelser: string[];
   afdeling?: string;
+  tilladelser?: string[];
 }
 
 export interface Boede {
