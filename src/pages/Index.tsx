@@ -30,9 +30,10 @@ const tabTitles: Record<string, { title: string; desc: string }> = {
 const Index = () => {
   const [activeTab, setActiveTab] = useState("ansatte");
   const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   if (!currentUser) {
-    return <LoginPage onLogin={(betjent) => setCurrentUser(betjent)} />;
+    return <LoginPage onLogin={(betjent, admin) => { setCurrentUser(betjent); setIsAdmin(admin); }} />;
   }
 
   const tab = tabTitles[activeTab];
@@ -42,7 +43,7 @@ const Index = () => {
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onLogout={() => setCurrentUser(null)}
+        onLogout={() => { setCurrentUser(null); setIsAdmin(false); }}
         badgeNr={currentUser.badgeNr}
       />
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
@@ -53,10 +54,10 @@ const Index = () => {
           </div>
           <div className="text-right">
             <p className="text-sm font-medium text-foreground">{currentUser.fornavn} {currentUser.efternavn}</p>
-            <p className="text-xs text-muted-foreground">{currentUser.rang}</p>
+            <p className="text-xs text-muted-foreground">{currentUser.rang}{isAdmin ? " — Admin" : ""}</p>
           </div>
         </div>
-        {activeTab === "ansatte" && <AnsatteListe />}
+        {activeTab === "ansatte" && <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />}
         {activeTab === "boeder" && <Bodetakster />}
         {activeTab === "kr" && <KRRegister />}
         {activeTab === "fleet" && <FleetManagement />}

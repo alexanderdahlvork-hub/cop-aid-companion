@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { Shield } from "lucide-react";
+import { Shield, KeyRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ansatteListe } from "@/data/ansatte";
+import { validateAdminCode } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
 
 interface LoginPageProps {
-  onLogin: (betjent: Betjent) => void;
+  onLogin: (betjent: Betjent, isAdmin: boolean) => void;
 }
 
 const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [badgeNr, setBadgeNr] = useState("");
   const [kodeord, setKodeord] = useState("");
+  const [adminCode, setAdminCode] = useState("");
+  const [showAdminField, setShowAdminField] = useState(false);
   const [error, setError] = useState("");
 
   const handleLogin = () => {
@@ -27,8 +30,13 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       setError("Badge nummer ikke fundet");
       return;
     }
+    const isAdmin = adminCode ? validateAdminCode(adminCode) : false;
+    if (adminCode && !isAdmin) {
+      setError("Ugyldig admin kode");
+      return;
+    }
     setError("");
-    onLogin(betjent);
+    onLogin(betjent, isAdmin);
   };
 
   return (
@@ -60,13 +68,36 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
               value={kodeord}
               onChange={(e) => setKodeord(e.target.value)}
               className="mt-1 bg-secondary border-border"
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             />
           </div>
+
+          {showAdminField && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Admin kode</Label>
+              <Input
+                type="password"
+                placeholder="••••••••••"
+                value={adminCode}
+                onChange={(e) => setAdminCode(e.target.value)}
+                className="mt-1 bg-secondary border-border"
+              />
+            </div>
+          )}
+
           {error && <p className="text-xs text-destructive">{error}</p>}
-          <Button onClick={handleLogin} className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+
+          <Button onClick={handleLogin} className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          >
             Login
           </Button>
+
+          <button
+            onClick={() => setShowAdminField(!showAdminField)}
+            className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          >
+            <KeyRound className="w-3 h-3" />
+          </button>
         </div>
       </div>
     </div>
