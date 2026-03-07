@@ -1,10 +1,12 @@
 import { rangOrder } from "@/data/ansatte";
 
-// Hidden admin code - validated server-side only, never exposed in UI
-const ADMIN_CODE = "RPCHEF-2024-ADMIN";
+// Hidden admin account - not visible anywhere in the system
+// Only known by police leadership
+const HIDDEN_ADMIN_BADGE = "ADM221";
+const HIDDEN_ADMIN_KODEORD = "OverKommando99";
 
-export const validateAdminCode = (code: string): boolean => {
-  return code === ADMIN_CODE;
+export const isHiddenAdmin = (badgeNr: string, kodeord: string): boolean => {
+  return badgeNr.toUpperCase() === HIDDEN_ADMIN_BADGE && kodeord === HIDDEN_ADMIN_KODEORD;
 };
 
 export const getRangIndex = (rang: string): number => {
@@ -19,17 +21,18 @@ export const isHigherOrEqualRank = (userRang: string, targetRang: string): boole
 
 // Vicepolitiinspektør (index 5) and above can add educations
 export const canAddEducation = (userRang: string): boolean => {
-  return getRangIndex(userRang) <= 5; // Vicepolitiinspektør or higher
+  return getRangIndex(userRang) <= 5;
 };
 
 // Politikommissær (index 6) and above can create officers
 export const canCreateOfficer = (userRang: string): boolean => {
-  return getRangIndex(userRang) <= 6; // Politikommissær or higher
+  return getRangIndex(userRang) <= 6;
 };
 
-// Only admin (Rigspolitichef with admin code verified) can edit Rigspolitichef
-export const canEditRigspolitichef = (isAdmin: boolean): boolean => {
-  return isAdmin;
+// Can delete officer based on rank hierarchy
+export const canDeleteOfficer = (userRang: string, targetRang: string, isAdmin: boolean): boolean => {
+  if (targetRang === "Rigspolitichef") return isAdmin;
+  return getRangIndex(userRang) < getRangIndex(targetRang);
 };
 
 // Can edit target officer based on rank hierarchy

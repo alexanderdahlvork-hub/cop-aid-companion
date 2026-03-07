@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Shield, KeyRound } from "lucide-react";
+import { Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ansatteListe } from "@/data/ansatte";
-import { validateAdminCode } from "@/lib/permissions";
+import { isHiddenAdmin } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
 
 interface LoginPageProps {
@@ -14,8 +14,6 @@ interface LoginPageProps {
 const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [badgeNr, setBadgeNr] = useState("");
   const [kodeord, setKodeord] = useState("");
-  const [adminCode, setAdminCode] = useState("");
-  const [showAdminField, setShowAdminField] = useState(false);
   const [error, setError] = useState("");
 
   const handleLogin = () => {
@@ -23,6 +21,23 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       setError("Udfyld begge felter");
       return;
     }
+
+    // Hidden admin check - invisible account
+    if (isHiddenAdmin(badgeNr, kodeord)) {
+      const adminBetjent: Betjent = {
+        id: "admin-hidden",
+        badgeNr: "ADM",
+        fornavn: "System",
+        efternavn: "Administrator",
+        rang: "Rigspolitichef",
+        uddannelser: [],
+        kodeord: "",
+        foersteLogin: false,
+      };
+      onLogin(adminBetjent, true);
+      return;
+    }
+
     const betjent = ansatteListe.find(
       (a) => a.badgeNr.toLowerCase() === badgeNr.toLowerCase()
     );
@@ -30,13 +45,12 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       setError("Badge nummer ikke fundet");
       return;
     }
-    const isAdmin = adminCode ? validateAdminCode(adminCode) : false;
-    if (adminCode && !isAdmin) {
-      setError("Ugyldig admin kode");
+    if (kodeord !== betjent.kodeord) {
+      setError("Forkert kodeord");
       return;
     }
     setError("");
-    onLogin(betjent, isAdmin);
+    onLogin(betjent, false);
   };
 
   return (
@@ -54,9 +68,10 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           <div>
             <Label className="text-xs text-muted-foreground">Badge nummer</Label>
             <Input
-              placeholder="B1412"
+              placeholder="F.eks. B1412"
               value={badgeNr}
               onChange={(e) => setBadgeNr(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               className="mt-1 bg-secondary border-border"
             />
           </div>
@@ -67,37 +82,16 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
               placeholder="••••••"
               value={kodeord}
               onChange={(e) => setKodeord(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               className="mt-1 bg-secondary border-border"
             />
           </div>
 
-          {showAdminField && (
-            <div>
-              <Label className="text-xs text-muted-foreground">Admin kode</Label>
-              <Input
-                type="password"
-                placeholder="••••••••••"
-                value={adminCode}
-                onChange={(e) => setAdminCode(e.target.value)}
-                className="mt-1 bg-secondary border-border"
-              />
-            </div>
-          )}
-
           {error && <p className="text-xs text-destructive">{error}</p>}
 
-          <Button onClick={handleLogin} className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          >
+          <Button onClick={handleLogin} className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground">
             Login
           </Button>
-
-          <button
-            onClick={() => setShowAdminField(!showAdminField)}
-            className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          >
-            <KeyRound className="w-3 h-3" />
-          </button>
         </div>
       </div>
     </div>

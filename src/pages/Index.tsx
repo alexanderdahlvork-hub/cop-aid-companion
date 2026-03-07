@@ -5,7 +5,9 @@ import FleetManagement from "@/components/police/FleetManagement";
 import AnsatteListe from "@/components/police/AnsatteListe";
 import Bodetakster from "@/components/police/Bodetakster";
 import LoginPage from "@/components/police/LoginPage";
+import ChangePasswordDialog from "@/components/police/ChangePasswordDialog";
 import { FileText, MapPin, Radio, Settings } from "lucide-react";
+import { ansatteListe } from "@/data/ansatte";
 import type { Betjent } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
@@ -31,9 +33,30 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("ansatte");
   const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
+  const handleLogin = (betjent: Betjent, admin: boolean) => {
+    setCurrentUser(betjent);
+    setIsAdmin(admin);
+    if (betjent.foersteLogin) {
+      setShowChangePassword(true);
+    }
+  };
+
+  const handleChangePassword = (newPassword: string) => {
+    if (!currentUser) return;
+    // Update password in the data
+    const idx = ansatteListe.findIndex(a => a.id === currentUser.id);
+    if (idx !== -1) {
+      ansatteListe[idx].kodeord = newPassword;
+      ansatteListe[idx].foersteLogin = false;
+    }
+    setCurrentUser({ ...currentUser, kodeord: newPassword, foersteLogin: false });
+    setShowChangePassword(false);
+  };
 
   if (!currentUser) {
-    return <LoginPage onLogin={(betjent, admin) => { setCurrentUser(betjent); setIsAdmin(admin); }} />;
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   const tab = tabTitles[activeTab];
@@ -66,6 +89,11 @@ const Index = () => {
         {activeTab === "radio" && placeholderTab(Radio, "Kommunikation", "Kommer snart")}
         {activeTab === "indstillinger" && placeholderTab(Settings, "Indstillinger", "Kommer snart")}
       </main>
+
+      <ChangePasswordDialog
+        open={showChangePassword}
+        onChangePassword={handleChangePassword}
+      />
     </div>
   );
 };

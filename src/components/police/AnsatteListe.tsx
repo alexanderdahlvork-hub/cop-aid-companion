@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, UserPlus, GraduationCap, ShieldCheck, X, ChevronDown } from "lucide-react";
+import { Plus, UserPlus, GraduationCap, ShieldCheck, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ansatteListe, rangOrder } from "@/data/ansatte";
-import { canAddEducation, canCreateOfficer, canEditOfficer, availablePermissions } from "@/lib/permissions";
+import { canAddEducation, canCreateOfficer, canEditOfficer, canDeleteOfficer, availablePermissions } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
 
 interface AnsatteListeProps {
@@ -26,6 +26,8 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   const [uddTarget, setUddTarget] = useState<Betjent | null>(null);
   const [customRanks, setCustomRanks] = useState<string[]>(rangOrder);
   const [newRankName, setNewRankName] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Betjent | null>(null);
 
   // Create form state
   const [newBadge, setNewBadge] = useState("");
@@ -58,6 +60,8 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
       rang: newRang,
       uddannelser: newUddannelser,
       tilladelser: newTilladelser,
+      kodeord: "1234",
+      foersteLogin: true,
     };
     setAnsatte([...ansatte, newBetjent]);
     setShowCreate(false);
@@ -85,6 +89,14 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     setSelectedUdd([]);
   };
 
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    setAnsatte(ansatte.filter(a => a.id !== deleteTarget.id));
+    setShowDeleteConfirm(false);
+    setDeleteTarget(null);
+    setValgt(null);
+  };
+
   const handleAddRank = () => {
     if (!newRankName.trim() || customRanks.includes(newRankName.trim())) return;
     setCustomRanks([...customRanks, newRankName.trim()]);
@@ -92,7 +104,7 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   };
 
   const handleRemoveRank = (rank: string) => {
-    if (ansatte.some(a => a.rang === rank)) return; // Can't remove rank with members
+    if (ansatte.some(a => a.rang === rank)) return;
     setCustomRanks(customRanks.filter(r => r !== rank));
   };
 
@@ -102,18 +114,17 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     setShowAddUdd(true);
   };
 
-  // Available ranks for new officer - can't create same or higher rank
   const creatableRanks = customRanks.filter(r => {
     const userIdx = customRanks.indexOf(currentUser.rang);
     const rankIdx = customRanks.indexOf(r);
     if (isAdmin) return true;
-    return rankIdx > userIdx; // Can only create lower ranks
+    return rankIdx > userIdx;
   });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 justify-end flex-wrap">
-        {canCreate && (
+        {(canCreate || isAdmin) && (
           <Button size="sm" className="gap-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={() => setShowCreate(true)}>
             <UserPlus className="w-4 h-4" /> Opret betjent
           </Button>
@@ -186,8 +197,29 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
                   <GraduationCap className="w-4 h-4" /> Tilføj uddannelse
                 </Button>
               )}
+              {valgt && canDeleteOfficer(currentUser.rang, valgt.rang, isAdmin) && (
+                <Button size="sm" variant="destructive" className="gap-1.5" onClick={() => { setDeleteTarget(valgt); setShowDeleteConfirm(true); }}>
+                  <Trash2 className="w-4 h-4" /> Slet
+                </Button>
+              )}
               <Button size="sm" variant="secondary" onClick={() => setValgt(null)}>Luk</Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Bekræft sletning</DialogTitle>
+            <DialogDescription>
+              Er du sikker på at du vil slette {deleteTarget?.fornavn} {deleteTarget?.efternavn} ({deleteTarget?.badgeNr})?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-2">
+            <Button variant="destructive" onClick={handleDelete}>Ja, slet</Button>
+            <Button variant="secondary" onClick={() => { setShowDeleteConfirm(false); setDeleteTarget(null); }}>Annuller</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -229,6 +261,8 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
                 <Input placeholder="Efternavn" value={newEfternavn} onChange={e => setNewEfternavn(e.target.value)} className="mt-1 bg-secondary border-border" />
               </div>
             </div>
+
+            <p className="text-xs text-muted-foreground italic">Standardkodeord: 1234 — betjenten skal ændre det ved første login.</p>
 
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">Uddannelser</Label>
