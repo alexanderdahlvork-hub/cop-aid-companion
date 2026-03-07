@@ -34,6 +34,8 @@ export interface Betjent {
   uddannelser: string[];
   afdeling?: string;
   tilladelser?: string[];
+  kodeord: string;
+  foersteLogin: boolean;
 }
 
 export interface Boede {
