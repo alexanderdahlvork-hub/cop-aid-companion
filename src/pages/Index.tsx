@@ -8,7 +8,7 @@ import LoginPage from "@/components/police/LoginPage";
 import ChangePasswordDialog from "@/components/police/ChangePasswordDialog";
 import Dashboard from "@/components/police/Dashboard";
 import { FileText, MapPin, Radio, Settings, AlertTriangle, Building, BookOpen } from "lucide-react";
-import { ansatteListe } from "@/data/ansatte";
+import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
@@ -33,12 +33,12 @@ const Index = () => {
     }
   };
 
-  const handleChangePassword = (newPassword: string) => {
+  const handleChangePassword = async (newPassword: string) => {
     if (!currentUser) return;
-    const idx = ansatteListe.findIndex(a => a.id === currentUser.id);
-    if (idx !== -1) {
-      ansatteListe[idx].kodeord = newPassword;
-      ansatteListe[idx].foersteLogin = false;
+    try {
+      await betjenteApi.update(currentUser.id, { kodeord: newPassword, foersteLogin: false });
+    } catch (err) {
+      console.error("Fejl ved ændring af kodeord:", err);
     }
     setCurrentUser({ ...currentUser, kodeord: newPassword, foersteLogin: false });
     setShowChangePassword(false);
