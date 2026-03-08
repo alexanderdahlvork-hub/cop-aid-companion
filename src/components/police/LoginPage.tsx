@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { betjenteApi } from "@/lib/api";
 import { isAdmin as checkIsAdmin } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
+import avldLogo from "@/assets/avld-logo.webp";
 
 interface LoginPageProps {
   onLogin: (betjent: Betjent, isAdmin: boolean) => void;
