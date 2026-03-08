@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   FileText, Scale, Shield, Car, Check, X, AlertTriangle,
-  ChevronRight, ChevronDown, Loader2, Clock, Gauge
+  ChevronRight, ChevronDown, Loader2, Clock, Gauge, ListChecks
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { betjenteApi } from "@/lib/api";
 import { standardBoeder } from "@/data/bodetakster";
 import type { Person, Betjent, Boede, Sigtelse, SigtelseBoede, RapportSkabelon } from "@/types/police";
@@ -75,7 +76,6 @@ const rapportSkabeloner: RapportSkabelon[] = [
   },
 ];
 
-// Klip system: Danish point system for license
 function getKlipStatus(totalKlip: number, tidligereKlip: number) {
   const samlet = totalKlip + tidligereKlip;
   if (samlet >= 3) {
@@ -126,6 +126,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
   const [valgtSkabelon, setValgtSkabelon] = useState<RapportSkabelon | null>(null);
   const [skabelonSvar, setSkabelonSvar] = useState<Record<string, string>>({});
+  const [skabelonOpen, setSkabelonOpen] = useState(false);
 
   const [openKat, setOpenKat] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -156,12 +157,12 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
       setMagt("");
       setValgtSkabelon(null);
       setSkabelonSvar({});
+      setSkabelonOpen(false);
       setShowKlipPopup(false);
       setSoegning("");
     }
   }, [open]);
 
-  // Calculate totals from actual data
   const totalBoede = valgteBoeder.reduce((s, b) => s + b.beloeb, 0);
   const totalKlip = valgteBoeder.reduce((s, b) => {
     const orig = boeder.find((x) => x.id === b.boedeId);
@@ -169,7 +170,6 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   }, 0);
   const totalFaengsel = valgteBoeder.reduce((s, b) => s + b.faengselMaaneder, 0);
 
-  // Check frakendelse from selected items
   const harFrakendelse = valgteBoeder.some((b) => {
     const orig = boeder.find((x) => x.id === b.boedeId);
     return orig?.frakendelse;
@@ -209,67 +209,50 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
     : boeder;
   const kategorier = Array.from(new Set(filtreretBoeder.map((b) => b.kategori)));
 
+  const buildSigtelse = (): Sigtelse => ({
+    id: Date.now().toString(),
+    personId: person.id,
+    personNavn: `${person.fornavn} ${person.efternavn}`,
+    personCpr: person.cpr,
+    dato: new Date().toISOString().split("T")[0],
+    sigtelseBoeder: valgteBoeder,
+    totalBoede,
+    faengselMaaneder: totalFaengsel,
+    fratagKoerekort: fratagKoerekort || frakendelsesType === "Ubetinget",
+    erkender,
+    involveretBetjente: valgteBetjente,
+    rapport: {
+      haendelsesforloeb: haendelse,
+      konfiskeredeGenstande: konfiskeret,
+      magtanvendelse: magt,
+      skabelonSvar: valgtSkabelon ? skabelonSvar : undefined,
+    },
+    skabelonType: valgtSkabelon?.id,
+  });
+
   const handleSubmit = () => {
     setSaving(true);
-    const sigtelse: Sigtelse = {
-      id: Date.now().toString(),
-      personId: person.id,
-      personNavn: `${person.fornavn} ${person.efternavn}`,
-      personCpr: person.cpr,
-      dato: new Date().toISOString().split("T")[0],
-      sigtelseBoeder: valgteBoeder,
-      totalBoede,
-      faengselMaaneder: totalFaengsel,
-      fratagKoerekort: fratagKoerekort || frakendelsesType === "Ubetinget",
-      erkender,
-      involveretBetjente: valgteBetjente,
-      rapport: {
-        haendelsesforloeb: haendelse,
-        konfiskeredeGenstande: konfiskeret,
-        magtanvendelse: magt,
-        skabelonSvar: valgtSkabelon ? skabelonSvar : undefined,
-      },
-      skabelonType: valgtSkabelon?.id,
-    };
-
-    // Show klip popup if there are klip
     if (totalKlip > 0 && !showKlipPopup) {
       setShowKlipPopup(true);
       setSaving(false);
       return;
     }
-
-    onSigtelseOprettet(sigtelse);
+    onSigtelseOprettet(buildSigtelse());
     setSaving(false);
     onOpenChange(false);
   };
 
   const confirmAndSubmit = () => {
-    const sigtelse: Sigtelse = {
-      id: Date.now().toString(),
-      personId: person.id,
-      personNavn: `${person.fornavn} ${person.efternavn}`,
-      personCpr: person.cpr,
-      dato: new Date().toISOString().split("T")[0],
-      sigtelseBoeder: valgteBoeder,
-      totalBoede,
-      faengselMaaneder: totalFaengsel,
-      fratagKoerekort: fratagKoerekort || frakendelsesType === "Ubetinget",
-      erkender,
-      involveretBetjente: valgteBetjente,
-      rapport: {
-        haendelsesforloeb: haendelse,
-        konfiskeredeGenstande: konfiskeret,
-        magtanvendelse: magt,
-        skabelonSvar: valgtSkabelon ? skabelonSvar : undefined,
-      },
-      skabelonType: valgtSkabelon?.id,
-    };
-    onSigtelseOprettet(sigtelse);
+    onSigtelseOprettet(buildSigtelse());
     onOpenChange(false);
   };
 
-  const steps = ["Sigtelser", "Rapport", "Betjente", "Oversigt"];
+  const steps = [
+    { label: "Sigtelser", icon: Scale },
+    { label: "Rapport", icon: FileText },
+    { label: "Betjente", icon: Shield },
+    { label: "Oversigt", icon: ListChecks },
+  ];
 
   if (loadingData) {
     return (
@@ -367,302 +350,380 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
-        {/* Header */}
-        <div className="px-5 pt-5 pb-3">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              Opret sigtelse — {person.fornavn} {person.efternavn}
+      <DialogContent className="max-w-[680px] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* Header with person info */}
+        <div className="px-5 pt-5 pb-4 border-b border-border bg-muted/20">
+          <DialogHeader className="mb-0">
+            <DialogTitle className="text-sm font-semibold flex items-center gap-2">
+              <Scale className="w-4 h-4 text-primary" />
+              Opret sigtelse
             </DialogTitle>
           </DialogHeader>
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary">
+                {person.fornavn[0]}{person.efternavn[0]}
+              </div>
+              <div>
+                <p className="text-xs font-medium text-foreground">{person.fornavn} {person.efternavn}</p>
+                <p className="text-[10px] text-muted-foreground font-mono">{person.cpr}</p>
+              </div>
+            </div>
+            {valgteBoeder.length > 0 && (
+              <div className="flex items-center gap-3 text-[10px]">
+                <span className="text-warning font-semibold font-mono">{totalBoede.toLocaleString("da-DK")} kr</span>
+                {totalFaengsel > 0 && <span className="text-destructive font-semibold">{totalFaengsel} md.</span>}
+                {totalKlip > 0 && <span className="text-primary font-semibold">+{totalKlip} klip</span>}
+              </div>
+            )}
+          </div>
 
-          {/* Steps */}
-          <div className="flex gap-1 mt-3">
-            {steps.map((s, i) => (
-              <button
-                key={s}
-                onClick={() => setStep(i)}
-                className={cn(
-                  "flex-1 text-center py-1.5 rounded text-[11px] font-medium transition-colors",
-                  step === i
-                    ? "bg-primary text-primary-foreground"
-                    : i < step
-                      ? "bg-success/15 text-success"
-                      : "bg-muted text-muted-foreground"
-                )}
-              >
-                {s}
-              </button>
-            ))}
+          {/* Step indicator */}
+          <div className="flex gap-0.5 mt-3">
+            {steps.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <button
+                  key={s.label}
+                  onClick={() => setStep(i)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[10px] font-medium transition-all",
+                    step === i
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : i < step
+                        ? "bg-success/10 text-success hover:bg-success/15"
+                        : "text-muted-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <Icon className="w-3 h-3" />
+                  {s.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Body */}
-        <ScrollArea className="flex-1 max-h-[55vh] px-5">
-          {step === 0 && (
-            <div className="space-y-2.5 pb-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Søg paragraf eller beskrivelse..."
-                  value={soegning}
-                  onChange={(e) => setSoegning(e.target.value)}
-                  className="bg-muted/50 border-border text-sm h-8 flex-1"
-                />
-                <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 shrink-0" onClick={() => setFartOpen(true)}>
-                  <Gauge className="w-3.5 h-3.5" /> Fartberegner
-                </Button>
-              </div>
-
-              {kategorier.map((kat) => {
-                const katBoeder = filtreretBoeder.filter((b) => b.kategori === kat);
-                const isOpen = openKat === kat;
-                return (
-                  <div key={kat} className="rounded-md border border-border overflow-hidden">
-                    <button
-                      onClick={() => setOpenKat(isOpen ? null : kat)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-muted/40 hover:bg-muted/60 transition-colors"
-                    >
-                      <span className="text-xs font-medium text-foreground">{kat}</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-muted-foreground">{katBoeder.length}</span>
-                        {isOpen ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
-                      </div>
-                    </button>
-                    {isOpen && (
-                      <div className="divide-y divide-border/40">
-                        {katBoeder.map((b) => {
-                          const selected = valgteBoeder.some((v) => v.boedeId === b.id);
-                          return (
-                            <button
-                              key={b.id}
-                              onClick={() => toggleBoede(b)}
-                              className={cn(
-                                "w-full flex items-center gap-2.5 px-3 py-1.5 text-left transition-colors",
-                                selected ? "bg-primary/8" : "hover:bg-muted/30"
-                              )}
-                            >
-                              <div className={cn(
-                                "w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0",
-                                selected ? "bg-primary border-primary" : "border-muted-foreground/30"
-                              )}>
-                                {selected && <Check className="w-2 h-2 text-primary-foreground" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <span className="text-[11px] text-foreground">
-                                  {b.paragraf && <span className="text-muted-foreground">{b.paragraf} — </span>}
-                                  {b.beskrivelse}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0">
-                                {(b.klip ?? 0) > 0 && <span className="text-[9px] text-primary font-medium">{b.klip} klip</span>}
-                                {(b.faengselMaaneder ?? 0) > 0 && <span className="text-[9px] text-destructive font-medium">{b.faengselMaaneder} md.</span>}
-                                <span className="text-[11px] font-mono text-warning ml-1">{b.beloeb.toLocaleString("da-DK")} kr</span>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Summary bar */}
-              {valgteBoeder.length > 0 && (
-                <div className="p-3 rounded-md bg-card border border-border">
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div>
-                      <p className="text-[9px] text-muted-foreground uppercase">Bøde</p>
-                      <p className="text-xs font-bold font-mono text-warning">{totalBoede.toLocaleString("da-DK")} kr</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-muted-foreground uppercase">Fængsel</p>
-                      <p className="text-xs font-bold text-destructive">{totalFaengsel > 0 ? `${totalFaengsel} md.` : "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-muted-foreground uppercase">Klip</p>
-                      <p className={cn("text-xs font-bold", totalKlip > 0 ? "text-primary" : "text-muted-foreground")}>{totalKlip > 0 ? `+${totalKlip}` : "—"}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] text-muted-foreground uppercase">Frakendelse</p>
-                      <p className={cn("text-xs font-bold", frakendelsesType === "Ubetinget" ? "text-destructive" : frakendelsesType ? "text-warning" : "text-muted-foreground")}>
-                        {frakendelsesType || "—"}
-                      </p>
-                    </div>
-                  </div>
-                  {klipStatus && (
-                    <div className={cn(
-                      "mt-2 p-2 rounded text-[11px] flex items-center gap-1.5",
-                      klipStatus.type === "ubetinget" ? "bg-destructive/10 text-destructive"
-                        : klipStatus.type === "betinget" ? "bg-warning/10 text-warning"
-                        : "bg-primary/10 text-primary"
-                    )}>
-                      <AlertTriangle className="w-3 h-3 shrink-0" />
-                      {klipStatus.tekst}
-                    </div>
-                  )}
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-5">
+            {/* STEP 0: Sigtelser */}
+            {step === 0 && (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Søg paragraf eller beskrivelse..."
+                    value={soegning}
+                    onChange={(e) => setSoegning(e.target.value)}
+                    className="bg-muted/30 border-border text-xs h-8 flex-1"
+                  />
+                  <Button size="sm" variant="outline" className="h-8 text-[10px] gap-1.5 shrink-0" onClick={() => setFartOpen(true)}>
+                    <Gauge className="w-3 h-3" /> Fart
+                  </Button>
                 </div>
-              )}
 
-              {/* Kørekort + erkender */}
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 flex-1 p-2 rounded-md bg-muted/30 border border-border">
-                  <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort" />
-                  <label htmlFor="koerekort" className="text-[11px] font-medium text-foreground cursor-pointer">Fratag kørekort</label>
+                <div className="space-y-1">
+                  {kategorier.map((kat) => {
+                    const katBoeder = filtreretBoeder.filter((b) => b.kategori === kat);
+                    const isOpen = openKat === kat;
+                    const selectedInKat = katBoeder.filter(b => valgteBoeder.some(v => v.boedeId === b.id)).length;
+                    return (
+                      <Collapsible key={kat} open={isOpen} onOpenChange={() => setOpenKat(isOpen ? null : kat)}>
+                        <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-foreground">{kat}</span>
+                            {selectedInKat > 0 && (
+                              <Badge className="bg-primary/15 text-primary border-0 text-[9px] h-4 px-1.5">{selectedInKat}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-muted-foreground">{katBoeder.length}</span>
+                            {isOpen ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-0.5 rounded-md border border-border overflow-hidden divide-y divide-border/30">
+                            {katBoeder.map((b) => {
+                              const selected = valgteBoeder.some((v) => v.boedeId === b.id);
+                              return (
+                                <button
+                                  key={b.id}
+                                  onClick={() => toggleBoede(b)}
+                                  className={cn(
+                                    "w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors",
+                                    selected ? "bg-primary/5" : "hover:bg-muted/20"
+                                  )}
+                                >
+                                  <div className={cn(
+                                    "w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0 transition-colors",
+                                    selected ? "bg-primary border-primary" : "border-muted-foreground/25"
+                                  )}>
+                                    {selected && <Check className="w-2 h-2 text-primary-foreground" />}
+                                  </div>
+                                  <span className="flex-1 text-[11px] text-foreground truncate">
+                                    {b.paragraf && <span className="text-muted-foreground">{b.paragraf} — </span>}
+                                    {b.beskrivelse}
+                                  </span>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {(b.klip ?? 0) > 0 && <span className="text-[9px] text-primary font-medium">{b.klip}klip</span>}
+                                    {(b.faengselMaaneder ?? 0) > 0 && <span className="text-[9px] text-destructive font-medium">{b.faengselMaaneder}md</span>}
+                                    <span className="text-[10px] font-mono text-warning ml-0.5">{b.beloeb.toLocaleString("da-DK")}kr</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    );
+                  })}
                 </div>
-              </div>
-              <div className="flex gap-1.5">
-                <Button size="sm" variant={erkender === true ? "default" : "outline"} onClick={() => setErkender(true)}
-                  className={cn("flex-1 h-7 text-[11px]", erkender === true ? "bg-success hover:bg-success/90" : "")}>
-                  <Check className="w-3 h-3 mr-1" /> Erkender
-                </Button>
-                <Button size="sm" variant={erkender === false ? "default" : "outline"} onClick={() => setErkender(false)}
-                  className={cn("flex-1 h-7 text-[11px]", erkender === false ? "bg-destructive hover:bg-destructive/90" : "")}>
-                  <X className="w-3 h-3 mr-1" /> Erkender ikke
-                </Button>
-              </div>
-            </div>
-          )}
 
-          {step === 1 && (
-            <div className="space-y-3 pb-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Rapportskabelon</p>
-                <div className="flex flex-wrap gap-1">
-                  {rapportSkabeloner.map((sk) => (
-                    <Button key={sk.id} size="sm" variant={valgtSkabelon?.id === sk.id ? "default" : "outline"}
-                      className="h-6 text-[10px] px-2"
-                      onClick={() => { valgtSkabelon?.id === sk.id ? (setValgtSkabelon(null), setSkabelonSvar({})) : (setValgtSkabelon(sk), setSkabelonSvar({})); }}>
-                      {sk.navn}
+                {/* Compact erkender + kørekort row */}
+                <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/30 border border-border">
+                    <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort" />
+                    <label htmlFor="koerekort" className="text-[10px] font-medium text-foreground cursor-pointer whitespace-nowrap">Fratag kørekort</label>
+                  </div>
+                  <div className="flex gap-1 flex-1">
+                    <Button size="sm" variant={erkender === true ? "default" : "outline"} onClick={() => setErkender(true)}
+                      className={cn("flex-1 h-7 text-[10px]", erkender === true && "bg-success hover:bg-success/90 text-success-foreground")}>
+                      <Check className="w-3 h-3 mr-0.5" /> Erkender
                     </Button>
-                  ))}
-                </div>
-              </div>
-
-              {valgtSkabelon && (
-                <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2.5">
-                  <p className="text-xs font-medium text-primary">{valgtSkabelon.navn}</p>
-                  {valgtSkabelon.spoergsmaal.map((sp, i) => (
-                    <div key={i}>
-                      <Label className="text-[11px] text-foreground">{sp}</Label>
-                      <Textarea value={skabelonSvar[`q${i}`] || ""} onChange={(e) => setSkabelonSvar({ ...skabelonSvar, [`q${i}`]: e.target.value })} rows={2} className="mt-0.5 bg-muted/30 border-border text-xs" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div>
-                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Hændelsesforløb</Label>
-                <Textarea placeholder="Beskriv hændelsesforløbet..." value={haendelse} onChange={(e) => setHaendelse(e.target.value)} rows={3} className="mt-1 bg-muted/30 border-border text-sm" />
-              </div>
-              <div>
-                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Konfiskerede genstande</Label>
-                <Textarea placeholder="Genstande konfiskeret..." value={konfiskeret} onChange={(e) => setKonfiskeret(e.target.value)} rows={2} className="mt-1 bg-muted/30 border-border text-sm" />
-              </div>
-              <div>
-                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Magtanvendelse</Label>
-                <Textarea placeholder="Brug af magtmidler..." value={magt} onChange={(e) => setMagt(e.target.value)} rows={2} className="mt-1 bg-muted/30 border-border text-sm" />
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-1 pb-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Involverede betjente</p>
-              {betjente.map((b) => {
-                const selected = valgteBetjente.includes(b.id);
-                return (
-                  <button key={b.id} onClick={() => toggleBetjent(b.id)}
-                    className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors",
-                      selected ? "bg-primary/8 border border-primary/20" : "hover:bg-muted/30 border border-transparent"
-                    )}>
-                    <div className={cn("w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0", selected ? "bg-primary border-primary" : "border-muted-foreground/30")}>
-                      {selected && <Check className="w-2 h-2 text-primary-foreground" />}
-                    </div>
-                    <Shield className="w-3.5 h-3.5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs font-medium">{b.fornavn} {b.efternavn}</p>
-                      <p className="text-[10px] text-muted-foreground">{b.rang} — {b.badgeNr}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="pb-3">
-              <div className="p-4 rounded-md bg-card border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">{person.fornavn} {person.efternavn}</span>
-                  <span className="text-[10px] text-muted-foreground font-mono">{person.cpr}</span>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 text-center p-2.5 rounded bg-muted/30">
-                  <div>
-                    <p className="text-[9px] text-muted-foreground uppercase">Bøde</p>
-                    <p className="text-xs font-bold font-mono text-warning">{totalBoede.toLocaleString("da-DK")} kr</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-muted-foreground uppercase">Fængsel</p>
-                    <p className="text-xs font-bold text-destructive">{totalFaengsel > 0 ? `${totalFaengsel} md.` : "Ingen"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-muted-foreground uppercase">Klip</p>
-                    <p className="text-xs font-bold text-primary">{totalKlip > 0 ? `+${totalKlip}` : "Ingen"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-muted-foreground uppercase">Kørekort</p>
-                    <p className={cn("text-xs font-bold", (fratagKoerekort || frakendelsesType === "Ubetinget") ? "text-destructive" : "text-success")}>
-                      {fratagKoerekort || frakendelsesType === "Ubetinget" ? "Frataget" : frakendelsesType || "OK"}
-                    </p>
+                    <Button size="sm" variant={erkender === false ? "default" : "outline"} onClick={() => setErkender(false)}
+                      className={cn("flex-1 h-7 text-[10px]", erkender === false && "bg-destructive hover:bg-destructive/90 text-destructive-foreground")}>
+                      <X className="w-3 h-3 mr-0.5" /> Nej
+                    </Button>
                   </div>
                 </div>
 
-                <div className="divide-y divide-border/30">
-                  {valgteBoeder.map((b) => (
-                    <div key={b.boedeId} className="flex justify-between text-[11px] py-1.5">
-                      <span className="text-foreground">{b.paragraf && `${b.paragraf} — `}{b.beskrivelse}</span>
-                      <span className="font-mono text-warning shrink-0 ml-2">{b.beloeb.toLocaleString("da-DK")} kr</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-1.5">
-                  {erkender === true && <Badge className="bg-success/20 text-success border-success/30 text-[10px]">Erkender</Badge>}
-                  {erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">Erkender ikke</Badge>}
-                  {erkender === null && <Badge variant="outline" className="text-[10px]">Ikke angivet</Badge>}
-                </div>
-
-                {valgteBetjente.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {valgteBetjente.map((id) => {
-                      const bt = betjente.find((x) => x.id === id);
-                      return bt ? <Badge key={id} variant="outline" className="text-[9px]">{bt.fornavn} {bt.efternavn}</Badge> : null;
-                    })}
+                {/* Klip warning */}
+                {klipStatus && (
+                  <div className={cn(
+                    "px-3 py-2 rounded-md text-[10px] flex items-center gap-1.5",
+                    klipStatus.type === "ubetinget" ? "bg-destructive/10 text-destructive"
+                      : klipStatus.type === "betinget" ? "bg-warning/10 text-warning"
+                      : "bg-primary/10 text-primary"
+                  )}>
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    {klipStatus.tekst}
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
+
+            {/* STEP 1: Rapport */}
+            {step === 1 && (
+              <div className="space-y-4">
+                {/* Collapsible template selector */}
+                <Collapsible open={skabelonOpen} onOpenChange={setSkabelonOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between h-9 text-xs">
+                      <span className="flex items-center gap-2">
+                        <FileText className="w-3.5 h-3.5 text-primary" />
+                        {valgtSkabelon ? `Skabelon: ${valgtSkabelon.navn}` : "Vælg rapportskabelon"}
+                      </span>
+                      <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", skabelonOpen && "rotate-180")} />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="grid grid-cols-2 gap-1.5 mt-2">
+                      {rapportSkabeloner.map((sk) => (
+                        <button
+                          key={sk.id}
+                          onClick={() => {
+                            if (valgtSkabelon?.id === sk.id) {
+                              setValgtSkabelon(null);
+                              setSkabelonSvar({});
+                            } else {
+                              setValgtSkabelon(sk);
+                              setSkabelonSvar({});
+                            }
+                            setSkabelonOpen(false);
+                          }}
+                          className={cn(
+                            "px-3 py-2 rounded-md border text-left transition-all text-[11px]",
+                            valgtSkabelon?.id === sk.id
+                              ? "border-primary bg-primary/5 text-primary font-medium"
+                              : "border-border hover:border-primary/30 hover:bg-muted/30 text-foreground"
+                          )}
+                        >
+                          {sk.navn}
+                        </button>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                {/* Template questions */}
+                {valgtSkabelon && (
+                  <div className="rounded-md border border-primary/15 bg-primary/[0.02] overflow-hidden">
+                    <div className="px-3 py-2 bg-primary/5 border-b border-primary/10">
+                      <p className="text-[11px] font-medium text-primary">{valgtSkabelon.navn} — Spørgsmål</p>
+                    </div>
+                    <div className="p-3 space-y-3">
+                      {valgtSkabelon.spoergsmaal.map((sp, i) => (
+                        <div key={i}>
+                          <Label className="text-[10px] font-medium text-foreground">{i + 1}. {sp}</Label>
+                          <Textarea
+                            value={skabelonSvar[`q${i}`] || ""}
+                            onChange={(e) => setSkabelonSvar({ ...skabelonSvar, [`q${i}`]: e.target.value })}
+                            rows={2}
+                            className="mt-1 bg-background border-border text-xs resize-none"
+                            placeholder="Skriv svar..."
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Main report fields */}
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Hændelsesforløb *</Label>
+                    <Textarea
+                      placeholder="Beskriv hændelsesforløbet detaljeret..."
+                      value={haendelse}
+                      onChange={(e) => setHaendelse(e.target.value)}
+                      rows={4}
+                      className="mt-1 bg-muted/20 border-border text-xs resize-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Konfiskerede genstande</Label>
+                      <Textarea
+                        placeholder="Evt. genstande..."
+                        value={konfiskeret}
+                        onChange={(e) => setKonfiskeret(e.target.value)}
+                        rows={2}
+                        className="mt-1 bg-muted/20 border-border text-xs resize-none"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Magtanvendelse</Label>
+                      <Textarea
+                        placeholder="Evt. magtmidler..."
+                        value={magt}
+                        onChange={(e) => setMagt(e.target.value)}
+                        rows={2}
+                        className="mt-1 bg-muted/20 border-border text-xs resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: Betjente */}
+            {step === 2 && (
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">Involverede betjente</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {betjente.map((b) => {
+                    const selected = valgteBetjente.includes(b.id);
+                    return (
+                      <button key={b.id} onClick={() => toggleBetjent(b.id)}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-2 rounded-md text-left transition-all border",
+                          selected
+                            ? "border-primary/30 bg-primary/5"
+                            : "border-transparent hover:bg-muted/30"
+                        )}>
+                        <div className={cn(
+                          "w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0",
+                          selected ? "bg-primary border-primary" : "border-muted-foreground/25"
+                        )}>
+                          {selected && <Check className="w-2 h-2 text-primary-foreground" />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium truncate">{b.fornavn} {b.efternavn}</p>
+                          <p className="text-[9px] text-muted-foreground">{b.rang} · {b.badgeNr}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Oversigt */}
+            {step === 3 && (
+              <div className="space-y-3">
+                {/* Summary card */}
+                <div className="rounded-md border border-border overflow-hidden">
+                  <div className="grid grid-cols-4 divide-x divide-border bg-muted/30">
+                    <div className="p-2.5 text-center">
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Bøde</p>
+                      <p className="text-sm font-bold font-mono text-warning mt-0.5">{totalBoede.toLocaleString("da-DK")}</p>
+                      <p className="text-[8px] text-muted-foreground">DKK</p>
+                    </div>
+                    <div className="p-2.5 text-center">
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Fængsel</p>
+                      <p className="text-sm font-bold text-destructive mt-0.5">{totalFaengsel > 0 ? totalFaengsel : "—"}</p>
+                      <p className="text-[8px] text-muted-foreground">{totalFaengsel > 0 ? "måneder" : ""}</p>
+                    </div>
+                    <div className="p-2.5 text-center">
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Klip</p>
+                      <p className="text-sm font-bold text-primary mt-0.5">{totalKlip > 0 ? `+${totalKlip}` : "—"}</p>
+                    </div>
+                    <div className="p-2.5 text-center">
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Kørekort</p>
+                      <p className={cn("text-sm font-bold mt-0.5", (fratagKoerekort || frakendelsesType === "Ubetinget") ? "text-destructive" : "text-success")}>
+                        {fratagKoerekort || frakendelsesType === "Ubetinget" ? "✗" : frakendelsesType || "✓"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Charges list */}
+                  <div className="divide-y divide-border/30">
+                    {valgteBoeder.map((b) => (
+                      <div key={b.boedeId} className="flex justify-between items-center px-3 py-1.5">
+                        <span className="text-[11px] text-foreground truncate pr-2">
+                          {b.paragraf && <span className="text-muted-foreground">{b.paragraf} — </span>}{b.beskrivelse}
+                        </span>
+                        <span className="text-[10px] font-mono text-warning shrink-0">{b.beloeb.toLocaleString("da-DK")} kr</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status badges */}
+                <div className="flex flex-wrap gap-1.5">
+                  {erkender === true && <Badge className="bg-success/15 text-success border-success/20 text-[10px]">Erkender</Badge>}
+                  {erkender === false && <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-[10px]">Erkender ikke</Badge>}
+                  {erkender === null && <Badge variant="outline" className="text-[10px]">Ikke angivet</Badge>}
+                  {valgtSkabelon && <Badge variant="outline" className="text-[10px]">{valgtSkabelon.navn}</Badge>}
+                  {valgteBetjente.length > 0 && (
+                    <Badge variant="outline" className="text-[10px]">{valgteBetjente.length} betjent{valgteBetjente.length > 1 ? "e" : ""}</Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </ScrollArea>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-          <Button variant="ghost" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="h-7 text-xs">
+        <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-muted/10">
+          <Button variant="ghost" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="h-7 text-[11px]">
             Tilbage
           </Button>
-          {step < 3 ? (
-            <Button size="sm" onClick={() => setStep(step + 1)} className="h-7 text-xs">
-              Næste <ChevronRight className="w-3 h-3 ml-1" />
-            </Button>
-          ) : (
-            <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
-              className="h-7 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Scale className="w-3.5 h-3.5 mr-1" />}
-              Opret sigtelse
-            </Button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {step === 0 && valgteBoeder.length > 0 && (
+              <span className="text-[10px] text-muted-foreground mr-2">{valgteBoeder.length} valgt</span>
+            )}
+            {step < 3 ? (
+              <Button size="sm" onClick={() => setStep(step + 1)} className="h-7 text-[11px] gap-1">
+                Næste <ChevronRight className="w-3 h-3" />
+              </Button>
+            ) : (
+              <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
+                className="h-7 text-[11px] bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-1">
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Scale className="w-3 h-3" />}
+                Opret sigtelse
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
