@@ -16,6 +16,7 @@ import FaerdselAfdeling from "@/components/police/afdelinger/FaerdselAfdeling";
 import EfterforskningSide from "@/components/police/afdelinger/EfterforskningSide";
 import SIGAfdeling from "@/components/police/afdelinger/SIGAfdeling";
 import RemeoAfdeling from "@/components/police/afdelinger/RemeoAfdeling";
+import KortOgGPS from "@/components/police/KortOgGPS";
 import { FileText, MapPin, Radio, Settings, AlertTriangle, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
