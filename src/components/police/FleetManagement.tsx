@@ -86,23 +86,30 @@ const FleetManagement = () => {
     setSignOnDialog(null);
   };
 
-  const handleSignOff = (patrolId: string, badgeNr: string) => {
-    setPatrols((prev) =>
-      prev.map((p) => {
-        if (p.id !== patrolId) return p;
-        const updated = p.medlemmer.filter((m) => m.badgeNr !== badgeNr);
-        return { ...p, medlemmer: updated, status: updated.length === 0 ? "ledig" : p.status };
-      })
-    );
-    toast("Afmeldt patrulje");
+  const handleSignOff = async (patrolId: string, badgeNr: string) => {
+    const patrol = patrols.find(p => p.id === patrolId);
+    if (!patrol) return;
+    const updatedMedlemmer = patrol.medlemmer.filter(m => m.badgeNr !== badgeNr);
+    const updated = { medlemmer: updatedMedlemmer, status: updatedMedlemmer.length === 0 ? "ledig" as const : patrol.status };
+    try {
+      await patruljerApi.update(patrolId, updated);
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
+      toast("Afmeldt patrulje");
+    } catch (err) { console.error(err); toast.error("Fejl ved afmelding"); }
   };
 
-  const handleStatusChange = (patrolId: string, status: PatrolStatus) => {
-    setPatrols((prev) => prev.map((p) => p.id === patrolId ? { ...p, status } : p));
+  const handleStatusChange = async (patrolId: string, status: PatrolStatus) => {
+    try {
+      await patruljerApi.update(patrolId, { status });
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, status } : p));
+    } catch (err) { console.error(err); toast.error("Fejl ved statusændring"); }
   };
 
-  const handleBemærkning = (patrolId: string) => {
-    setPatrols((prev) => prev.map((p) => p.id === patrolId ? { ...p, bemærkning: bemærkningInput } : p));
+  const handleBemærkning = async (patrolId: string) => {
+    try {
+      await patruljerApi.update(patrolId, { bemærkning: bemærkningInput });
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, bemærkning: bemærkningInput } : p));
+    } catch (err) { console.error(err); toast.error("Fejl"); }
     setBemærkningDialog(null);
     setBemærkningInput("");
   };
