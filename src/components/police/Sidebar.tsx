@@ -60,6 +60,7 @@ const menuItems: MenuItem[] = [
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: SidebarProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({ hjem: true, database: true });
   const [showProfile, setShowProfile] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const toggleGroup = (id: string) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
