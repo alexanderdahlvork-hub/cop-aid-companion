@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { betjenteApi } from "@/lib/api";
 import { standardBoeder } from "@/data/bodetakster";
@@ -108,12 +107,12 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [valgtSkabelon, setValgtSkabelon] = useState<RapportSkabelon | null>(null);
   const [skabelonSvar, setSkabelonSvar] = useState<Record<string, string>>({});
 
-  // Section open states
   const [betjenteOpen, setBetjenteOpen] = useState(false);
   const [straffeOpen, setStraffeOpen] = useState(false);
   const [konfiskeretOpen, setKonfiskeretOpen] = useState(false);
   const [magtOpen, setMagtOpen] = useState(false);
   const [skabelonOpen, setSkabelonOpen] = useState(false);
+  const [dokOpen, setDokOpen] = useState(false);
 
   const [openKat, setOpenKat] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -121,16 +120,13 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [soegning, setSoegning] = useState("");
   const [fartOpen, setFartOpen] = useState(false);
 
-  // Dokumenter
   const [dokNavn, setDokNavn] = useState("");
   const [dokUrl, setDokUrl] = useState("");
   const [dokumenter, setDokumenter] = useState<{ navn: string; url: string }[]>([]);
 
-  // Konfiskerede genstande som liste
   const [konfiskeretInput, setKonfiskeretInput] = useState("");
   const [konfiskeredeGenstande, setKonfiskeredeGenstande] = useState<string[]>([]);
 
-  // Magtmidler som liste
   const [magtInput, setMagtInput] = useState("");
   const [magtmidler, setMagtmidler] = useState<string[]>([]);
 
@@ -147,29 +143,14 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
   useEffect(() => {
     if (open) {
-      setValgteBoeder([]);
-      setFratagKoerekort(false);
-      setErkender(null);
-      setValgteBetjente([]);
-      setHaendelse("");
-      setKonfiskeret("");
-      setMagt("");
-      setValgtSkabelon(null);
-      setSkabelonSvar({});
-      setShowKlipPopup(false);
-      setSoegning("");
-      setBetjenteOpen(false);
-      setStraffeOpen(false);
-      setKonfiskeretOpen(false);
-      setMagtOpen(false);
-      setSkabelonOpen(false);
-      setDokNavn("");
-      setDokUrl("");
-      setDokumenter([]);
-      setKonfiskeretInput("");
-      setKonfiskeredeGenstande([]);
-      setMagtInput("");
-      setMagtmidler([]);
+      setValgteBoeder([]); setFratagKoerekort(false); setErkender(null);
+      setValgteBetjente([]); setHaendelse(""); setKonfiskeret(""); setMagt("");
+      setValgtSkabelon(null); setSkabelonSvar({}); setShowKlipPopup(false);
+      setSoegning(""); setBetjenteOpen(false); setStraffeOpen(false);
+      setKonfiskeretOpen(false); setMagtOpen(false); setSkabelonOpen(false);
+      setDokNavn(""); setDokUrl(""); setDokumenter([]); setDokOpen(false);
+      setKonfiskeretInput(""); setKonfiskeredeGenstande([]);
+      setMagtInput(""); setMagtmidler([]);
     }
   }, [open]);
 
@@ -331,7 +312,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
               <SectionBlock title="Medvirkende betjente" icon={<Users className="w-4 h-4" />}>
                 <Collapsible open={betjenteOpen} onOpenChange={setBetjenteOpen}>
                   <CollapsibleTrigger asChild>
-                    <Button className="w-full h-9 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button className="w-full h-10 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                       <Plus className="w-3.5 h-3.5" /> Vælg Betjente
                     </Button>
                   </CollapsibleTrigger>
@@ -371,7 +352,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
               <SectionBlock title="Straffe" icon={<Gavel className="w-4 h-4" />}>
                 <Collapsible open={straffeOpen} onOpenChange={setStraffeOpen}>
                   <CollapsibleTrigger asChild>
-                    <Button className="w-full h-9 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button className="w-full h-10 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                       <Plus className="w-3.5 h-3.5" /> Vælg Straffe
                     </Button>
                   </CollapsibleTrigger>
@@ -431,7 +412,6 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                   </CollapsibleContent>
                 </Collapsible>
 
-                {/* Selected straffe summary */}
                 {valgteBoeder.length > 0 && (
                   <div className="mt-2 rounded-md border border-border overflow-hidden">
                     <div className="divide-y divide-border/30">
@@ -457,20 +437,6 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                   </div>
                 )}
 
-                {/* Erkender + kørekort */}
-                <div className="flex gap-2 mt-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/30 border border-border">
-                    <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort2" />
-                    <label htmlFor="koerekort2" className="text-[10px] font-medium cursor-pointer whitespace-nowrap">Fratag kørekort</label>
-                  </div>
-                  <div className="flex gap-1 flex-1">
-                    <Button size="sm" variant={erkender === true ? "default" : "outline"} onClick={() => setErkender(true)}
-                      className={cn("flex-1 h-7 text-[10px]", erkender === true && "bg-success hover:bg-success/90")}><Check className="w-3 h-3 mr-0.5" /> Erkender</Button>
-                    <Button size="sm" variant={erkender === false ? "default" : "outline"} onClick={() => setErkender(false)}
-                      className={cn("flex-1 h-7 text-[10px]", erkender === false && "bg-destructive hover:bg-destructive/90")}><X className="w-3 h-3 mr-0.5" /> Nej</Button>
-                  </div>
-                </div>
-
                 {klipStatus && (
                   <div className={cn("mt-2 px-3 py-2 rounded-md text-[10px] flex items-center gap-1.5",
                     klipStatus.type === "ubetinget" ? "bg-destructive/10 text-destructive" : klipStatus.type === "betinget" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
@@ -478,12 +444,12 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                 )}
               </SectionBlock>
 
-              {/* === Konfiskerede ting + Magtmidler (side by side) === */}
+              {/* === Konfiskerede ting + Magtmidler brugt (side by side) === */}
               <div className="grid grid-cols-2 gap-3">
                 <SectionBlock title="Konfiskerede ting" icon={<Package className="w-4 h-4" />}>
                   <Collapsible open={konfiskeretOpen} onOpenChange={setKonfiskeretOpen}>
                     <CollapsibleTrigger asChild>
-                      <Button className="w-full h-9 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+                      <Button className="w-full h-10 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Plus className="w-3.5 h-3.5" /> Vælg Konfiskerede ting
                       </Button>
                     </CollapsibleTrigger>
@@ -515,7 +481,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                 <SectionBlock title="Magtmidler brugt" icon={<Shield className="w-4 h-4" />}>
                   <Collapsible open={magtOpen} onOpenChange={setMagtOpen}>
                     <CollapsibleTrigger asChild>
-                      <Button className="w-full h-9 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+                      <Button className="w-full h-10 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Plus className="w-3.5 h-3.5" /> Vælg Magtmidler
                       </Button>
                     </CollapsibleTrigger>
@@ -547,16 +513,15 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
               {/* === Rapport beskrivelse === */}
               <SectionBlock title="Rapport beskrivelse" icon={<FileText className="w-4 h-4" />}>
-                {/* Skabelon picker */}
                 <Collapsible open={skabelonOpen} onOpenChange={setSkabelonOpen}>
                   <CollapsibleTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between h-8 text-xs mb-2">
-                      <span>{valgtSkabelon ? `Skabelon: ${valgtSkabelon.navn}` : "Vælg rapportskabelon (valgfrit)"}</span>
+                    <Button variant="outline" className="w-full justify-between h-10 text-xs">
+                      <span className="text-muted-foreground">{valgtSkabelon ? `Skabelon: ${valgtSkabelon.navn}` : "Vælg rapportskabelon (valgfrit)"}</span>
                       <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground transition-transform", skabelonOpen && "rotate-180")} />
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <div className="grid grid-cols-3 gap-1.5 mb-3">
+                    <div className="grid grid-cols-3 gap-1.5 mt-2">
                       {rapportSkabeloner.map((sk) => (
                         <button key={sk.id} onClick={() => {
                           valgtSkabelon?.id === sk.id ? (setValgtSkabelon(null), setSkabelonSvar({})) : (setValgtSkabelon(sk), setSkabelonSvar({}));
@@ -571,7 +536,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                 </Collapsible>
 
                 {valgtSkabelon && (
-                  <div className="rounded-md border border-primary/15 bg-primary/[0.02] p-3 space-y-2.5 mb-3">
+                  <div className="rounded-md border border-primary/15 bg-primary/[0.02] p-3 space-y-2.5 mt-2">
                     <p className="text-[11px] font-medium text-primary">{valgtSkabelon.navn}</p>
                     {valgtSkabelon.spoergsmaal.map((sp, i) => (
                       <div key={i}>
@@ -587,64 +552,81 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                   placeholder="Skriv rapportbeskrivelsen her..."
                   value={haendelse}
                   onChange={(e) => setHaendelse(e.target.value)}
-                  rows={6}
-                  className="bg-muted/20 border-border text-xs resize-none"
+                  rows={5}
+                  className="bg-muted/20 border-border text-xs resize-none mt-2"
                 />
               </SectionBlock>
 
-              {/* === Dokumenter === */}
-              <SectionBlock title="Dokumenter" icon={<Link2 className="w-4 h-4" />}>
-                {dokumenter.length > 0 ? (
-                  <div className="space-y-1 mb-2">
-                    {dokumenter.map((d, i) => (
-                      <div key={i} className="flex items-center justify-between bg-muted/30 border border-border rounded px-3 py-1.5 text-[11px]">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-3 h-3 text-muted-foreground" />
-                          <span>{d.navn}</span>
-                        </div>
-                        <button onClick={() => setDokumenter(dokumenter.filter((_, j) => j !== i))}
-                          className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                      </div>
-                    ))}
+              {/* === Øvrige oplysninger === */}
+              <SectionBlock title="Øvrige oplysninger" icon={<FileText className="w-4 h-4" />}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/30 border border-border">
+                    <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort2" />
+                    <label htmlFor="koerekort2" className="text-xs font-medium cursor-pointer whitespace-nowrap">Fratag kørekort</label>
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic mb-2">Ingen dokumenter tilknyttet denne sag.</p>
-                )}
-                <Input placeholder="Dokumentnavn" value={dokNavn} onChange={(e) => setDokNavn(e.target.value)}
-                  className="h-8 text-xs bg-muted/30 border-border mb-1.5" />
-                <Input placeholder="Dokument URL" value={dokUrl} onChange={(e) => setDokUrl(e.target.value)}
-                  className="h-8 text-xs bg-muted/30 border-border mb-1.5" />
-                <Button size="sm" className="w-full h-8 text-xs gap-1.5" disabled={!dokNavn.trim()}
-                  onClick={() => { setDokumenter([...dokumenter, { navn: dokNavn, url: dokUrl }]); setDokNavn(""); setDokUrl(""); }}>
-                  <Plus className="w-3 h-3" /> Tilføj dokument
-                </Button>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground mr-1">Erkender</span>
+                    <Button size="sm" variant={erkender === true ? "default" : "outline"} onClick={() => setErkender(true)}
+                      className={cn("h-8 w-8 p-0", erkender === true && "bg-success hover:bg-success/90")}>
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setErkender(null)} className="h-8 w-8 p-0">
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant={erkender === false ? "default" : "outline"} onClick={() => setErkender(false)}
+                      className={cn("h-8 w-8 p-0", erkender === false && "bg-destructive hover:bg-destructive/90")}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
               </SectionBlock>
-
-              {/* === Beslaglagte genstande (from konfiskerede) === */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-foreground">Beslaglagte genstande</h4>
-                {konfiskeredeGenstande.length > 0 ? (
-                  <div className="space-y-1">
-                    {konfiskeredeGenstande.map((g, i) => (
-                      <div key={i} className="bg-muted/30 border border-border rounded px-3 py-1.5 text-xs text-foreground">{g}</div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic">Ingen beslaglagte genstande registreret</p>
-                )}
-              </div>
 
             </div>
           </div>
 
+          {/* Dokument panel (expandable above footer) */}
+          {dokOpen && (
+            <div className="px-6 py-3 border-t border-border bg-muted/5 space-y-2">
+              {dokumenter.length > 0 && (
+                <div className="space-y-1">
+                  {dokumenter.map((d, i) => (
+                    <div key={i} className="flex items-center justify-between bg-muted/30 border border-border rounded px-3 py-1.5 text-[11px]">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-3 h-3 text-muted-foreground" />
+                        <span>{d.navn}</span>
+                      </div>
+                      <button onClick={() => setDokumenter(dokumenter.filter((_, j) => j !== i))}
+                        className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input placeholder="Dokumentnavn" value={dokNavn} onChange={(e) => setDokNavn(e.target.value)}
+                  className="h-8 text-xs bg-muted/30 border-border flex-1" />
+                <Input placeholder="URL" value={dokUrl} onChange={(e) => setDokUrl(e.target.value)}
+                  className="h-8 text-xs bg-muted/30 border-border flex-1" />
+                <Button size="sm" className="h-8 text-xs gap-1 shrink-0" disabled={!dokNavn.trim()}
+                  onClick={() => { setDokumenter([...dokumenter, { navn: dokNavn.trim(), url: dokUrl }]); setDokNavn(""); setDokUrl(""); }}>
+                  <Plus className="w-3 h-3" /> Tilføj
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-muted/10">
-            <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs">Annuller</Button>
-            <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
-              className="h-8 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-1.5">
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scale className="w-3.5 h-3.5" />}
-              Opret sigtelse
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => setDokOpen(!dokOpen)}>
+              <Plus className="w-3 h-3" /> Tilføj dokumenter...
             </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs">Annuller</Button>
+              <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
+                className="h-8 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-1.5">
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scale className="w-3.5 h-3.5" />}
+                Opret sigtelse
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
