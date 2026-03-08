@@ -203,53 +203,72 @@ const KRRegister = () => {
         </div>
       </div>
 
-      <div className="hidden lg:block flex-1">
+      <div className="hidden lg:block flex-1 overflow-y-auto">
         {valgtPerson ? (
-          <Card className="h-full">
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                    <User className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{valgtPerson.fornavn} {valgtPerson.efternavn}</CardTitle>
-                    <p className="text-sm text-muted-foreground font-mono">{valgtPerson.cpr}</p>
-                  </div>
+          <div className="h-full flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
                 </div>
-                <Badge variant="outline" className={statusConfig[valgtPerson.status].className}>
-                  {statusConfig[valgtPerson.status].label}
-                </Badge>
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
+                  <p className="text-xs text-muted-foreground font-mono">{valgtPerson.cpr}</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              <Badge variant="outline" className={statusConfig[valgtPerson.status].className}>
+                {statusConfig[valgtPerson.status].label}
+              </Badge>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 p-4 space-y-5 overflow-y-auto">
               {valgtPerson.status === "eftersøgt" && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20">
-                  <AlertTriangle className="w-4 h-4 text-warning" />
-                  <span className="text-sm text-warning font-medium">Person er registreret som eftersøgt</span>
+                <div className="flex items-center gap-2 p-2.5 rounded-md bg-warning/10 border border-warning/20">
+                  <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
+                  <span className="text-xs text-warning font-medium">Eftersøgt person</span>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <InfoField label="Adresse" value={valgtPerson.adresse} />
-                <InfoField label="Postnr / By" value={`${valgtPerson.postnr} ${valgtPerson.by}`} />
-                <InfoField label="Telefon" value={valgtPerson.telefon} />
-                <InfoField label="Oprettet" value={valgtPerson.oprettet} />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Noter</p>
-                <div className="p-3 rounded-lg bg-muted/50 text-sm">{valgtPerson.noter}</div>
+
+              {/* Info grid */}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Adresse</p>
+                  <p className="text-sm text-foreground">{valgtPerson.adresse}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">By</p>
+                  <p className="text-sm text-foreground">{valgtPerson.postnr} {valgtPerson.by}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Telefon</p>
+                  <p className="text-sm text-foreground">{valgtPerson.telefon || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Oprettet</p>
+                  <p className="text-sm text-foreground">{valgtPerson.oprettet}</p>
+                </div>
               </div>
 
-              {/* Status ændring */}
-              <div className="pt-2 border-t border-border space-y-2">
-                <p className="text-xs text-muted-foreground">Skift status</p>
-                <div className="flex flex-wrap gap-2">
+              {valgtPerson.noter && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Noter</p>
+                  <p className="text-sm text-foreground/80 bg-muted/30 rounded-md p-2.5">{valgtPerson.noter}</p>
+                </div>
+              )}
+
+              {/* Status */}
+              <div className="pt-3 border-t border-border">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Status</p>
+                <div className="flex gap-1.5">
                   {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as Person["status"][]).map((s) => (
                     <Button
                       key={s}
                       size="sm"
                       variant={valgtPerson.status === s ? "default" : "outline"}
                       disabled={valgtPerson.status === s || updatingStatus}
+                      className="text-xs h-7 px-2.5"
                       onClick={async () => {
                         setUpdatingStatus(true);
                         try {
@@ -263,7 +282,6 @@ const KRRegister = () => {
                         setUpdatingStatus(false);
                       }}
                     >
-                      {s === "eftersøgt" && <AlertTriangle className="w-3 h-3 mr-1" />}
                       {statusConfig[s].label}
                     </Button>
                   ))}
@@ -271,44 +289,40 @@ const KRRegister = () => {
               </div>
 
               {/* Opret sigtelse */}
-              <div className="pt-2 border-t border-border">
-                <Button
-                  size="sm"
-                  onClick={() => setSigtelseDialogOpen(true)}
-                  className="w-full gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                >
-                  <Scale className="w-4 h-4" />
-                  Opret sigtelse
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                onClick={() => setSigtelseDialogOpen(true)}
+                className="w-full gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground h-8 text-xs"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                Opret sigtelse
+              </Button>
 
               {/* Sigtelse historik */}
               {sigtelser.filter((s) => s.personId === valgtPerson.id).length > 0 && (
-                <div className="pt-2 border-t border-border space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tidligere sigtelser</p>
-                  {sigtelser.filter((s) => s.personId === valgtPerson.id).map((sig) => (
-                    <div key={sig.id} className="p-3 rounded-lg bg-secondary/50 border border-border space-y-1.5">
-                      <div className="flex justify-between items-start">
-                        <p className="text-sm font-medium text-foreground">Sigtelse — {sig.dato}</p>
-                        <div className="flex gap-1">
-                          {sig.erkender === true && <Badge className="bg-success/20 text-success border-success/30 text-[10px]">Erkender</Badge>}
-                          {sig.erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">Erkender ikke</Badge>}
+                <div className="pt-3 border-t border-border">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Sigtelser</p>
+                  <div className="space-y-2">
+                    {sigtelser.filter((s) => s.personId === valgtPerson.id).map((sig) => (
+                      <div key={sig.id} className="p-3 rounded-md bg-secondary/40 border border-border/50 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-medium text-foreground">{sig.dato}</span>
+                          {sig.erkender === true && <Badge className="bg-success/20 text-success border-success/30 text-[10px] h-4">Erkender</Badge>}
+                          {sig.erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] h-4">Nægter</Badge>}
                         </div>
+                        <div className="flex gap-3 text-xs text-muted-foreground">
+                          <span className="text-warning font-mono">{sig.totalBoede.toLocaleString("da-DK")} kr</span>
+                          {sig.faengselMaaneder > 0 && <span className="text-destructive">{sig.faengselMaaneder} md. fængsel</span>}
+                          {sig.fratagKoerekort && <span className="text-destructive">Kørekort frataget</span>}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{sig.sigtelseBoeder.map((b) => b.paragraf).join(", ")}</p>
                       </div>
-                      <div className="flex gap-4 text-xs">
-                        <span className="text-warning font-mono font-semibold">{sig.totalBoede.toLocaleString("da-DK")} kr</span>
-                        {sig.faengselMaaneder > 0 && <span className="text-destructive font-semibold">{sig.faengselMaaneder} md. fængsel</span>}
-                        {sig.fratagKoerekort && <span className="text-destructive">Kørekort frataget</span>}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {sig.sigtelseBoeder.map((b) => b.paragraf).join(", ")}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
             Vælg en person for at se detaljer
