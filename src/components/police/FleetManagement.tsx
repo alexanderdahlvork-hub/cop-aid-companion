@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { UserPlus, UserMinus, Shield, CircleDot, MessageSquare, Search, AlertCircle, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { UserPlus, UserMinus, Shield, CircleDot, MessageSquare, Search, AlertCircle, Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
+import { patruljerApi } from "@/lib/api";
+import type { Patrulje } from "@/lib/api";
 
 type PatrolStatus = "ledig" | "i_brug" | "optaget" | "ude_af_drift";
 
