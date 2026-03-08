@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, User, AlertTriangle, ChevronRight, Loader2, Scale } from "lucide-react";
+import { Search, Plus, User, AlertTriangle, ChevronRight, Loader2, Scale, MapPin, Phone, Calendar, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
