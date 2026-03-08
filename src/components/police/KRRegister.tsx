@@ -26,6 +26,7 @@ const KRRegister = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [nyPerson, setNyPerson] = useState<Partial<Person>>({ status: "aktiv" });
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -229,6 +230,37 @@ const KRRegister = () => {
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Noter</p>
                 <div className="p-3 rounded-lg bg-muted/50 text-sm">{valgtPerson.noter}</div>
+              </div>
+
+              {/* Status ændring */}
+              <div className="pt-2 border-t border-border space-y-2">
+                <p className="text-xs text-muted-foreground">Skift status</p>
+                <div className="flex flex-wrap gap-2">
+                  {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as Person["status"][]).map((s) => (
+                    <Button
+                      key={s}
+                      size="sm"
+                      variant={valgtPerson.status === s ? "default" : "outline"}
+                      className={valgtPerson.status === s ? "" : ""}
+                      disabled={valgtPerson.status === s || updatingStatus}
+                      onClick={async () => {
+                        setUpdatingStatus(true);
+                        try {
+                          await personerApi.update(valgtPerson.id, { status: s });
+                          const updated = { ...valgtPerson, status: s };
+                          setValgtPerson(updated);
+                          setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+                        } catch (err) {
+                          console.error("Fejl ved statusændring:", err);
+                        }
+                        setUpdatingStatus(false);
+                      }}
+                    >
+                      {s === "eftersøgt" && <AlertTriangle className="w-3 h-3 mr-1" />}
+                      {statusConfig[s].label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

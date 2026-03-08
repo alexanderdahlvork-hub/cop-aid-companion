@@ -9,6 +9,7 @@ import LoginPage from "@/components/police/LoginPage";
 import ChangePasswordDialog from "@/components/police/ChangePasswordDialog";
 import Dashboard from "@/components/police/Dashboard";
 import MinProfil from "@/components/police/MinProfil";
+import Efterlysninger from "@/components/police/Efterlysninger";
 import { FileText, MapPin, Radio, Settings, AlertTriangle, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
@@ -59,7 +60,7 @@ const Index = () => {
       case "kr": return <KRRegister />;
       case "fleet": return <FleetManagement />;
       case "ejendomme": return <Ejendomsregister />;
-      case "efterlysninger": return placeholderTab(AlertTriangle, "Efterlysninger", "Kommer snart");
+      case "efterlysninger": return <Efterlysninger />;
       case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
       case "kort": return placeholderTab(MapPin, "Kort & GPS", "Kommer snart");
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
