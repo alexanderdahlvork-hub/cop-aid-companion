@@ -13,6 +13,85 @@
  *   "Husk at kopiere indholdet af rest.ts til det rigtige repository:
  *    https://github.com/alexanderdahlvork-hub/cop-aid-companion-rest/blob/main/src/rest.ts
  *    Ændringer her deployes IKKE automatisk."
+ *
+ * ─── D1 DATABASE SCHEMA ───
+ * Run this SQL in the D1 console to create all required tables:
+ *
+ * CREATE TABLE IF NOT EXISTS betjente (
+ *   id TEXT PRIMARY KEY,
+ *   badgeNr TEXT UNIQUE NOT NULL,
+ *   fornavn TEXT NOT NULL,
+ *   efternavn TEXT NOT NULL,
+ *   rang TEXT NOT NULL,
+ *   uddannelser TEXT DEFAULT '[]',
+ *   afdeling TEXT,
+ *   tilladelser TEXT DEFAULT '[]',
+ *   kodeord TEXT NOT NULL DEFAULT '1234',
+ *   foersteLogin INTEGER NOT NULL DEFAULT 1
+ * );
+ *
+ * CREATE TABLE IF NOT EXISTS fyrede_medarbejdere (
+ *   id TEXT PRIMARY KEY,
+ *   badgeNr TEXT NOT NULL,
+ *   fornavn TEXT NOT NULL,
+ *   efternavn TEXT NOT NULL,
+ *   rang TEXT NOT NULL,
+ *   fyretDato TEXT NOT NULL,
+ *   fyretAf TEXT NOT NULL
+ * );
+ *
+ * CREATE TABLE IF NOT EXISTS personer (
+ *   id TEXT PRIMARY KEY,
+ *   cpr TEXT NOT NULL,
+ *   fornavn TEXT NOT NULL,
+ *   efternavn TEXT NOT NULL,
+ *   adresse TEXT NOT NULL,
+ *   postnr TEXT NOT NULL,
+ *   by TEXT NOT NULL,  -- Note: "by" is keyword, handled by sanitizeKeyword
+ *   telefon TEXT NOT NULL,
+ *   status TEXT NOT NULL DEFAULT 'aktiv',
+ *   noter TEXT DEFAULT '',
+ *   oprettet TEXT NOT NULL
+ * );
+ *
+ * CREATE TABLE IF NOT EXISTS koeretoejer (
+ *   id TEXT PRIMARY KEY,
+ *   nummerplade TEXT UNIQUE NOT NULL,
+ *   maerke TEXT NOT NULL,
+ *   model TEXT NOT NULL,
+ *   aargang TEXT NOT NULL,
+ *   farve TEXT NOT NULL,
+ *   status TEXT NOT NULL DEFAULT 'aktiv',
+ *   tildelt TEXT DEFAULT '',
+ *   sidstService TEXT,
+ *   km INTEGER DEFAULT 0
+ * );
+ *
+ * CREATE TABLE IF NOT EXISTS boeder (
+ *   id TEXT PRIMARY KEY,
+ *   paragraf TEXT NOT NULL,
+ *   beskrivelse TEXT NOT NULL,
+ *   beloeb INTEGER NOT NULL,
+ *   kategori TEXT NOT NULL
+ * );
+ *
+ * CREATE TABLE IF NOT EXISTS rang_order (
+ *   id TEXT PRIMARY KEY,
+ *   rang TEXT UNIQUE NOT NULL,
+ *   position INTEGER NOT NULL
+ * );
+ *
+ * -- Default ranks:
+ * INSERT OR IGNORE INTO rang_order (id, rang, position) VALUES
+ *   ('r1', 'Rigspolitichef', 0),
+ *   ('r2', 'Politidirektør', 1),
+ *   ('r3', 'Politimester', 2),
+ *   ('r4', 'Chefpolitiinspektør', 3),
+ *   ('r5', 'Politiinspektør', 4),
+ *   ('r6', 'Vicepolitiinspektør', 5),
+ *   ('r7', 'Politikommissær', 6),
+ *   ('r8', 'Politiassistent', 7),
+ *   ('r9', 'Politibetjent', 8);
  */
 
 import { Context } from 'hono';
@@ -198,4 +277,4 @@ export async function handleRest(c: Context<{ Bindings: Env }>): Promise<Respons
         default:
             return c.json({ error: 'Method not allowed' }, 405);
     }
-} 
+}
