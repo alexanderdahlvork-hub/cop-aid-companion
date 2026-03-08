@@ -1,10 +1,13 @@
 const API_BASE = "https://cop-aid-companion-rest.alexanderdahlvork.workers.dev";
+// TODO: Erstat med rigtig auth (JWT, session tokens, etc.)
+const API_TOKEN = "secret";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${API_TOKEN}`,
       ...options?.headers,
     },
   });
