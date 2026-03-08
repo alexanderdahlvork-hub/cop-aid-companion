@@ -635,7 +635,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
               </div>
 
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-muted/10">
