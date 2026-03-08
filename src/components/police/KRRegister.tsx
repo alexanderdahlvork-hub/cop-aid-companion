@@ -26,6 +26,7 @@ const KRRegister = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [nyPerson, setNyPerson] = useState<Partial<Person>>({ status: "aktiv" });
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     const load = async () => {
