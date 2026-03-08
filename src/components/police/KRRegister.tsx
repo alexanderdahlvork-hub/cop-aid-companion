@@ -33,10 +33,6 @@ const KRRegister = () => {
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
 
-  // Document fields (local state, for UI)
-  const [dokNavn, setDokNavn] = useState("");
-  const [dokUrl, setDokUrl] = useState("");
-  const [dokumenter, setDokumenter] = useState<{ navn: string; url: string }[]>([]);
 
   useEffect(() => {
     const load = async () => {
