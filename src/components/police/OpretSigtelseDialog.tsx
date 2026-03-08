@@ -15,6 +15,7 @@ import { betjenteApi } from "@/lib/api";
 import { standardBoeder } from "@/data/bodetakster";
 import type { Person, Betjent, Boede, Sigtelse, SigtelseBoede, RapportSkabelon } from "@/types/police";
 import { cn } from "@/lib/utils";
+import FartBeregner from "./FartBeregner";
 
 const rapportSkabeloner: RapportSkabelon[] = [
   {
