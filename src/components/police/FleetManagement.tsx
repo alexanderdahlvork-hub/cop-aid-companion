@@ -146,6 +146,32 @@ const FleetManagement = () => {
     setBemærkningInput("");
   };
 
+  const handleOpretPatrulje = () => {
+    const kat = nyKategori === "_custom" ? nyKategoriCustom.trim() : nyKategori;
+    if (!nyNavn.trim() || !kat) return;
+    const newPatrol: Patrol = {
+      id: `custom-${Date.now()}`,
+      navn: nyNavn.trim(),
+      kategori: kat,
+      pladser: Math.max(1, Math.min(6, parseInt(nyPladser) || 2)),
+      medlemmer: [],
+      status: "ledig",
+      bemærkning: "",
+    };
+    setPatrols((prev) => [...prev, newPatrol]);
+    setNyNavn("");
+    setNyKategori("");
+    setNyKategoriCustom("");
+    setNyPladser("2");
+    setOpretDialog(false);
+    toast("Patrulje oprettet");
+  };
+
+  const handleSletPatrulje = (id: string) => {
+    setPatrols((prev) => prev.filter((p) => p.id !== id));
+    toast("Patrulje slettet");
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
