@@ -301,7 +301,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
             </DialogHeader>
           </div>
 
-          <ScrollArea className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="px-6 py-5 space-y-5">
 
               {/* Person info card */}
@@ -635,7 +635,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
               </div>
 
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-muted/10">
