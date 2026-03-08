@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, User, AlertTriangle, ChevronRight, Loader2, Scale, MapPin, Phone, Calendar, FileText } from "lucide-react";
+import { Search, Plus, User, AlertTriangle, Loader2, Scale, X, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,13 +11,16 @@ import { personerApi, sigtelserApi } from "@/lib/api";
 import type { Person, Sigtelse } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
 import { toast } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
-const statusConfig: Record<Person["status"], { label: string; className: string }> = {
-  aktiv: { label: "Aktiv", className: "bg-success/20 text-success border-success/30" },
-  eftersøgt: { label: "Eftersøgt", className: "bg-warning/20 text-warning border-warning/30" },
-  anholdt: { label: "Anholdt", className: "bg-destructive/20 text-destructive border-destructive/30" },
-  sigtet: { label: "Sigtet", className: "bg-primary/20 text-primary border-primary/30" },
+const statusConfig: Record<Person["status"], { label: string; dot: string; bg: string }> = {
+  aktiv: { label: "Aktiv", dot: "bg-success", bg: "bg-success/10 text-success" },
+  eftersøgt: { label: "Eftersøgt", dot: "bg-warning", bg: "bg-warning/10 text-warning" },
+  anholdt: { label: "Anholdt", dot: "bg-destructive", bg: "bg-destructive/10 text-destructive" },
+  sigtet: { label: "Sigtet", dot: "bg-primary", bg: "bg-primary/10 text-primary" },
 };
+
+type DetailTab = "info" | "sigtelser";
 
 const KRRegister = () => {
   const [personer, setPersoner] = useState<Person[]>([]);
@@ -31,6 +33,7 @@ const KRRegister = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
+  const [tab, setTab] = useState<DetailTab>("info");
 
   useEffect(() => {
     const load = async () => {
@@ -53,6 +56,8 @@ const KRRegister = () => {
   const filtreret = personer.filter((p) =>
     `${p.fornavn} ${p.efternavn} ${p.cpr}`.toLowerCase().includes(soegning.toLowerCase())
   );
+
+  const personSigtelser = valgtPerson ? sigtelser.filter((s) => s.personId === valgtPerson.id) : [];
 
   const opretPerson = async () => {
     setSaving(true);
@@ -85,250 +90,293 @@ const KRRegister = () => {
     return (
       <div className="flex items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
         <Loader2 className="w-5 h-5 animate-spin" />
-        <span>Indlæser personer...</span>
+        <span>Indlæser...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full gap-4">
-      <div className="w-full lg:w-1/2 xl:w-2/5 flex flex-col gap-4">
-        <div className="flex items-center gap-2">
+    <div className="flex h-full">
+      {/* Left: Person list */}
+      <div className={cn(
+        "flex flex-col border-r border-border bg-card/30",
+        valgtPerson ? "w-72 shrink-0 hidden lg:flex" : "flex-1"
+      )}>
+        {/* Search + create */}
+        <div className="p-3 border-b border-border flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input
-              placeholder="Søg navn, CPR..."
+              placeholder="Søg..."
               value={soegning}
               onChange={(e) => setSoegning(e.target.value)}
-              className="pl-9 bg-secondary border-border"
+              className="pl-8 h-8 text-xs bg-background border-border"
             />
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5">
-                <Plus className="w-4 h-4" /> Opret
+              <Button size="sm" className="h-8 w-8 p-0 shrink-0">
+                <Plus className="w-3.5 h-3.5" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Opret person i KR</DialogTitle>
+                <DialogTitle className="text-sm">Opret person</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-3 py-2">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2.5 pt-1">
+                <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <Label className="text-xs">Fornavn</Label>
-                    <Input value={nyPerson.fornavn || ""} onChange={(e) => setNyPerson({ ...nyPerson, fornavn: e.target.value })} />
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fornavn</Label>
+                    <Input className="h-8 text-sm mt-0.5" value={nyPerson.fornavn || ""} onChange={(e) => setNyPerson({ ...nyPerson, fornavn: e.target.value })} />
                   </div>
                   <div>
-                    <Label className="text-xs">Efternavn</Label>
-                    <Input value={nyPerson.efternavn || ""} onChange={(e) => setNyPerson({ ...nyPerson, efternavn: e.target.value })} />
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs">CPR-nummer</Label>
-                  <Input placeholder="DDMMÅÅ-XXXX" value={nyPerson.cpr || ""} onChange={(e) => setNyPerson({ ...nyPerson, cpr: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs">Adresse</Label>
-                  <Input value={nyPerson.adresse || ""} onChange={(e) => setNyPerson({ ...nyPerson, adresse: e.target.value })} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs">Postnr</Label>
-                    <Input value={nyPerson.postnr || ""} onChange={(e) => setNyPerson({ ...nyPerson, postnr: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label className="text-xs">By</Label>
-                    <Input value={nyPerson.by || ""} onChange={(e) => setNyPerson({ ...nyPerson, by: e.target.value })} />
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Efternavn</Label>
+                    <Input className="h-8 text-sm mt-0.5" value={nyPerson.efternavn || ""} onChange={(e) => setNyPerson({ ...nyPerson, efternavn: e.target.value })} />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs">Telefon</Label>
-                  <Input value={nyPerson.telefon || ""} onChange={(e) => setNyPerson({ ...nyPerson, telefon: e.target.value })} />
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">CPR</Label>
+                  <Input className="h-8 text-sm mt-0.5" placeholder="DDMMÅÅ-XXXX" value={nyPerson.cpr || ""} onChange={(e) => setNyPerson({ ...nyPerson, cpr: e.target.value })} />
                 </div>
                 <div>
-                  <Label className="text-xs">Status</Label>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Adresse</Label>
+                  <Input className="h-8 text-sm mt-0.5" value={nyPerson.adresse || ""} onChange={(e) => setNyPerson({ ...nyPerson, adresse: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Postnr</Label>
+                    <Input className="h-8 text-sm mt-0.5" value={nyPerson.postnr || ""} onChange={(e) => setNyPerson({ ...nyPerson, postnr: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">By</Label>
+                    <Input className="h-8 text-sm mt-0.5" value={nyPerson.by || ""} onChange={(e) => setNyPerson({ ...nyPerson, by: e.target.value })} />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Telefon</Label>
+                  <Input className="h-8 text-sm mt-0.5" value={nyPerson.telefon || ""} onChange={(e) => setNyPerson({ ...nyPerson, telefon: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</Label>
                   <Select value={nyPerson.status || "aktiv"} onValueChange={(v) => setNyPerson({ ...nyPerson, status: v as Person["status"] })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm mt-0.5"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="aktiv">Aktiv</SelectItem>
-                      <SelectItem value="eftersøgt">Eftersøgt</SelectItem>
-                      <SelectItem value="anholdt">Anholdt</SelectItem>
-                      <SelectItem value="sigtet">Sigtet</SelectItem>
+                      {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as const).map((s) => (
+                        <SelectItem key={s} value={s}>{statusConfig[s].label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">Noter</Label>
-                  <Textarea value={nyPerson.noter || ""} onChange={(e) => setNyPerson({ ...nyPerson, noter: e.target.value })} rows={3} />
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Noter</Label>
+                  <Textarea className="text-sm mt-0.5" rows={2} value={nyPerson.noter || ""} onChange={(e) => setNyPerson({ ...nyPerson, noter: e.target.value })} />
                 </div>
-                <Button onClick={opretPerson} disabled={saving} className="w-full mt-2">
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                  Opret person
+                <Button onClick={opretPerson} disabled={saving} className="h-8 text-xs mt-1">
+                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />}
+                  Opret
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        <div className="space-y-1.5 overflow-y-auto flex-1">
-          {filtreret.map((person) => (
-            <button
-              key={person.id}
-              onClick={() => setValgtPerson(person)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all ${
-                valgtPerson?.id === person.id
-                  ? "bg-primary/10 border border-primary/30"
-                  : "bg-secondary/50 border border-transparent hover:bg-secondary"
-              }`}
-            >
-              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
-                <User className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{person.fornavn} {person.efternavn}</p>
-                <p className="text-xs text-muted-foreground font-mono">{person.cpr}</p>
-              </div>
-              <Badge variant="outline" className={statusConfig[person.status].className}>
-                {statusConfig[person.status].label}
-              </Badge>
-              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-            </button>
-          ))}
+        {/* List */}
+        <div className="flex-1 overflow-y-auto">
+          {filtreret.map((person) => {
+            const active = valgtPerson?.id === person.id;
+            return (
+              <button
+                key={person.id}
+                onClick={() => { setValgtPerson(person); setTab("info"); }}
+                className={cn(
+                  "w-full flex items-center gap-2.5 px-3 py-2.5 text-left border-b border-border/40 transition-colors",
+                  active ? "bg-primary/8" : "hover:bg-muted/40"
+                )}
+              >
+                <div className={cn("w-2 h-2 rounded-full shrink-0", statusConfig[person.status].dot)} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate text-foreground">{person.fornavn} {person.efternavn}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">{person.cpr}</p>
+                </div>
+              </button>
+            );
+          })}
           {filtreret.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              Ingen resultater fundet
-            </div>
+            <p className="text-center py-8 text-xs text-muted-foreground">Ingen resultater</p>
           )}
         </div>
       </div>
 
-      <div className="hidden lg:block flex-1 overflow-y-auto">
-        {valgtPerson ? (
-          <div className="h-full flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-foreground">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
-                  <p className="text-xs text-muted-foreground font-mono">{valgtPerson.cpr}</p>
-                </div>
-              </div>
-              <Badge variant="outline" className={statusConfig[valgtPerson.status].className}>
-                {statusConfig[valgtPerson.status].label}
-              </Badge>
+      {/* Right: Detail */}
+      {valgtPerson ? (
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Detail header */}
+          <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-card/50">
+            <button
+              onClick={() => setValgtPerson(null)}
+              className="lg:hidden w-7 h-7 rounded-md flex items-center justify-center hover:bg-muted"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <User className="w-4 h-4 text-primary" />
             </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-semibold text-foreground truncate">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
+              <p className="text-[10px] text-muted-foreground font-mono">{valgtPerson.cpr}</p>
+            </div>
+            <div className={cn("px-2 py-0.5 rounded text-[10px] font-medium", statusConfig[valgtPerson.status].bg)}>
+              {statusConfig[valgtPerson.status].label}
+            </div>
+          </div>
 
-            {/* Content */}
-            <div className="flex-1 p-4 space-y-5 overflow-y-auto">
-              {valgtPerson.status === "eftersøgt" && (
-                <div className="flex items-center gap-2 p-2.5 rounded-md bg-warning/10 border border-warning/20">
-                  <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
-                  <span className="text-xs text-warning font-medium">Eftersøgt person</span>
-                </div>
-              )}
-
-              {/* Info grid */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Adresse</p>
-                  <p className="text-sm text-foreground">{valgtPerson.adresse}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">By</p>
-                  <p className="text-sm text-foreground">{valgtPerson.postnr} {valgtPerson.by}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Telefon</p>
-                  <p className="text-sm text-foreground">{valgtPerson.telefon || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Oprettet</p>
-                  <p className="text-sm text-foreground">{valgtPerson.oprettet}</p>
-                </div>
-              </div>
-
-              {valgtPerson.noter && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Noter</p>
-                  <p className="text-sm text-foreground/80 bg-muted/30 rounded-md p-2.5">{valgtPerson.noter}</p>
-                </div>
-              )}
-
-              {/* Status */}
-              <div className="pt-3 border-t border-border">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Status</p>
-                <div className="flex gap-1.5">
-                  {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as Person["status"][]).map((s) => (
-                    <Button
-                      key={s}
-                      size="sm"
-                      variant={valgtPerson.status === s ? "default" : "outline"}
-                      disabled={valgtPerson.status === s || updatingStatus}
-                      className="text-xs h-7 px-2.5"
-                      onClick={async () => {
-                        setUpdatingStatus(true);
-                        try {
-                          await personerApi.update(valgtPerson.id, { status: s });
-                          const updated = { ...valgtPerson, status: s };
-                          setValgtPerson(updated);
-                          setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-                        } catch (err) {
-                          console.error("Fejl ved statusændring:", err);
-                        }
-                        setUpdatingStatus(false);
-                      }}
-                    >
-                      {statusConfig[s].label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Opret sigtelse */}
+          {/* Tabs */}
+          <div className="flex border-b border-border bg-card/30">
+            {([
+              { id: "info" as const, label: "Oplysninger" },
+              { id: "sigtelser" as const, label: `Sigtelser${personSigtelser.length > 0 ? ` (${personSigtelser.length})` : ""}` },
+            ]).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "px-4 py-2 text-xs font-medium transition-colors border-b-2 -mb-px",
+                  tab === t.id
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+            <div className="flex-1" />
+            <div className="pr-3 py-1.5">
               <Button
                 size="sm"
                 onClick={() => setSigtelseDialogOpen(true)}
-                className="w-full gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground h-8 text-xs"
+                className="h-7 text-[10px] gap-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               >
-                <Scale className="w-3.5 h-3.5" />
+                <Scale className="w-3 h-3" />
                 Opret sigtelse
               </Button>
+            </div>
+          </div>
 
-              {/* Sigtelse historik */}
-              {sigtelser.filter((s) => s.personId === valgtPerson.id).length > 0 && (
+          {/* Tab content */}
+          <div className="flex-1 overflow-y-auto p-5">
+            {tab === "info" && (
+              <div className="space-y-5 max-w-xl">
+                {valgtPerson.status === "eftersøgt" && (
+                  <div className="flex items-center gap-2 p-2 rounded bg-warning/8 border border-warning/15">
+                    <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0" />
+                    <span className="text-[11px] text-warning font-medium">Eftersøgt person</span>
+                  </div>
+                )}
+
+                {/* Info grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Adresse" value={valgtPerson.adresse} />
+                  <Field label="Postnr / By" value={`${valgtPerson.postnr} ${valgtPerson.by}`} />
+                  <Field label="Telefon" value={valgtPerson.telefon || "—"} />
+                  <Field label="Oprettet" value={valgtPerson.oprettet} />
+                </div>
+
+                {valgtPerson.noter && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Noter</p>
+                    <p className="text-xs text-foreground/80 bg-muted/20 rounded p-2.5 leading-relaxed">{valgtPerson.noter}</p>
+                  </div>
+                )}
+
+                {/* Status change */}
                 <div className="pt-3 border-t border-border">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Sigtelser</p>
-                  <div className="space-y-2">
-                    {sigtelser.filter((s) => s.personId === valgtPerson.id).map((sig) => (
-                      <div key={sig.id} className="p-3 rounded-md bg-secondary/40 border border-border/50 space-y-1">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-medium text-foreground">{sig.dato}</span>
-                          {sig.erkender === true && <Badge className="bg-success/20 text-success border-success/30 text-[10px] h-4">Erkender</Badge>}
-                          {sig.erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px] h-4">Nægter</Badge>}
-                        </div>
-                        <div className="flex gap-3 text-xs text-muted-foreground">
-                          <span className="text-warning font-mono">{sig.totalBoede.toLocaleString("da-DK")} kr</span>
-                          {sig.faengselMaaneder > 0 && <span className="text-destructive">{sig.faengselMaaneder} md. fængsel</span>}
-                          {sig.fratagKoerekort && <span className="text-destructive">Kørekort frataget</span>}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">{sig.sigtelseBoeder.map((b) => b.paragraf).join(", ")}</p>
-                      </div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Skift status</p>
+                  <div className="flex gap-1.5">
+                    {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as Person["status"][]).map((s) => (
+                      <Button
+                        key={s}
+                        size="sm"
+                        variant={valgtPerson.status === s ? "default" : "outline"}
+                        disabled={valgtPerson.status === s || updatingStatus}
+                        className="h-7 text-[10px] px-2.5"
+                        onClick={async () => {
+                          setUpdatingStatus(true);
+                          try {
+                            await personerApi.update(valgtPerson.id, { status: s });
+                            const updated = { ...valgtPerson, status: s };
+                            setValgtPerson(updated);
+                            setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+                          } catch (err) {
+                            console.error(err);
+                          }
+                          setUpdatingStatus(false);
+                        }}
+                      >
+                        {statusConfig[s].label}
+                      </Button>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {tab === "sigtelser" && (
+              <div className="space-y-3 max-w-2xl">
+                {personSigtelser.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-8 text-center">Ingen sigtelser registreret</p>
+                ) : (
+                  personSigtelser.map((sig) => (
+                    <div key={sig.id} className="rounded-md border border-border bg-card/50 overflow-hidden">
+                      {/* Sigtelse header */}
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 bg-muted/20">
+                        <span className="text-xs font-medium text-foreground">{sig.dato}</span>
+                        <div className="flex items-center gap-2">
+                          {sig.erkender === true && <span className="text-[10px] text-success font-medium">Erkender</span>}
+                          {sig.erkender === false && <span className="text-[10px] text-destructive font-medium">Nægter</span>}
+                        </div>
+                      </div>
+                      {/* Stats */}
+                      <div className="grid grid-cols-3 divide-x divide-border/40 text-center py-2.5">
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase">Bøde</p>
+                          <p className="text-xs font-bold font-mono text-warning">{sig.totalBoede.toLocaleString("da-DK")} kr</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase">Fængsel</p>
+                          <p className="text-xs font-bold text-foreground">{sig.faengselMaaneder > 0 ? `${sig.faengselMaaneder} md.` : "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase">Kørekort</p>
+                          <p className={cn("text-xs font-bold", sig.fratagKoerekort ? "text-destructive" : "text-success")}>
+                            {sig.fratagKoerekort ? "Frataget" : "OK"}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Charges list */}
+                      <div className="px-4 pb-3">
+                        <div className="space-y-0.5">
+                          {sig.sigtelseBoeder.map((b, i) => (
+                            <div key={i} className="flex justify-between text-[10px] py-0.5">
+                              <span className="text-muted-foreground">{b.paragraf && `${b.paragraf} — `}{b.beskrivelse}</span>
+                              <span className="font-mono text-foreground ml-2 shrink-0">{b.beloeb.toLocaleString("da-DK")} kr</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-            Vælg en person for at se detaljer
+        </div>
+      ) : (
+        !valgtPerson && filtreret.length > 0 && (
+          <div className="hidden lg:flex flex-1 items-center justify-center text-muted-foreground text-xs">
+            Vælg en person fra listen
           </div>
-        )}
-      </div>
+        )
+      )}
 
       {valgtPerson && (
         <OpretSigtelseDialog
@@ -357,10 +405,10 @@ const KRRegister = () => {
   );
 };
 
-const InfoField = ({ label, value }: { label: string; value: string }) => (
+const Field = ({ label, value }: { label: string; value: string }) => (
   <div>
-    <p className="text-xs text-muted-foreground">{label}</p>
-    <p className="text-sm font-medium">{value}</p>
+    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">{label}</p>
+    <p className="text-xs text-foreground">{value}</p>
   </div>
 );
 
