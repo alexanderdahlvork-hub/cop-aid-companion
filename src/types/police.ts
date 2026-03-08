@@ -74,11 +74,3 @@ export interface FyretMedarbejder {
   fyretDato: string;
   fyretAf: string;
 }
-  id: string;
-  badgeNr: string;
-  fornavn: string;
-  efternavn: string;
-  rang: string;
-  fyretDato: string;
-  fyretAf: string;
-}

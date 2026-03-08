@@ -17,6 +17,7 @@ const FleetManagement = () => {
   const [koeretoejer, setKoeretoejer] = useState<Koeretoej[]>([]);
   const [loading, setLoading] = useState(true);
   const [valgt, setValgt] = useState<Koeretoej | null>(null);
+  const [soegning, setSoegning] = useState("");
 
   useEffect(() => {
     const load = async () => {

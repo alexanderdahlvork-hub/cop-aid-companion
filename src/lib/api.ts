@@ -165,6 +165,23 @@ export const boederApi = {
   },
 };
 
+// ── Ejendomme ──
+export const ejendommeApi = {
+  async getAll(): Promise<Ejendom[]> {
+    const res = await getAll<Ejendom>("ejendomme");
+    return res.results;
+  },
+  async create(e: Ejendom): Promise<void> {
+    await create("ejendomme", e);
+  },
+  async update(id: string, data: Partial<Ejendom>): Promise<void> {
+    await update("ejendomme", id, data);
+  },
+  async remove(id: string): Promise<void> {
+    await remove("ejendomme", id);
+  },
+};
+
 // ── Rang Order ──
 export const rangApi = {
   async getAll(): Promise<{ id: string; rang: string; position: number }[]> {
