@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { personerApi } from "@/lib/api";
+import { personerApi, sigtelserApi } from "@/lib/api";
 import type { Person, Sigtelse } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
 import { toast } from "@/components/ui/sonner";
