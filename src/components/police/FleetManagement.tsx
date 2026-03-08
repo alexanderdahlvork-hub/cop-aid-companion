@@ -38,6 +38,14 @@ const FleetManagement = () => {
   const [nyKategoriCustom, setNyKategoriCustom] = useState("");
   const [nyPladser, setNyPladser] = useState("2");
 
+  // Load from database
+  useEffect(() => {
+    patruljerApi.getAll()
+      .then(setPatrols)
+      .catch((err) => { console.error("Fejl ved indlæsning af patruljer:", err); toast.error("Kunne ikke indlæse patruljer"); })
+      .finally(() => setLoading(false));
+  }, []);
+
   const kategorier = Array.from(new Set(patrols.map((p) => p.kategori)));
 
   const filtreret = patrols.filter((p) => {
