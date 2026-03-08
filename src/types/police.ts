@@ -50,3 +50,13 @@ export interface BoedKategori {
   navn: string;
   boeder: Boede[];
 }
+
+export interface FyretMedarbejder {
+  id: string;
+  badgeNr: string;
+  fornavn: string;
+  efternavn: string;
+  rang: string;
+  fyretDato: string;
+  fyretAf: string;
+}
