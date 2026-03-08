@@ -131,6 +131,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [saving, setSaving] = useState(false);
   const [showKlipPopup, setShowKlipPopup] = useState(false);
   const [soegning, setSoegning] = useState("");
+  const [fartOpen, setFartOpen] = useState(false);
 
   const boeder = standardBoeder;
 
