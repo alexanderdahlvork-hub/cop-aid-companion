@@ -6,31 +6,21 @@ import AnsatteListe from "@/components/police/AnsatteListe";
 import Bodetakster from "@/components/police/Bodetakster";
 import LoginPage from "@/components/police/LoginPage";
 import ChangePasswordDialog from "@/components/police/ChangePasswordDialog";
-import { FileText, MapPin, Radio, Settings } from "lucide-react";
+import Dashboard from "@/components/police/Dashboard";
+import { FileText, MapPin, Radio, Settings, AlertTriangle, Building, BookOpen } from "lucide-react";
 import { ansatteListe } from "@/data/ansatte";
 import type { Betjent } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
-  <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3">
+  <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3 min-h-[400px]">
     {(() => { const Icon = icon; return <Icon className="w-10 h-10 opacity-30" />; })()}
     <h2 className="text-lg font-semibold text-foreground">{title}</h2>
     <p className="text-sm">{desc}</p>
   </div>
 );
 
-const tabTitles: Record<string, { title: string; desc: string }> = {
-  ansatte: { title: "Ansatte", desc: "Oversigt over alle betjente" },
-  boeder: { title: "Bødetakster", desc: "Lovgivning og bødebeløb" },
-  kr: { title: "KR — Kriminalregisteret", desc: "Søg og opret personer i registeret" },
-  fleet: { title: "Flådestyring", desc: "Oversigt over patruljekøretøjer" },
-  rapporter: { title: "Rapporter", desc: "" },
-  kort: { title: "Kort & GPS", desc: "" },
-  radio: { title: "Kommunikation", desc: "" },
-  indstillinger: { title: "Indstillinger", desc: "" },
-};
-
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("ansatte");
+  const [activeTab, setActiveTab] = useState("forside");
   const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -45,7 +35,6 @@ const Index = () => {
 
   const handleChangePassword = (newPassword: string) => {
     if (!currentUser) return;
-    // Update password in the data
     const idx = ansatteListe.findIndex(a => a.id === currentUser.id);
     if (idx !== -1) {
       ansatteListe[idx].kodeord = newPassword;
@@ -59,7 +48,21 @@ const Index = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  const tab = tabTitles[activeTab];
+  const renderContent = () => {
+    switch (activeTab) {
+      case "forside": return <Dashboard currentUser={currentUser} />;
+      case "guides": return placeholderTab(BookOpen, "Guides & FAQ", "Hjælp og vejledninger");
+      case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
+      case "boeder": return <Bodetakster />;
+      case "kr": return <KRRegister />;
+      case "fleet": return <FleetManagement />;
+      case "efterlysninger": return placeholderTab(AlertTriangle, "Efterlysninger", "Kommer snart");
+      case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
+      case "kort": return placeholderTab(MapPin, "Kort & GPS", "Kommer snart");
+      case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
+      default: return placeholderTab(Settings, "Side", "Kommer snart");
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -67,27 +70,11 @@ const Index = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onLogout={() => { setCurrentUser(null); setIsAdmin(false); }}
-        badgeNr={currentUser.badgeNr}
+        currentUser={currentUser}
+        isAdmin={isAdmin}
       />
-      <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">{tab?.title}</h1>
-            {tab?.desc && <p className="text-sm text-muted-foreground">{tab.desc}</p>}
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-medium text-foreground">{currentUser.fornavn} {currentUser.efternavn}</p>
-            <p className="text-xs text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
-          </div>
-        </div>
-        {activeTab === "ansatte" && <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />}
-        {activeTab === "boeder" && <Bodetakster />}
-        {activeTab === "kr" && <KRRegister />}
-        {activeTab === "fleet" && <FleetManagement />}
-        {activeTab === "rapporter" && placeholderTab(FileText, "Rapporter", "Kommer snart")}
-        {activeTab === "kort" && placeholderTab(MapPin, "Kort & GPS", "Kommer snart")}
-        {activeTab === "radio" && placeholderTab(Radio, "Kommunikation", "Kommer snart")}
-        {activeTab === "indstillinger" && placeholderTab(Settings, "Indstillinger", "Kommer snart")}
+      <main className="flex-1 p-4 lg:p-6 overflow-y-auto relative">
+        {renderContent()}
       </main>
 
       <ChangePasswordDialog
