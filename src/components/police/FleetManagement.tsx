@@ -13,22 +13,7 @@ import { toast } from "@/components/ui/sonner";
 import { patruljerApi } from "@/lib/api";
 import type { Patrulje } from "@/lib/api";
 
-type PatrolStatus = "ledig" | "i_brug" | "optaget" | "ude_af_drift";
-
-interface PatrolMember {
-  badgeNr: string;
-  navn: string;
-}
-
-interface Patrol {
-  id: string;
-  navn: string;
-  kategori: string;
-  pladser: number;
-  medlemmer: PatrolMember[];
-  status: PatrolStatus;
-  bemærkning: string;
-}
+type PatrolStatus = Patrulje['status'];
 
 const statusConfig: Record<PatrolStatus, { label: string; dot: string; bg: string }> = {
   ledig: { label: "Ledig", dot: "bg-success", bg: "bg-success/10 text-success border-success/20" },
@@ -37,43 +22,9 @@ const statusConfig: Record<PatrolStatus, { label: string; dot: string; bg: strin
   ude_af_drift: { label: "Ude af drift", dot: "bg-destructive", bg: "bg-destructive/10 text-destructive border-destructive/20" },
 };
 
-const initialPatrols: Patrol[] = [
-  // Lima
-  { id: "lima-01", navn: "Lima 01", kategori: "Lima", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Foxtrot
-  { id: "foxtrot-11", navn: "Foxtrot 11", kategori: "Foxtrot", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Bravo
-  ...Array.from({ length: 20 }, (_, i) => ({
-    id: `bravo-${21 + i}`,
-    navn: `Bravo ${21 + i}`,
-    kategori: "Bravo",
-    pladser: 2,
-    medlemmer: [] as PatrolMember[],
-    status: "ledig" as PatrolStatus,
-    bemærkning: "",
-  })),
-  // Mike
-  { id: "mike-20", navn: "Mike 20", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-43", navn: "Mike 43", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-44", navn: "Mike 44", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-45", navn: "Mike 45", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-46", navn: "Mike 46", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Romeo
-  { id: "romeo-13", navn: "Romeo 13", kategori: "Romeo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Mike Kilo
-  { id: "mk-20", navn: "Mike Kilo 20", kategori: "Mike Kilo", pladser: 3, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mk-35", navn: "Mike Kilo 35", kategori: "Mike Kilo", pladser: 3, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Kilo
-  { id: "kilo-16", navn: "Kilo 16", kategori: "Kilo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "kilo-17", navn: "Kilo 17", kategori: "Kilo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "kilo-18", navn: "Kilo 18", kategori: "Kilo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // S (Stab)
-  { id: "s-1", navn: "S 1", kategori: "Stab", pladser: 4, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "s-2", navn: "S 2", kategori: "Stab", pladser: 4, medlemmer: [], status: "ledig", bemærkning: "" },
-];
-
 const FleetManagement = () => {
-  const [patrols, setPatrols] = useState<Patrol[]>(initialPatrols);
+  const [patrols, setPatrols] = useState<Patrulje[]>([]);
+  const [loading, setLoading] = useState(true);
   const [soegning, setSoegning] = useState("");
   const [signOnDialog, setSignOnDialog] = useState<string | null>(null);
   const [badgeInput, setBadgeInput] = useState("");
