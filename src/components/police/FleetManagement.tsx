@@ -187,6 +187,9 @@ const FleetManagement = () => {
               <span className="text-muted-foreground">Ledige:</span>
               <span className="font-bold text-success">{stats.ledig}</span>
             </div>
+            <Button size="sm" className="h-6 text-[10px] gap-1 px-2" onClick={() => setOpretDialog(true)}>
+              <Plus className="w-3 h-3" /> Opret patrulje
+            </Button>
           </div>
         </div>
 
