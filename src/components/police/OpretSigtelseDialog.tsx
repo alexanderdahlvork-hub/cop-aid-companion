@@ -400,12 +400,17 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
         <ScrollArea className="flex-1 max-h-[55vh] px-5">
           {step === 0 && (
             <div className="space-y-2.5 pb-3">
-              <Input
-                placeholder="Søg paragraf eller beskrivelse..."
-                value={soegning}
-                onChange={(e) => setSoegning(e.target.value)}
-                className="bg-muted/50 border-border text-sm h-8"
-              />
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Søg paragraf eller beskrivelse..."
+                  value={soegning}
+                  onChange={(e) => setSoegning(e.target.value)}
+                  className="bg-muted/50 border-border text-sm h-8 flex-1"
+                />
+                <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 shrink-0" onClick={() => setFartOpen(true)}>
+                  <Gauge className="w-3.5 h-3.5" /> Fartberegner
+                </Button>
+              </div>
 
               {kategorier.map((kat) => {
                 const katBoeder = filtreretBoeder.filter((b) => b.kategori === kat);
