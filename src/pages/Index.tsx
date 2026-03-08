@@ -2,6 +2,7 @@ import { useState } from "react";
 import Sidebar from "@/components/police/Sidebar";
 import KRRegister from "@/components/police/KRRegister";
 import FleetManagement from "@/components/police/FleetManagement";
+import Ejendomsregister from "@/components/police/Ejendomsregister";
 import AnsatteListe from "@/components/police/AnsatteListe";
 import Bodetakster from "@/components/police/Bodetakster";
 import LoginPage from "@/components/police/LoginPage";
@@ -56,6 +57,7 @@ const Index = () => {
       case "boeder": return <Bodetakster />;
       case "kr": return <KRRegister />;
       case "fleet": return <FleetManagement />;
+      case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return placeholderTab(AlertTriangle, "Efterlysninger", "Kommer snart");
       case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
       case "kort": return placeholderTab(MapPin, "Kort & GPS", "Kommer snart");

@@ -41,7 +41,7 @@ function remove(table: string, id: string): Promise<{ message: string }> {
 }
 
 // ── Betjente (Officers) ──
-import type { Betjent, FyretMedarbejder, Person, Koeretoej, Boede } from "@/types/police";
+import type { Betjent, FyretMedarbejder, Person, Koeretoej, Boede, Ejendom } from "@/types/police";
 
 interface BetjentRow {
   id: string;
@@ -162,6 +162,23 @@ export const boederApi = {
   },
   async remove(id: string): Promise<void> {
     await remove("boeder", id);
+  },
+};
+
+// ── Ejendomme ──
+export const ejendommeApi = {
+  async getAll(): Promise<Ejendom[]> {
+    const res = await getAll<Ejendom>("ejendomme");
+    return res.results;
+  },
+  async create(e: Ejendom): Promise<void> {
+    await create("ejendomme", e);
+  },
+  async update(id: string, data: Partial<Ejendom>): Promise<void> {
+    await update("ejendomme", id, data);
+  },
+  async remove(id: string): Promise<void> {
+    await remove("ejendomme", id);
   },
 };
 
