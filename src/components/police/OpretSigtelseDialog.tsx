@@ -364,64 +364,64 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Scale className="w-5 h-5 text-primary" />
-            Opret sigtelse — {person.fornavn} {person.efternavn}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+        {/* Header */}
+        <div className="px-5 pt-5 pb-3">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold">
+              Opret sigtelse — {person.fornavn} {person.efternavn}
+            </DialogTitle>
+          </DialogHeader>
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-1 pb-2">
-          {steps.map((s, i) => (
-            <button
-              key={s}
-              onClick={() => setStep(i)}
-              className={cn(
-                "flex-1 text-center py-1.5 rounded-md text-xs font-medium transition-all",
-                step === i
-                  ? "bg-primary text-primary-foreground"
-                  : i < step
-                    ? "bg-success/20 text-success"
-                    : "bg-secondary text-muted-foreground"
-              )}
-            >
-              {s}
-            </button>
-          ))}
+          {/* Steps */}
+          <div className="flex gap-1 mt-3">
+            {steps.map((s, i) => (
+              <button
+                key={s}
+                onClick={() => setStep(i)}
+                className={cn(
+                  "flex-1 text-center py-1.5 rounded text-[11px] font-medium transition-colors",
+                  step === i
+                    ? "bg-primary text-primary-foreground"
+                    : i < step
+                      ? "bg-success/15 text-success"
+                      : "bg-muted text-muted-foreground"
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <ScrollArea className="flex-1 max-h-[55vh]">
-          {/* Step 0: Sigtelser */}
+        {/* Body */}
+        <ScrollArea className="flex-1 max-h-[55vh] px-5">
           {step === 0 && (
-            <div className="space-y-3 pr-3">
-              <div className="relative">
-                <Input
-                  placeholder="Søg paragraf eller sigtelse..."
-                  value={soegning}
-                  onChange={(e) => setSoegning(e.target.value)}
-                  className="bg-secondary border-border text-sm"
-                />
-              </div>
+            <div className="space-y-2.5 pb-3">
+              <Input
+                placeholder="Søg paragraf eller beskrivelse..."
+                value={soegning}
+                onChange={(e) => setSoegning(e.target.value)}
+                className="bg-muted/50 border-border text-sm h-8"
+              />
 
               {kategorier.map((kat) => {
                 const katBoeder = filtreretBoeder.filter((b) => b.kategori === kat);
                 const isOpen = openKat === kat;
                 return (
-                  <div key={kat} className="rounded-lg border border-border overflow-hidden">
+                  <div key={kat} className="rounded-md border border-border overflow-hidden">
                     <button
                       onClick={() => setOpenKat(isOpen ? null : kat)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-secondary/80 hover:bg-secondary transition-colors text-left"
+                      className="w-full flex items-center justify-between px-3 py-2 bg-muted/40 hover:bg-muted/60 transition-colors"
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-foreground">{kat}</span>
-                        <Badge variant="outline" className="text-[10px]">{katBoeder.length}</Badge>
+                      <span className="text-xs font-medium text-foreground">{kat}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">{katBoeder.length}</span>
+                        {isOpen ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
                       </div>
-                      {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
                     </button>
                     {isOpen && (
-                      <div className="divide-y divide-border/50">
+                      <div className="divide-y divide-border/40">
                         {katBoeder.map((b) => {
                           const selected = valgteBoeder.some((v) => v.boedeId === b.id);
                           return (
@@ -429,30 +429,26 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                               key={b.id}
                               onClick={() => toggleBoede(b)}
                               className={cn(
-                                "w-full flex items-center gap-2 px-3 py-2 text-left transition-all",
-                                selected ? "bg-primary/10" : "hover:bg-muted/50"
+                                "w-full flex items-center gap-2.5 px-3 py-1.5 text-left transition-colors",
+                                selected ? "bg-primary/8" : "hover:bg-muted/30"
                               )}
                             >
                               <div className={cn(
-                                "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors",
-                                selected ? "bg-primary border-primary" : "border-border"
+                                "w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0",
+                                selected ? "bg-primary border-primary" : "border-muted-foreground/30"
                               )}>
-                                {selected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
+                                {selected && <Check className="w-2 h-2 text-primary-foreground" />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-foreground">
+                                <span className="text-[11px] text-foreground">
                                   {b.paragraf && <span className="text-muted-foreground">{b.paragraf} — </span>}
                                   {b.beskrivelse}
-                                </p>
+                                </span>
                               </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                {(b.klip ?? 0) > 0 && (
-                                  <Badge variant="outline" className="text-[9px] bg-primary/10 text-primary border-primary/20 px-1 py-0">{b.klip} klip</Badge>
-                                )}
-                                {(b.faengselMaaneder ?? 0) > 0 && (
-                                  <Badge variant="outline" className="text-[9px] bg-destructive/10 text-destructive border-destructive/20 px-1 py-0">{b.faengselMaaneder} md.</Badge>
-                                )}
-                                <span className="text-xs font-mono font-semibold text-warning">{b.beloeb.toLocaleString("da-DK")} kr</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {(b.klip ?? 0) > 0 && <span className="text-[9px] text-primary font-medium">{b.klip} klip</span>}
+                                {(b.faengselMaaneder ?? 0) > 0 && <span className="text-[9px] text-destructive font-medium">{b.faengselMaaneder} md.</span>}
+                                <span className="text-[11px] font-mono text-warning ml-1">{b.beloeb.toLocaleString("da-DK")} kr</span>
                               </div>
                             </button>
                           );
@@ -463,126 +459,120 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                 );
               })}
 
-              {/* Summary */}
+              {/* Summary bar */}
               {valgteBoeder.length > 0 && (
-                <div className="p-3 rounded-lg bg-card border border-border space-y-1.5">
+                <div className="p-3 rounded-md bg-card border border-border">
                   <div className="grid grid-cols-4 gap-2 text-center">
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Bøde</p>
-                      <p className="text-sm font-bold font-mono text-warning">{totalBoede.toLocaleString("da-DK")} kr</p>
+                      <p className="text-[9px] text-muted-foreground uppercase">Bøde</p>
+                      <p className="text-xs font-bold font-mono text-warning">{totalBoede.toLocaleString("da-DK")} kr</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Fængsel</p>
-                      <p className="text-sm font-bold text-destructive">{totalFaengsel > 0 ? `${totalFaengsel} md.` : "—"}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase">Fængsel</p>
+                      <p className="text-xs font-bold text-destructive">{totalFaengsel > 0 ? `${totalFaengsel} md.` : "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Klip</p>
-                      <p className={cn("text-sm font-bold", totalKlip > 0 ? "text-primary" : "text-muted-foreground")}>{totalKlip > 0 ? `+${totalKlip}` : "—"}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase">Klip</p>
+                      <p className={cn("text-xs font-bold", totalKlip > 0 ? "text-primary" : "text-muted-foreground")}>{totalKlip > 0 ? `+${totalKlip}` : "—"}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Frakendelse</p>
-                      <p className={cn("text-sm font-bold", frakendelsesType === "Ubetinget" ? "text-destructive" : frakendelsesType ? "text-warning" : "text-muted-foreground")}>
+                      <p className="text-[9px] text-muted-foreground uppercase">Frakendelse</p>
+                      <p className={cn("text-xs font-bold", frakendelsesType === "Ubetinget" ? "text-destructive" : frakendelsesType ? "text-warning" : "text-muted-foreground")}>
                         {frakendelsesType || "—"}
                       </p>
                     </div>
                   </div>
-
-                  {/* Klip warning inline */}
                   {klipStatus && (
                     <div className={cn(
-                      "mt-2 p-2 rounded-md text-xs flex items-center gap-2",
-                      klipStatus.type === "ubetinget"
-                        ? "bg-destructive/10 text-destructive"
-                        : klipStatus.type === "betinget"
-                          ? "bg-warning/10 text-warning"
-                          : "bg-primary/10 text-primary"
+                      "mt-2 p-2 rounded text-[11px] flex items-center gap-1.5",
+                      klipStatus.type === "ubetinget" ? "bg-destructive/10 text-destructive"
+                        : klipStatus.type === "betinget" ? "bg-warning/10 text-warning"
+                        : "bg-primary/10 text-primary"
                     )}>
-                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                      <span>{klipStatus.tekst} (tidligere: {tidligereKlip})</span>
+                      <AlertTriangle className="w-3 h-3 shrink-0" />
+                      {klipStatus.tekst}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Kørekort + Erkender */}
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-secondary/50 border border-border">
-                <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort" />
-                <label htmlFor="koerekort" className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
-                  <Car className="w-3.5 h-3.5 text-destructive" /> Fratag kørekort
-                </label>
-              </div>
-
+              {/* Kørekort + erkender */}
               <div className="flex gap-2">
+                <div className="flex items-center gap-2 flex-1 p-2 rounded-md bg-muted/30 border border-border">
+                  <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort" />
+                  <label htmlFor="koerekort" className="text-[11px] font-medium text-foreground cursor-pointer">Fratag kørekort</label>
+                </div>
+              </div>
+              <div className="flex gap-1.5">
                 <Button size="sm" variant={erkender === true ? "default" : "outline"} onClick={() => setErkender(true)}
-                  className={cn("flex-1", erkender === true ? "bg-success hover:bg-success/90" : "")}>
-                  <Check className="w-3.5 h-3.5 mr-1" /> Erkender
+                  className={cn("flex-1 h-7 text-[11px]", erkender === true ? "bg-success hover:bg-success/90" : "")}>
+                  <Check className="w-3 h-3 mr-1" /> Erkender
                 </Button>
                 <Button size="sm" variant={erkender === false ? "default" : "outline"} onClick={() => setErkender(false)}
-                  className={cn("flex-1", erkender === false ? "bg-destructive hover:bg-destructive/90" : "")}>
-                  <X className="w-3.5 h-3.5 mr-1" /> Erkender ikke
+                  className={cn("flex-1 h-7 text-[11px]", erkender === false ? "bg-destructive hover:bg-destructive/90" : "")}>
+                  <X className="w-3 h-3 mr-1" /> Erkender ikke
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 1: Rapport */}
           {step === 1 && (
-            <div className="space-y-4 pr-3">
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Vælg rapportskabelon (valgfrit):</p>
-                <div className="flex flex-wrap gap-1.5">
+            <div className="space-y-3 pb-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Rapportskabelon</p>
+                <div className="flex flex-wrap gap-1">
                   {rapportSkabeloner.map((sk) => (
                     <Button key={sk.id} size="sm" variant={valgtSkabelon?.id === sk.id ? "default" : "outline"}
+                      className="h-6 text-[10px] px-2"
                       onClick={() => { valgtSkabelon?.id === sk.id ? (setValgtSkabelon(null), setSkabelonSvar({})) : (setValgtSkabelon(sk), setSkabelonSvar({})); }}>
-                      <FileText className="w-3 h-3 mr-1" /> {sk.navn}
+                      {sk.navn}
                     </Button>
                   ))}
                 </div>
               </div>
 
               {valgtSkabelon && (
-                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-3">
-                  <p className="text-sm font-semibold text-primary">{valgtSkabelon.navn}</p>
+                <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2.5">
+                  <p className="text-xs font-medium text-primary">{valgtSkabelon.navn}</p>
                   {valgtSkabelon.spoergsmaal.map((sp, i) => (
                     <div key={i}>
-                      <Label className="text-xs text-foreground">{sp}</Label>
-                      <Textarea value={skabelonSvar[`q${i}`] || ""} onChange={(e) => setSkabelonSvar({ ...skabelonSvar, [`q${i}`]: e.target.value })} rows={2} className="mt-1 bg-secondary border-border text-sm" />
+                      <Label className="text-[11px] text-foreground">{sp}</Label>
+                      <Textarea value={skabelonSvar[`q${i}`] || ""} onChange={(e) => setSkabelonSvar({ ...skabelonSvar, [`q${i}`]: e.target.value })} rows={2} className="mt-0.5 bg-muted/30 border-border text-xs" />
                     </div>
                   ))}
                 </div>
               )}
 
               <div>
-                <Label className="text-xs text-muted-foreground">Hændelsesforløb</Label>
-                <Textarea placeholder="Beskriv hændelsesforløbet..." value={haendelse} onChange={(e) => setHaendelse(e.target.value)} rows={4} className="mt-1 bg-secondary border-border" />
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Hændelsesforløb</Label>
+                <Textarea placeholder="Beskriv hændelsesforløbet..." value={haendelse} onChange={(e) => setHaendelse(e.target.value)} rows={3} className="mt-1 bg-muted/30 border-border text-sm" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Konfiskerede genstande</Label>
-                <Textarea placeholder="Genstande konfiskeret fra personen..." value={konfiskeret} onChange={(e) => setKonfiskeret(e.target.value)} rows={3} className="mt-1 bg-secondary border-border" />
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Konfiskerede genstande</Label>
+                <Textarea placeholder="Genstande konfiskeret..." value={konfiskeret} onChange={(e) => setKonfiskeret(e.target.value)} rows={2} className="mt-1 bg-muted/30 border-border text-sm" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Magtanvendelse</Label>
-                <Textarea placeholder="Brug af magtmidler (peberspray, håndjern, etc.)..." value={magt} onChange={(e) => setMagt(e.target.value)} rows={3} className="mt-1 bg-secondary border-border" />
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Magtanvendelse</Label>
+                <Textarea placeholder="Brug af magtmidler..." value={magt} onChange={(e) => setMagt(e.target.value)} rows={2} className="mt-1 bg-muted/30 border-border text-sm" />
               </div>
             </div>
           )}
 
-          {/* Step 2: Betjente */}
           {step === 2 && (
-            <div className="space-y-2 pr-3">
-              <p className="text-xs text-muted-foreground">Vælg involverede betjente:</p>
+            <div className="space-y-1 pb-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Involverede betjente</p>
               {betjente.map((b) => {
                 const selected = valgteBetjente.includes(b.id);
                 return (
                   <button key={b.id} onClick={() => toggleBetjent(b.id)}
-                    className={cn("w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all",
-                      selected ? "bg-primary/10 border border-primary/30" : "bg-secondary/50 border border-transparent hover:bg-secondary"
+                    className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors",
+                      selected ? "bg-primary/8 border border-primary/20" : "hover:bg-muted/30 border border-transparent"
                     )}>
-                    <div className={cn("w-4 h-4 rounded border flex items-center justify-center shrink-0", selected ? "bg-primary border-primary" : "border-border")}>
-                      {selected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
+                    <div className={cn("w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0", selected ? "bg-primary border-primary" : "border-muted-foreground/30")}>
+                      {selected && <Check className="w-2 h-2 text-primary-foreground" />}
                     </div>
-                    <Shield className="w-4 h-4 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
+                    <Shield className="w-3.5 h-3.5 text-muted-foreground" />
+                    <div>
                       <p className="text-xs font-medium">{b.fornavn} {b.efternavn}</p>
                       <p className="text-[10px] text-muted-foreground">{b.rang} — {b.badgeNr}</p>
                     </div>
@@ -592,56 +582,55 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
             </div>
           )}
 
-          {/* Step 3: Oversigt */}
           {step === 3 && (
-            <div className="space-y-3 pr-3">
-              <div className="p-4 rounded-lg bg-card border border-border space-y-3">
+            <div className="pb-3">
+              <div className="p-4 rounded-md bg-card border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground">{person.fornavn} {person.efternavn}</h3>
-                  <span className="text-xs text-muted-foreground font-mono">{person.cpr}</span>
+                  <span className="text-sm font-semibold text-foreground">{person.fornavn} {person.efternavn}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{person.cpr}</span>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 text-center p-3 rounded-md bg-secondary/50">
+                <div className="grid grid-cols-4 gap-2 text-center p-2.5 rounded bg-muted/30">
                   <div>
-                    <p className="text-[10px] text-muted-foreground">BØDE</p>
-                    <p className="text-sm font-bold font-mono text-warning">{totalBoede.toLocaleString("da-DK")} kr</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Bøde</p>
+                    <p className="text-xs font-bold font-mono text-warning">{totalBoede.toLocaleString("da-DK")} kr</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">FÆNGSEL</p>
-                    <p className="text-sm font-bold text-destructive">{totalFaengsel > 0 ? `${totalFaengsel} md.` : "Ingen"}</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Fængsel</p>
+                    <p className="text-xs font-bold text-destructive">{totalFaengsel > 0 ? `${totalFaengsel} md.` : "Ingen"}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">KLIP</p>
-                    <p className="text-sm font-bold text-primary">{totalKlip > 0 ? `+${totalKlip}` : "Ingen"}</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Klip</p>
+                    <p className="text-xs font-bold text-primary">{totalKlip > 0 ? `+${totalKlip}` : "Ingen"}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">KØREKORT</p>
-                    <p className={cn("text-sm font-bold", (fratagKoerekort || frakendelsesType === "Ubetinget") ? "text-destructive" : "text-success")}>
+                    <p className="text-[9px] text-muted-foreground uppercase">Kørekort</p>
+                    <p className={cn("text-xs font-bold", (fratagKoerekort || frakendelsesType === "Ubetinget") ? "text-destructive" : "text-success")}>
                       {fratagKoerekort || frakendelsesType === "Ubetinget" ? "Frataget" : frakendelsesType || "OK"}
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="divide-y divide-border/30">
                   {valgteBoeder.map((b) => (
-                    <div key={b.boedeId} className="flex justify-between text-xs py-1 border-b border-border/30 last:border-0">
+                    <div key={b.boedeId} className="flex justify-between text-[11px] py-1.5">
                       <span className="text-foreground">{b.paragraf && `${b.paragraf} — `}{b.beskrivelse}</span>
                       <span className="font-mono text-warning shrink-0 ml-2">{b.beloeb.toLocaleString("da-DK")} kr</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex gap-2">
-                  {erkender === true && <Badge className="bg-success/20 text-success border-success/30">Erkender</Badge>}
-                  {erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30">Erkender ikke</Badge>}
-                  {erkender === null && <Badge variant="outline">Ikke angivet</Badge>}
+                <div className="flex gap-1.5">
+                  {erkender === true && <Badge className="bg-success/20 text-success border-success/30 text-[10px]">Erkender</Badge>}
+                  {erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">Erkender ikke</Badge>}
+                  {erkender === null && <Badge variant="outline" className="text-[10px]">Ikke angivet</Badge>}
                 </div>
 
                 {valgteBetjente.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {valgteBetjente.map((id) => {
                       const bt = betjente.find((x) => x.id === id);
-                      return bt ? <Badge key={id} variant="outline" className="text-[10px]">{bt.fornavn} {bt.efternavn}</Badge> : null;
+                      return bt ? <Badge key={id} variant="outline" className="text-[9px]">{bt.fornavn} {bt.efternavn}</Badge> : null;
                     })}
                   </div>
                 )}
@@ -650,19 +639,19 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
           )}
         </ScrollArea>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <Button variant="outline" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0}>
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-3 border-t border-border">
+          <Button variant="ghost" size="sm" onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="h-7 text-xs">
             Tilbage
           </Button>
           {step < 3 ? (
-            <Button size="sm" onClick={() => setStep(step + 1)}>
-              Næste <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            <Button size="sm" onClick={() => setStep(step + 1)} className="h-7 text-xs">
+              Næste <ChevronRight className="w-3 h-3 ml-1" />
             </Button>
           ) : (
             <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Scale className="w-4 h-4 mr-1" />}
+              className="h-7 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Scale className="w-3.5 h-3.5 mr-1" />}
               Opret sigtelse
             </Button>
           )}
