@@ -216,7 +216,7 @@ const KRRegister = () => {
 
       {/* Right: Detail view — inspired by reference but custom design */}
       {valgtPerson ? (
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 h-full max-h-[calc(100vh-4rem)]">
           <div className="p-5 space-y-5 max-w-3xl">
             {/* Back button on mobile */}
             <button
