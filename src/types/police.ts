@@ -51,7 +51,29 @@ export interface BoedKategori {
   boeder: Boede[];
 }
 
+export interface Ejendom {
+  id: string;
+  adresse: string;
+  postnr: string;
+  by: string;
+  ejer: string;
+  ejerCpr: string;
+  type: 'villa' | 'lejlighed' | 'erhverv' | 'grund';
+  vurdering: number;
+  matrikelnr: string;
+  noter: string;
+  oprettet: string;
+}
+
 export interface FyretMedarbejder {
+  id: string;
+  badgeNr: string;
+  fornavn: string;
+  efternavn: string;
+  rang: string;
+  fyretDato: string;
+  fyretAf: string;
+}
   id: string;
   badgeNr: string;
   fornavn: string;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Car, Wrench, MapPin, Loader2 } from "lucide-react";
+import { Car, Wrench, MapPin, Loader2, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { koeretoejerApi } from "@/lib/api";
 import type { Koeretoej } from "@/types/police";
 

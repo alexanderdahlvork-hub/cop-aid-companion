@@ -41,7 +41,7 @@ function remove(table: string, id: string): Promise<{ message: string }> {
 }
 
 // ── Betjente (Officers) ──
-import type { Betjent, FyretMedarbejder, Person, Koeretoej, Boede } from "@/types/police";
+import type { Betjent, FyretMedarbejder, Person, Koeretoej, Boede, Ejendom } from "@/types/police";
 
 interface BetjentRow {
   id: string;
