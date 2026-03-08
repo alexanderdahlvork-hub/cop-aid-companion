@@ -46,6 +46,10 @@ export interface Boede {
   beskrivelse: string;
   beloeb: number;
   kategori: string;
+  klip?: number;
+  frakendelse?: 'Betinget' | 'Ubetinget' | '';
+  faengselMaaneder?: number;
+  information?: string;
 }
 
 export interface BoedKategori {
