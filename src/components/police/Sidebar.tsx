@@ -186,10 +186,16 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
               </div>
             </div>
 
-            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors">
+            <button
+              onClick={() => { setShowProfile(false); onTabChange("profil"); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
+            >
               <Settings className="w-3.5 h-3.5" /> Mine Ansøgninger
             </button>
-            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors">
+            <button
+              onClick={() => { setShowProfile(false); onTabChange("profil"); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
+            >
               <User className="w-3.5 h-3.5" /> Min Profil
             </button>
 

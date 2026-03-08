@@ -36,6 +36,8 @@ export interface Betjent {
   tilladelser?: string[];
   kodeord: string;
   foersteLogin: boolean;
+  profilBillede?: string;
+  antalSager?: number;
 }
 
 export interface Boede {
