@@ -2,7 +2,8 @@ import { useState } from "react";
 import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
   BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
-  Building, ChevronDown, ChevronRight, User, Moon, LogOut
+  Building, ChevronDown, ChevronRight, User, Moon, LogOut,
+  Target, Crosshair, Gauge, Heart, FolderOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -21,7 +22,35 @@ interface MenuItem {
   label: string;
   icon: typeof Home;
   children?: MenuItem[];
+  afdeling?: string; // restrict to this department
 }
+
+const AFDELINGER: { id: string; label: string; icon: typeof Home; tabs: MenuItem[] }[] = [
+  {
+    id: "NSK", label: "NSK", icon: Target,
+    tabs: [{ id: "nsk", label: "Organiseret Kriminalitet", icon: Target }],
+  },
+  {
+    id: "Lima", label: "Lima", icon: Shield,
+    tabs: [{ id: "lima", label: "Aktionsstyrken", icon: Shield }],
+  },
+  {
+    id: "Færdsel", label: "Færdsel", icon: Gauge,
+    tabs: [{ id: "faerdsel", label: "Færdselsafdeling", icon: Gauge }],
+  },
+  {
+    id: "Efterforskning", label: "Efterforskning", icon: FolderOpen,
+    tabs: [{ id: "efterforskning", label: "Efterforskning", icon: FolderOpen }],
+  },
+  {
+    id: "SIG", label: "SIG", icon: Crosshair,
+    tabs: [{ id: "sig", label: "Særlig Indsatsgruppe", icon: Crosshair }],
+  },
+  {
+    id: "Remeo", label: "Remeo", icon: Heart,
+    tabs: [{ id: "remeo", label: "Redning & Medicinsk", icon: Heart }],
+  },
+];
 
 const menuItems: MenuItem[] = [
   {
@@ -145,13 +174,40 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
           );
         })}
 
-        {/* Gemte Tabs section */}
-        <div className="pt-3 mt-3 border-t border-sidebar-border">
-          <p className="text-[10px] text-muted-foreground px-2 mb-1 hidden lg:block">Gemte Tabs</p>
-          <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-sidebar-accent-foreground transition-all">
-            <span className="hidden lg:block">+ Tilføj nuværende side</span>
-          </button>
-        </div>
+        {/* Afdelinger */}
+        {(() => {
+          const userAfd = currentUser.afdeling || "";
+          const visibleAfdelinger = isAdmin
+            ? AFDELINGER
+            : AFDELINGER.filter((a) => userAfd.toLowerCase().includes(a.id.toLowerCase()));
+          
+          if (visibleAfdelinger.length === 0) return null;
+          
+          return (
+            <div className="pt-3 mt-3 border-t border-sidebar-border">
+              <p className="text-[10px] text-muted-foreground px-2 mb-1 hidden lg:block uppercase tracking-wider">Min afdeling</p>
+              {visibleAfdelinger.map((afd) => (
+                <div key={afd.id}>
+                  {afd.tabs.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onTabChange(t.id)}
+                      className={cn(
+                        "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-all",
+                        activeTab === t.id
+                          ? "bg-primary/15 text-primary font-semibold"
+                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <afd.icon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="hidden lg:block">{afd.label}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </nav>
 
       {/* Bottom user bar */}
