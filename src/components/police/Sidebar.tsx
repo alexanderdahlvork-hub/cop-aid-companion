@@ -1,69 +1,219 @@
-import { Shield, Users, Car, FileText, Radio, MapPin, Settings, BadgeCheck, Scale } from "lucide-react";
+import { useState } from "react";
+import {
+  Shield, Users, Car, FileText, Radio, MapPin, Settings,
+  BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
+  Building, ChevronDown, ChevronRight, User, Moon, LogOut
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Betjent } from "@/types/police";
 
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onLogout: () => void;
-  badgeNr: string;
+  currentUser: Betjent;
+  isAdmin: boolean;
 }
 
-const menuItems = [
-  { id: "ansatte", label: "Ansatte", icon: BadgeCheck },
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: typeof Home;
+  children?: MenuItem[];
+}
+
+const menuItems: MenuItem[] = [
+  {
+    id: "hjem", label: "Hjem", icon: Home,
+    children: [
+      { id: "forside", label: "Forside", icon: Home },
+      { id: "guides", label: "Guides & FAQ", icon: BookOpen },
+    ],
+  },
+  {
+    id: "database", label: "Database registre", icon: Search,
+    children: [
+      { id: "kr", label: "Personregister", icon: Users },
+      { id: "fleet", label: "Motorregister", icon: Car },
+      { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
+    ],
+  },
+  {
+    id: "flaade", label: "Flådestyring & Opkald", icon: Radio,
+    children: [
+      { id: "radio", label: "Kommunikation", icon: Radio },
+      { id: "kort", label: "Kort", icon: MapPin },
+    ],
+  },
   { id: "boeder", label: "Bødetakster", icon: Scale },
-  { id: "kr", label: "Kriminalregister", icon: Users },
-  { id: "fleet", label: "Flådestyring", icon: Car },
-  { id: "rapporter", label: "Rapporter", icon: FileText },
-  { id: "kort", label: "Kort", icon: MapPin },
-  { id: "radio", label: "Kommunikation", icon: Radio },
-  { id: "indstillinger", label: "Indstillinger", icon: Settings },
+  { id: "kontor", label: "Kontor", icon: Building },
+  {
+    id: "ansatte_group", label: "Ansatte", icon: BadgeCheck,
+    children: [
+      { id: "ansatte", label: "Alle ansatte", icon: Users },
+    ],
+  },
 ];
 
-const Sidebar = ({ activeTab, onTabChange, onLogout, badgeNr }: SidebarProps) => {
+const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: SidebarProps) => {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ hjem: true, database: true });
+  const [showProfile, setShowProfile] = useState(false);
+
+  const toggleGroup = (id: string) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const isActiveInGroup = (item: MenuItem): boolean => {
+    if (item.children) return item.children.some((c) => c.id === activeTab);
+    return item.id === activeTab;
+  };
+
   return (
-    <div className="w-20 lg:w-64 bg-sidebar border-r border-sidebar-border flex flex-col h-screen">
+    <div className="w-20 lg:w-60 bg-sidebar border-r border-sidebar-border flex flex-col h-screen relative">
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-          <Shield className="w-6 h-6 text-primary" />
+      <div className="p-3 border-b border-sidebar-border flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+          <Shield className="w-4 h-4 text-primary" />
         </div>
-        <div className="hidden lg:block">
-          <h1 className="font-bold text-sidebar-foreground text-sm tracking-wide uppercase">Politi MDT</h1>
-          <p className="text-xs text-muted-foreground">Mobile Data Terminal</p>
+        <div className="hidden lg:block min-w-0">
+          <h1 className="font-bold text-sidebar-foreground text-xs tracking-wide">Rigspolitiet</h1>
+          <p className="text-[10px] text-muted-foreground truncate">Adgang baseret på stilling</p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-2 space-y-1">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onTabChange(item.id)}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-              activeTab === item.id
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <item.icon className="w-5 h-5 shrink-0" />
-            <span className="hidden lg:block">{item.label}</span>
+      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+        {menuItems.map((item) => {
+          if (item.children) {
+            const isOpen = expanded[item.id] ?? false;
+            const isActive = isActiveInGroup(item);
+            return (
+              <div key={item.id}>
+                <button
+                  onClick={() => toggleGroup(item.id)}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all",
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span className="hidden lg:block flex-1 text-left">{item.label}</span>
+                  <span className="hidden lg:block">
+                    {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="ml-4 lg:ml-6 space-y-0.5">
+                    {item.children.map((child) => (
+                      <button
+                        key={child.id}
+                        onClick={() => onTabChange(child.id)}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-all",
+                          activeTab === child.id
+                            ? "bg-primary/15 text-primary font-semibold"
+                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        <child.icon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="hidden lg:block">{child.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className={cn(
+                "w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all",
+                activeTab === item.id
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              )}
+            >
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:block">{item.label}</span>
+            </button>
+          );
+        })}
+
+        {/* Gemte Tabs section */}
+        <div className="pt-3 mt-3 border-t border-sidebar-border">
+          <p className="text-[10px] text-muted-foreground px-2 mb-1 hidden lg:block">Gemte Tabs</p>
+          <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-sidebar-accent-foreground transition-all">
+            <span className="hidden lg:block">+ Tilføj nuværende side</span>
           </button>
-        ))}
+        </div>
       </nav>
 
-      {/* Status */}
-      <div className="p-4 border-t border-sidebar-border space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
-          <span className="hidden lg:block text-xs text-muted-foreground">Online — {badgeNr}</span>
-        </div>
+      {/* Bottom user bar */}
+      <div className="border-t border-sidebar-border">
         <button
-          onClick={onLogout}
-          className="hidden lg:block text-xs text-destructive hover:underline"
+          onClick={() => setShowProfile(!showProfile)}
+          className="w-full p-3 flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
         >
-          Log ud
+          <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
+            <Shield className="w-4 h-4 text-warning" />
+          </div>
+          <div className="hidden lg:block text-left min-w-0">
+            <p className="text-xs font-semibold text-sidebar-foreground truncate">
+              {currentUser.fornavn} {currentUser.efternavn} | {currentUser.badgeNr}
+            </p>
+            <p className="text-[10px] text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
+          </div>
         </button>
+
+        {/* Profile popup */}
+        {showProfile && (
+          <div className="absolute bottom-16 left-2 right-2 bg-card border border-border rounded-lg shadow-2xl p-3 space-y-2 z-50">
+            <div className="flex items-center gap-2 pb-2 border-b border-border">
+              <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-warning" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground">
+                  {currentUser.fornavn} {currentUser.efternavn} | {currentUser.badgeNr}
+                </p>
+                <p className="text-[10px] text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
+              </div>
+            </div>
+
+            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors">
+              <Settings className="w-3.5 h-3.5" /> Mine Ansøgninger
+            </button>
+            <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors">
+              <User className="w-3.5 h-3.5" /> Min Profil
+            </button>
+
+            <div className="flex items-center gap-2 px-2 py-1.5">
+              <Moon className="w-3.5 h-3.5 text-foreground" />
+              <span className="text-xs text-foreground">Mørkt Tema</span>
+              <div className="ml-auto w-8 h-4 bg-primary rounded-full relative">
+                <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full" />
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-2">
+              <button
+                onClick={() => { setShowProfile(false); onLogout(); }}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" /> Luk ned
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom status */}
+      <div className="px-3 py-2 flex items-center gap-2 border-t border-sidebar-border">
+        <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
+        <span className="hidden lg:block text-[10px] text-muted-foreground">Online</span>
       </div>
     </div>
   );

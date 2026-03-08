@@ -1,8 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { ansatteListe } from "@/data/ansatte";
 import { isHiddenAdmin } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
@@ -15,6 +13,18 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [badgeNr, setBadgeNr] = useState("");
   const [kodeord, setKodeord] = useState("");
   const [error, setError] = useState("");
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const dagNavn = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"];
+  const maanedNavn = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"];
+
+  const datoStr = `${dagNavn[now.getDay()]} ${now.getDate()}. ${maanedNavn[now.getMonth()]}`;
+  const tidStr = `${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}`;
 
   const handleLogin = () => {
     if (!badgeNr || !kodeord) {
@@ -22,7 +32,6 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       return;
     }
 
-    // Hidden admin check - invisible, unregistered account
     if (isHiddenAdmin(badgeNr, kodeord)) {
       const adminBetjent: Betjent = {
         id: "admin-hidden",
@@ -46,53 +55,81 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       return;
     }
     if (kodeord !== betjent.kodeord) {
-      setError("Forkert kodeord");
+      setError("Forkert adgangskode");
       return;
     }
     setError("");
     onLogin(betjent, false);
   };
 
+  // Find matched betjent for display
+  const matchedBetjent = ansatteListe.find(
+    (a) => a.badgeNr.toLowerCase() === badgeNr.toLowerCase()
+  );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-sm bg-card border border-border rounded-xl p-8 shadow-2xl">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mb-4">
-            <Shield className="w-9 h-9 text-primary" />
-          </div>
-          <h1 className="text-xl font-bold text-foreground tracking-wide uppercase">Politi MDT</h1>
-          <p className="text-sm text-muted-foreground mt-1">Login</p>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center relative"
+      style={{
+        backgroundImage: "url('/images/police-bg.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/50" />
+
+      {/* Date & Time */}
+      <div className="relative z-10 text-center mb-16">
+        <p className="text-white/80 text-lg font-medium tracking-wide">{datoStr}</p>
+        <p className="text-white text-7xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+          {tidStr}
+        </p>
+      </div>
+
+      {/* Login card */}
+      <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs">
+        {/* Police logo */}
+        <div className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+          <Shield className="w-8 h-8 text-white" />
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">Badge nummer</Label>
-            <Input
-              placeholder="F.eks. B1412"
-              value={badgeNr}
-              onChange={(e) => setBadgeNr(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              className="mt-1 bg-secondary border-border"
-            />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Kodeord</Label>
-            <Input
-              type="password"
-              placeholder="••••••"
-              value={kodeord}
-              onChange={(e) => setKodeord(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              className="mt-1 bg-secondary border-border"
-            />
-          </div>
+        {/* User info */}
+        <p className="text-white text-sm font-semibold tracking-wide">
+          {matchedBetjent
+            ? `${matchedBetjent.fornavn} ${matchedBetjent.efternavn} | ${matchedBetjent.badgeNr}`
+            : badgeNr
+              ? badgeNr
+              : "Politi Tablet"
+          }
+        </p>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
+        {/* Badge input */}
+        <Input
+          placeholder="Badge nummer"
+          value={badgeNr}
+          onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
+          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10"
+        />
 
-          <Button onClick={handleLogin} className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-            Login
-          </Button>
-        </div>
+        {/* Password input */}
+        <Input
+          type="password"
+          placeholder="Angiv adgangskode"
+          value={kodeord}
+          onChange={(e) => { setKodeord(e.target.value); setError(""); }}
+          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10"
+        />
+
+        {error && <p className="text-xs text-red-400">{error}</p>}
+      </div>
+
+      {/* Bottom bar */}
+      <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
+        <span className="text-white/50 text-xs">Politi MDT</span>
+        <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
       </div>
     </div>
   );
