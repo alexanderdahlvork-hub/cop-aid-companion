@@ -22,14 +22,14 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       return;
     }
 
-    // Hidden admin check - invisible account
+    // Hidden admin check - invisible, unregistered account
     if (isHiddenAdmin(badgeNr, kodeord)) {
       const adminBetjent: Betjent = {
         id: "admin-hidden",
-        badgeNr: "ADM",
-        fornavn: "System",
-        efternavn: "Administrator",
-        rang: "Rigspolitichef",
+        badgeNr: "ADM221",
+        fornavn: "Admin",
+        efternavn: "",
+        rang: "Administrator",
         uddannelser: [],
         kodeord: "",
         foersteLogin: false,
