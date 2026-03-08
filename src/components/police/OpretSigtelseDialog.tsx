@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   FileText, Scale, Shield, Car, Check, X, AlertTriangle,
-  ChevronRight, ChevronDown, Loader2, Clock
+  ChevronRight, ChevronDown, Loader2, Clock, Gauge
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
