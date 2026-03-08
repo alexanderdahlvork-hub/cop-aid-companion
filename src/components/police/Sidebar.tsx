@@ -193,13 +193,16 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
               <User className="w-3.5 h-3.5" /> Min Profil
             </button>
 
-            <div className="flex items-center gap-2 px-2 py-1.5">
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted transition-colors"
+            >
               <Moon className="w-3.5 h-3.5 text-foreground" />
               <span className="text-xs text-foreground">Mørkt Tema</span>
-              <div className="ml-auto w-8 h-4 bg-primary rounded-full relative">
-                <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full" />
+              <div className={cn("ml-auto w-8 h-4 rounded-full relative transition-colors", theme === "dark" ? "bg-primary" : "bg-muted-foreground/30")}>
+                <div className={cn("absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all", theme === "dark" ? "right-0.5" : "left-0.5")} />
               </div>
-            </div>
+            </button>
 
             <div className="border-t border-border pt-2">
               <button
