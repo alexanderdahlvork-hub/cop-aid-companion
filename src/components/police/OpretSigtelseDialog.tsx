@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   FileText, Scale, Shield, Car, Check, X, AlertTriangle,
-  ChevronRight, ChevronDown, Loader2, Clock
+  ChevronRight, ChevronDown, Loader2, Clock, Gauge
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { betjenteApi } from "@/lib/api";
 import { standardBoeder } from "@/data/bodetakster";
 import type { Person, Betjent, Boede, Sigtelse, SigtelseBoede, RapportSkabelon } from "@/types/police";
 import { cn } from "@/lib/utils";
+import FartBeregner from "./FartBeregner";
 
 const rapportSkabeloner: RapportSkabelon[] = [
   {
@@ -130,6 +131,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [saving, setSaving] = useState(false);
   const [showKlipPopup, setShowKlipPopup] = useState(false);
   const [soegning, setSoegning] = useState("");
+  const [fartOpen, setFartOpen] = useState(false);
 
   const boeder = standardBoeder;
 
@@ -363,6 +365,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
         {/* Header */}
@@ -398,12 +401,17 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
         <ScrollArea className="flex-1 max-h-[55vh] px-5">
           {step === 0 && (
             <div className="space-y-2.5 pb-3">
-              <Input
-                placeholder="Søg paragraf eller beskrivelse..."
-                value={soegning}
-                onChange={(e) => setSoegning(e.target.value)}
-                className="bg-muted/50 border-border text-sm h-8"
-              />
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Søg paragraf eller beskrivelse..."
+                  value={soegning}
+                  onChange={(e) => setSoegning(e.target.value)}
+                  className="bg-muted/50 border-border text-sm h-8 flex-1"
+                />
+                <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5 shrink-0" onClick={() => setFartOpen(true)}>
+                  <Gauge className="w-3.5 h-3.5" /> Fartberegner
+                </Button>
+              </div>
 
               {kategorier.map((kat) => {
                 const katBoeder = filtreretBoeder.filter((b) => b.kategori === kat);
@@ -658,6 +666,22 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
         </div>
       </DialogContent>
     </Dialog>
+
+    <FartBeregner
+      open={fartOpen}
+      onOpenChange={setFartOpen}
+      onTilfoejBoede={(beskrivelse, beloeb, klip, frakendelse) => {
+        const id = `fart-${Date.now()}`;
+        setValgteBoeder((prev) => [...prev, {
+          boedeId: id,
+          paragraf: "Fartoverskridelse",
+          beskrivelse,
+          beloeb,
+          faengselMaaneder: 0,
+        }]);
+      }}
+    />
+    </>
   );
 };
 
