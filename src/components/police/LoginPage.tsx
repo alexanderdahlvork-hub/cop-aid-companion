@@ -82,7 +82,10 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       {/* Date & Time */}
       <div className="relative z-10 text-center mb-16">
         <p className="text-white/80 text-lg font-medium tracking-wide">{datoStr}</p>
-        <p className="text-white text-7xl font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <p 
+          className="text-white text-7xl font-bold tracking-tight cursor-default transition-all duration-500 hover:tracking-[0.3em] hover:text-primary hover:drop-shadow-[0_0_25px_hsl(213,80%,50%)] hover:scale-110"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
           {tidStr}
         </p>
       </div>
