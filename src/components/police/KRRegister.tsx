@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { personerApi } from "@/lib/api";
+import { personerApi, sigtelserApi } from "@/lib/api";
 import type { Person, Sigtelse } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
 import { toast } from "@/components/ui/sonner";
@@ -35,10 +35,14 @@ const KRRegister = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await personerApi.getAll();
-        setPersoner(data);
+        const [personData, sigtelseData] = await Promise.all([
+          personerApi.getAll(),
+          sigtelserApi.getAll(),
+        ]);
+        setPersoner(personData);
+        setSigtelser(sigtelseData);
       } catch (err) {
-        console.error("Fejl ved indlæsning af personer:", err);
+        console.error("Fejl ved indlæsning:", err);
       } finally {
         setLoading(false);
       }
@@ -317,14 +321,21 @@ const KRRegister = () => {
           open={sigtelseDialogOpen}
           onOpenChange={setSigtelseDialogOpen}
           person={valgtPerson}
-          onSigtelseOprettet={(sig) => {
+          onSigtelseOprettet={async (sig) => {
             setSigtelser((prev) => [sig, ...prev]);
-            // Auto-set status to sigtet
             const updated = { ...valgtPerson, status: "sigtet" as const };
             setValgtPerson(updated);
             setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-            personerApi.update(valgtPerson.id, { status: "sigtet" }).catch(console.error);
-            toast("Sigtelse oprettet");
+            try {
+              await Promise.all([
+                sigtelserApi.create(sig),
+                personerApi.update(valgtPerson.id, { status: "sigtet" }),
+              ]);
+            } catch (err) {
+              console.error("Fejl ved gemning af sigtelse:", err);
+              toast.error("Kunne ikke gemme sigtelsen");
+            }
+            toast("Sigtelse oprettet og gemt");
           }}
         />
       )}

@@ -182,6 +182,78 @@ export const ejendommeApi = {
   },
 };
 
+// ── Sigtelser ──
+interface SigtelseRow {
+  id: string;
+  personId: string;
+  personNavn: string;
+  personCpr: string;
+  dato: string;
+  sigtelseBoeder: string; // JSON
+  totalBoede: number;
+  faengselMaaneder: number;
+  fratagKoerekort: number; // 0 or 1
+  erkender: number | null; // 0, 1, or null
+  involveretBetjente: string; // JSON
+  rapport: string; // JSON
+  skabelonType?: string;
+}
+
+import type { Sigtelse } from "@/types/police";
+
+function rowToSigtelse(row: SigtelseRow): Sigtelse {
+  return {
+    id: row.id,
+    personId: row.personId,
+    personNavn: row.personNavn,
+    personCpr: row.personCpr,
+    dato: row.dato,
+    sigtelseBoeder: JSON.parse(row.sigtelseBoeder || "[]"),
+    totalBoede: row.totalBoede,
+    faengselMaaneder: row.faengselMaaneder,
+    fratagKoerekort: row.fratagKoerekort === 1,
+    erkender: row.erkender === null ? null : row.erkender === 1,
+    involveretBetjente: JSON.parse(row.involveretBetjente || "[]"),
+    rapport: JSON.parse(row.rapport || "{}"),
+    skabelonType: row.skabelonType,
+  };
+}
+
+function sigtelseToRow(s: Sigtelse): Record<string, any> {
+  return {
+    id: s.id,
+    personId: s.personId,
+    personNavn: s.personNavn,
+    personCpr: s.personCpr,
+    dato: s.dato,
+    sigtelseBoeder: JSON.stringify(s.sigtelseBoeder),
+    totalBoede: s.totalBoede,
+    faengselMaaneder: s.faengselMaaneder,
+    fratagKoerekort: s.fratagKoerekort ? 1 : 0,
+    erkender: s.erkender === null ? null : s.erkender ? 1 : 0,
+    involveretBetjente: JSON.stringify(s.involveretBetjente),
+    rapport: JSON.stringify(s.rapport),
+    skabelonType: s.skabelonType || "",
+  };
+}
+
+export const sigtelserApi = {
+  async getAll(): Promise<Sigtelse[]> {
+    const res = await getAll<SigtelseRow>("sigtelser");
+    return res.results.map(rowToSigtelse);
+  },
+  async getByPerson(personId: string): Promise<Sigtelse[]> {
+    const res = await getAll<SigtelseRow>("sigtelser", { personId });
+    return res.results.map(rowToSigtelse);
+  },
+  async create(s: Sigtelse): Promise<void> {
+    await create("sigtelser", sigtelseToRow(s));
+  },
+  async remove(id: string): Promise<void> {
+    await remove("sigtelser", id);
+  },
+};
+
 // ── Rang Order ──
 export const rangApi = {
   async getAll(): Promise<{ id: string; rang: string; position: number }[]> {
