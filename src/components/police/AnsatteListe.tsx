@@ -1,13 +1,14 @@
-import { useState } from "react";
-import { Plus, UserPlus, GraduationCap, ShieldCheck, X, Trash2, History } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, UserPlus, GraduationCap, ShieldCheck, X, Trash2, History, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ansatteListe, rangOrder } from "@/data/ansatte";
+import { rangOrder } from "@/data/ansatte";
 import { canAddEducation, canCreateOfficer, canEditOfficer, canDeleteOfficer, availablePermissions } from "@/lib/permissions";
+import { betjenteApi, fyredeApi, rangApi } from "@/lib/api";
 import type { Betjent, FyretMedarbejder } from "@/types/police";
 
 interface AnsatteListeProps {
@@ -18,8 +19,9 @@ interface AnsatteListeProps {
 const uddannelserOptions = ["Betjent", "Civil", "Romeo", "Helikopter", "LIMA", "LIMA-A", "K9", "SRT", "Teknik", "Efterforskning"];
 
 const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
-  const [ansatte, setAnsatte] = useState<Betjent[]>(ansatteListe);
+  const [ansatte, setAnsatte] = useState<Betjent[]>([]);
   const [fyrede, setFyrede] = useState<FyretMedarbejder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [valgt, setValgt] = useState<Betjent | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showRankManager, setShowRankManager] = useState(false);
@@ -30,29 +32,51 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Betjent | null>(null);
   const [showFyrede, setShowFyrede] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Create form state
   const [newBadge, setNewBadge] = useState("");
   const [newFornavn, setNewFornavn] = useState("");
   const [newEfternavn, setNewEfternavn] = useState("");
   const [newRang, setNewRang] = useState("");
   const [newUddannelser, setNewUddannelser] = useState<string[]>([]);
   const [newTilladelser, setNewTilladelser] = useState<string[]>([]);
-
-  // Education add state
   const [selectedUdd, setSelectedUdd] = useState<string[]>([]);
 
   const canCreate = canCreateOfficer(currentUser.rang);
   const canEducate = canAddEducation(currentUser.rang);
 
-  // Show ALL rank categories, even empty ones
+  // Load data from API
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [betjente, fyredeList, ranks] = await Promise.all([
+          betjenteApi.getAll(),
+          fyredeApi.getAll(),
+          rangApi.getAll().catch(() => []),
+        ]);
+        setAnsatte(betjente);
+        setFyrede(fyredeList);
+        if (ranks.length > 0) {
+          setCustomRanks(ranks.map(r => r.rang));
+        }
+      } catch (err) {
+        console.error("Fejl ved indlæsning:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   const grouped = customRanks.map((rang) => ({
     rang,
     members: ansatte.filter((a) => a.rang === rang),
   }));
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newBadge || !newFornavn || !newEfternavn || !newRang) return;
+    setSaving(true);
     const newBetjent: Betjent = {
       id: String(Date.now()),
       badgeNr: newBadge,
@@ -64,9 +88,16 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
       kodeord: "1234",
       foersteLogin: true,
     };
-    setAnsatte([...ansatte, newBetjent]);
-    setShowCreate(false);
-    resetCreateForm();
+    try {
+      await betjenteApi.create(newBetjent);
+      setAnsatte([...ansatte, newBetjent]);
+      setShowCreate(false);
+      resetCreateForm();
+    } catch (err) {
+      console.error("Fejl ved oprettelse:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const resetCreateForm = () => {
@@ -78,23 +109,30 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     setNewTilladelser([]);
   };
 
-  const handleAddUddannelse = () => {
+  const handleAddUddannelse = async () => {
     if (!uddTarget || selectedUdd.length === 0) return;
-    setAnsatte(ansatte.map(a =>
-      a.id === uddTarget.id
-        ? { ...a, uddannelser: [...new Set([...a.uddannelser, ...selectedUdd])] }
-        : a
-    ));
-    setShowAddUdd(false);
-    setUddTarget(null);
-    setSelectedUdd([]);
+    setSaving(true);
+    const updated = [...new Set([...uddTarget.uddannelser, ...selectedUdd])];
+    try {
+      await betjenteApi.update(uddTarget.id, { uddannelser: updated });
+      setAnsatte(ansatte.map(a =>
+        a.id === uddTarget.id ? { ...a, uddannelser: updated } : a
+      ));
+      setShowAddUdd(false);
+      setUddTarget(null);
+      setSelectedUdd([]);
+    } catch (err) {
+      console.error("Fejl ved tilføjelse af uddannelse:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    // Log fired employee
+    setSaving(true);
     const fyret: FyretMedarbejder = {
-      id: deleteTarget.id,
+      id: String(Date.now()),
       badgeNr: deleteTarget.badgeNr,
       fornavn: deleteTarget.fornavn,
       efternavn: deleteTarget.efternavn,
@@ -102,22 +140,46 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
       fyretDato: new Date().toLocaleString("da-DK"),
       fyretAf: `${currentUser.fornavn} ${currentUser.efternavn} (${currentUser.badgeNr})`,
     };
-    setFyrede([fyret, ...fyrede]);
-    setAnsatte(ansatte.filter(a => a.id !== deleteTarget.id));
-    setShowDeleteConfirm(false);
-    setDeleteTarget(null);
-    setValgt(null);
+    try {
+      await Promise.all([
+        fyredeApi.create(fyret),
+        betjenteApi.remove(deleteTarget.id),
+      ]);
+      setFyrede([fyret, ...fyrede]);
+      setAnsatte(ansatte.filter(a => a.id !== deleteTarget.id));
+      setShowDeleteConfirm(false);
+      setDeleteTarget(null);
+      setValgt(null);
+    } catch (err) {
+      console.error("Fejl ved fyring:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleAddRank = () => {
+  const handleAddRank = async () => {
     if (!newRankName.trim() || customRanks.includes(newRankName.trim())) return;
-    setCustomRanks([...customRanks, newRankName.trim()]);
-    setNewRankName("");
+    const name = newRankName.trim();
+    const position = customRanks.length;
+    try {
+      await rangApi.create(name, position);
+      setCustomRanks([...customRanks, name]);
+      setNewRankName("");
+    } catch (err) {
+      console.error("Fejl ved tilføjelse af rang:", err);
+    }
   };
 
-  const handleRemoveRank = (rank: string) => {
+  const handleRemoveRank = async (rank: string) => {
     if (ansatte.some(a => a.rang === rank)) return;
-    setCustomRanks(customRanks.filter(r => r !== rank));
+    try {
+      const ranks = await rangApi.getAll();
+      const found = ranks.find(r => r.rang === rank);
+      if (found) await rangApi.remove(found.id);
+      setCustomRanks(customRanks.filter(r => r !== rank));
+    } catch (err) {
+      console.error("Fejl ved fjernelse af rang:", err);
+    }
   };
 
   const openAddUdd = (betjent: Betjent) => {
@@ -132,6 +194,15 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     if (isAdmin) return true;
     return rankIdx > userIdx;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Indlæser ansatte...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -242,7 +313,10 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 pt-2">
-            <Button variant="destructive" onClick={handleDelete}>Ja, fyr</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+              Ja, fyr
+            </Button>
             <Button variant="secondary" onClick={() => { setShowDeleteConfirm(false); setDeleteTarget(null); }}>Annuller</Button>
           </div>
         </DialogContent>
@@ -327,7 +401,10 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleCreate} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">Opret</Button>
+              <Button onClick={handleCreate} disabled={saving} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                Opret
+              </Button>
               <Button variant="secondary" onClick={() => { setShowCreate(false); resetCreateForm(); }}>Annuller</Button>
             </div>
           </div>
@@ -363,14 +440,17 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
               <p className="text-sm text-muted-foreground italic">Alle uddannelser er allerede tilføjet</p>
             )}
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleAddUddannelse} disabled={selectedUdd.length === 0} className="bg-success hover:bg-success/90 text-success-foreground">Tilføj</Button>
+              <Button onClick={handleAddUddannelse} disabled={selectedUdd.length === 0 || saving} className="bg-success hover:bg-success/90 text-success-foreground">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                Tilføj
+              </Button>
               <Button variant="secondary" onClick={() => setShowAddUdd(false)}>Annuller</Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Rank manager dialog (admin only) */}
+      {/* Rank manager dialog */}
       <Dialog open={showRankManager} onOpenChange={setShowRankManager}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -401,7 +481,7 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Fired employees log dialog */}
+      {/* Fired employees log */}
       <Dialog open={showFyrede} onOpenChange={setShowFyrede}>
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>

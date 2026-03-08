@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Plus, User, AlertTriangle, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Plus, User, AlertTriangle, ChevronRight, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,28 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { personerApi } from "@/lib/api";
 import type { Person } from "@/types/police";
-
-const demoPersoner: Person[] = [
-  {
-    id: "1", cpr: "010185-1234", fornavn: "Anders", efternavn: "Jensen",
-    adresse: "Vestergade 12", postnr: "8000", by: "Aarhus C",
-    telefon: "12345678", status: "aktiv", noter: "Ingen bemærkninger",
-    oprettet: "2024-01-15",
-  },
-  {
-    id: "2", cpr: "150990-5678", fornavn: "Maria", efternavn: "Nielsen",
-    adresse: "Nørregade 45", postnr: "1165", by: "København K",
-    telefon: "87654321", status: "eftersøgt", noter: "Eftersøgt ifm. sag #4521",
-    oprettet: "2024-03-22",
-  },
-  {
-    id: "3", cpr: "200375-9012", fornavn: "Thomas", efternavn: "Pedersen",
-    adresse: "Søndergade 8", postnr: "5000", by: "Odense C",
-    telefon: "11223344", status: "sigtet", noter: "Sigtet for tyveri §276",
-    oprettet: "2024-06-10",
-  },
-];
 
 const statusConfig: Record<Person["status"], { label: string; className: string }> = {
   aktiv: { label: "Aktiv", className: "bg-success/20 text-success border-success/30" },
@@ -39,17 +19,34 @@ const statusConfig: Record<Person["status"], { label: string; className: string 
 };
 
 const KRRegister = () => {
-  const [personer, setPersoner] = useState<Person[]>(demoPersoner);
+  const [personer, setPersoner] = useState<Person[]>([]);
+  const [loading, setLoading] = useState(true);
   const [soegning, setSoegning] = useState("");
   const [valgtPerson, setValgtPerson] = useState<Person | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [nyPerson, setNyPerson] = useState<Partial<Person>>({ status: "aktiv" });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await personerApi.getAll();
+        setPersoner(data);
+      } catch (err) {
+        console.error("Fejl ved indlæsning af personer:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const filtreret = personer.filter((p) =>
     `${p.fornavn} ${p.efternavn} ${p.cpr}`.toLowerCase().includes(soegning.toLowerCase())
   );
 
-  const opretPerson = () => {
+  const opretPerson = async () => {
+    setSaving(true);
     const person: Person = {
       id: Date.now().toString(),
       cpr: nyPerson.cpr || "",
@@ -63,14 +60,29 @@ const KRRegister = () => {
       noter: nyPerson.noter || "",
       oprettet: new Date().toISOString().split("T")[0],
     };
-    setPersoner([person, ...personer]);
-    setNyPerson({ status: "aktiv" });
-    setDialogOpen(false);
+    try {
+      await personerApi.create(person);
+      setPersoner([person, ...personer]);
+      setNyPerson({ status: "aktiv" });
+      setDialogOpen(false);
+    } catch (err) {
+      console.error("Fejl ved oprettelse:", err);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Indlæser personer...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full gap-4">
-      {/* List */}
       <div className="w-full lg:w-1/2 xl:w-2/5 flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -141,13 +153,15 @@ const KRRegister = () => {
                   <Label className="text-xs">Noter</Label>
                   <Textarea value={nyPerson.noter || ""} onChange={(e) => setNyPerson({ ...nyPerson, noter: e.target.value })} rows={3} />
                 </div>
-                <Button onClick={opretPerson} className="w-full mt-2">Opret person</Button>
+                <Button onClick={opretPerson} disabled={saving} className="w-full mt-2">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                  Opret person
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Person list */}
         <div className="space-y-1.5 overflow-y-auto flex-1">
           {filtreret.map((person) => (
             <button
@@ -180,7 +194,6 @@ const KRRegister = () => {
         </div>
       </div>
 
-      {/* Detail */}
       <div className="hidden lg:block flex-1">
         {valgtPerson ? (
           <Card className="h-full">

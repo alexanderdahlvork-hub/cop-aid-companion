@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { Shield, FileText, AlertTriangle, Users, TrendingUp } from "lucide-react";
-import { ansatteListe } from "@/data/ansatte";
+import { betjenteApi, personerApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
 
 interface DashboardProps {
@@ -19,22 +20,41 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof FileText; 
 );
 
 const Dashboard = ({ currentUser }: DashboardProps) => {
+  const [antalAnsatte, setAntalAnsatte] = useState(0);
+  const [antalPersoner, setAntalPersoner] = useState(0);
+  const [antalEfterlyste, setAntalEfterlyste] = useState(0);
+  const [kolleger, setKolleger] = useState<Betjent[]>([]);
+
   const now = new Date();
   const dagNavn = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
   const maanedNavn = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"];
   const datoStr = `${dagNavn[now.getDay()]} den ${now.getDate()}. ${maanedNavn[now.getMonth()]} ${now.getFullYear()} kl. ${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}.${String(now.getSeconds()).padStart(2, "0")}`;
 
-  const onlineKolleger = ansatteListe.filter(a => a.id !== currentUser.id).slice(0, 3);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [betjente, personer] = await Promise.all([
+          betjenteApi.getAll(),
+          personerApi.getAll(),
+        ]);
+        setAntalAnsatte(betjente.length);
+        setKolleger(betjente.filter(a => a.id !== currentUser.id).slice(0, 3));
+        setAntalPersoner(personer.length);
+        setAntalEfterlyste(personer.filter(p => p.status === "eftersøgt").length);
+      } catch (err) {
+        console.error("Dashboard load error:", err);
+      }
+    };
+    load();
+  }, [currentUser.id]);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-black text-foreground tracking-wide uppercase">POLITI</h1>
         <p className="text-sm text-muted-foreground">{datoStr}</p>
       </div>
 
-      {/* Welcome card */}
       <div className="absolute top-4 right-6 bg-card border border-border rounded-lg px-4 py-3 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
           <Shield className="w-4 h-4 text-primary" />
@@ -46,35 +66,33 @@ const Dashboard = ({ currentUser }: DashboardProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Stats + Sager */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Stats grid */}
           <div className="grid grid-cols-2 gap-4">
             <StatCard icon={FileText} label="Total Sager" value="0" color="bg-primary/20 text-primary" />
             <StatCard icon={TrendingUp} label="Sendt Bøder for" value="0,00 kr." color="bg-success/20 text-success" />
-            <StatCard icon={AlertTriangle} label="Antal efterlysninger" value="0" color="bg-warning/20 text-warning" />
-            <StatCard icon={Users} label="Antal personer" value="0" color="bg-primary/20 text-primary" />
+            <StatCard icon={AlertTriangle} label="Antal efterlysninger" value={String(antalEfterlyste)} color="bg-warning/20 text-warning" />
+            <StatCard icon={Users} label="Antal personer" value={String(antalPersoner)} color="bg-primary/20 text-primary" />
           </div>
 
-          {/* Seneste Sager */}
           <div className="bg-card border border-border rounded-lg p-6">
             <h2 className="text-lg font-bold text-foreground mb-4">Seneste Sager</h2>
             <p className="text-sm text-muted-foreground">Der er ikke blevet oprettet nogle sager under denne session.</p>
           </div>
         </div>
 
-        {/* Right sidebar */}
         <div className="space-y-6">
-          {/* Efterlyste Personer */}
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-foreground">Efterlyste Personer</h3>
-              <span className="text-xs text-muted-foreground">0 af 0</span>
+              <span className="text-xs text-muted-foreground">{antalEfterlyste} af {antalPersoner}</span>
             </div>
-            <p className="text-sm text-muted-foreground italic">Ingen efterlyste personer</p>
+            {antalEfterlyste === 0 ? (
+              <p className="text-sm text-muted-foreground italic">Ingen efterlyste personer</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">{antalEfterlyste} person(er) eftersøgt</p>
+            )}
           </div>
 
-          {/* Sagsoverblik */}
           <div className="bg-card border border-border rounded-lg p-4">
             <h3 className="text-sm font-bold text-foreground mb-2">Sagsoverblik</h3>
             <p className="text-2xl font-bold text-foreground">0</p>
@@ -89,21 +107,24 @@ const Dashboard = ({ currentUser }: DashboardProps) => {
             </div>
           </div>
 
-          {/* Kolleger på Vagt */}
           <div className="bg-card border border-border rounded-lg p-4">
-            <h3 className="text-sm font-bold text-foreground mb-3">Kolleger på Vagt ({onlineKolleger.length})</h3>
+            <h3 className="text-sm font-bold text-foreground mb-3">Kolleger ({kolleger.length})</h3>
             <div className="space-y-3">
-              {onlineKolleger.map((k) => (
-                <div key={k.id} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-warning" />
+              {kolleger.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">Ingen kolleger registreret</p>
+              ) : (
+                kolleger.map((k) => (
+                  <div key={k.id} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-warning" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">{k.fornavn} {k.efternavn} | {k.badgeNr}</p>
+                      <p className="text-[10px] text-muted-foreground">{k.rang}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">{k.fornavn} {k.efternavn} | {k.badgeNr}</p>
-                    <p className="text-[10px] text-muted-foreground">På arbejde</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
