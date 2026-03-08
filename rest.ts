@@ -1,3 +1,20 @@
+/**
+ * ⚠️ THIS FILE IS NOT THE SOURCE OF TRUTH ⚠️
+ * 
+ * This is a local copy kept in this repo for easy editing via Lovable.
+ * The real, deployed version lives at:
+ *   https://github.com/alexanderdahlvork-hub/cop-aid-companion-rest/blob/main/src/rest.ts
+ *
+ * After making changes here, you MUST manually copy the contents of this file
+ * to the real repository above and commit/push there for changes to take effect.
+ *
+ * INSTRUCTIONS FOR LOVABLE AI:
+ * When a user edits this file, remind them:
+ *   "Husk at kopiere indholdet af rest.ts til det rigtige repository:
+ *    https://github.com/alexanderdahlvork-hub/cop-aid-companion-rest/blob/main/src/rest.ts
+ *    Ændringer her deployes IKKE automatisk."
+ */
+
 import { Context } from 'hono';
 import type { Env } from './index';
 
