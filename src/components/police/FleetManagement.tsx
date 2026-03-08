@@ -114,10 +114,10 @@ const FleetManagement = () => {
     setBemærkningInput("");
   };
 
-  const handleOpretPatrulje = () => {
+  const handleOpretPatrulje = async () => {
     const kat = nyKategori === "_custom" ? nyKategoriCustom.trim() : nyKategori;
     if (!nyNavn.trim() || !kat) return;
-    const newPatrol: Patrol = {
+    const newPatrol: Patrulje = {
       id: `custom-${Date.now()}`,
       navn: nyNavn.trim(),
       kategori: kat,
@@ -126,19 +126,34 @@ const FleetManagement = () => {
       status: "ledig",
       bemærkning: "",
     };
-    setPatrols((prev) => [...prev, newPatrol]);
+    try {
+      await patruljerApi.create(newPatrol);
+      setPatrols(prev => [...prev, newPatrol]);
+      toast("Patrulje oprettet");
+    } catch (err) { console.error(err); toast.error("Fejl ved oprettelse"); }
     setNyNavn("");
     setNyKategori("");
     setNyKategoriCustom("");
     setNyPladser("2");
     setOpretDialog(false);
-    toast("Patrulje oprettet");
   };
 
-  const handleSletPatrulje = (id: string) => {
-    setPatrols((prev) => prev.filter((p) => p.id !== id));
-    toast("Patrulje slettet");
+  const handleSletPatrulje = async (id: string) => {
+    try {
+      await patruljerApi.remove(id);
+      setPatrols(prev => prev.filter(p => p.id !== id));
+      toast("Patrulje slettet");
+    } catch (err) { console.error(err); toast.error("Fejl ved sletning"); }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Indlæser patruljer...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
