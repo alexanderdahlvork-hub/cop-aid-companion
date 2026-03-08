@@ -9,6 +9,7 @@ import LoginPage from "@/components/police/LoginPage";
 import ChangePasswordDialog from "@/components/police/ChangePasswordDialog";
 import Dashboard from "@/components/police/Dashboard";
 import MinProfil from "@/components/police/MinProfil";
+import Efterlysninger from "@/components/police/Efterlysninger";
 import { FileText, MapPin, Radio, Settings, AlertTriangle, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
