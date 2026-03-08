@@ -267,3 +267,143 @@ export const rangApi = {
     await remove("rang_order", id);
   },
 };
+
+// ── Patruljer (Fleet) ──
+export interface PatrolMember {
+  badgeNr: string;
+  navn: string;
+}
+
+interface PatruljeRow {
+  id: string;
+  navn: string;
+  kategori: string;
+  pladser: number;
+  medlemmer: string; // JSON
+  status: string;
+  bemaerkning: string;
+}
+
+export interface Patrulje {
+  id: string;
+  navn: string;
+  kategori: string;
+  pladser: number;
+  medlemmer: PatrolMember[];
+  status: 'ledig' | 'i_brug' | 'optaget' | 'ude_af_drift';
+  bemærkning: string;
+}
+
+function rowToPatrulje(row: PatruljeRow): Patrulje {
+  return {
+    id: row.id,
+    navn: row.navn,
+    kategori: row.kategori,
+    pladser: row.pladser,
+    medlemmer: JSON.parse(row.medlemmer || '[]'),
+    status: (row.status || 'ledig') as Patrulje['status'],
+    bemærkning: row.bemaerkning || '',
+  };
+}
+
+function patruljeToRow(p: Partial<Patrulje> & { id?: string }): Record<string, any> {
+  const row: Record<string, any> = {};
+  if (p.id !== undefined) row.id = p.id;
+  if (p.navn !== undefined) row.navn = p.navn;
+  if (p.kategori !== undefined) row.kategori = p.kategori;
+  if (p.pladser !== undefined) row.pladser = p.pladser;
+  if (p.medlemmer !== undefined) row.medlemmer = JSON.stringify(p.medlemmer);
+  if (p.status !== undefined) row.status = p.status;
+  if (p.bemærkning !== undefined) row.bemaerkning = p.bemærkning;
+  return row;
+}
+
+export const patruljerApi = {
+  async getAll(): Promise<Patrulje[]> {
+    const res = await getAll<PatruljeRow>("patruljer");
+    return res.results.map(rowToPatrulje);
+  },
+  async create(p: Patrulje): Promise<void> {
+    await create("patruljer", patruljeToRow(p));
+  },
+  async update(id: string, data: Partial<Patrulje>): Promise<void> {
+    await update("patruljer", id, patruljeToRow(data));
+  },
+  async remove(id: string): Promise<void> {
+    await remove("patruljer", id);
+  },
+};
+
+// ── Opgaver (Dispatch) ──
+interface OpgaveRow {
+  id: string;
+  typeId: string;
+  typeNavn: string;
+  prioritet: string;
+  adresse: string;
+  beskrivelse: string;
+  tildeltPatruljer: string; // JSON
+  oprettet: string;
+  status: string;
+}
+
+export interface OpgaveDB {
+  id: string;
+  typeId: string;
+  typeNavn: string;
+  prioritet: string;
+  adresse: string;
+  beskrivelse: string;
+  tildeltPatruljer: string[];
+  oprettet: string;
+  status: 'aktiv' | 'undervejs' | 'afsluttet';
+}
+
+function rowToOpgave(row: OpgaveRow): OpgaveDB {
+  return {
+    id: row.id,
+    typeId: row.typeId,
+    typeNavn: row.typeNavn,
+    prioritet: row.prioritet,
+    adresse: row.adresse,
+    beskrivelse: row.beskrivelse || '',
+    tildeltPatruljer: JSON.parse(row.tildeltPatruljer || '[]'),
+    oprettet: row.oprettet,
+    status: (row.status || 'aktiv') as OpgaveDB['status'],
+  };
+}
+
+function opgaveToRow(o: OpgaveDB): Record<string, any> {
+  return {
+    id: o.id,
+    typeId: o.typeId,
+    typeNavn: o.typeNavn,
+    prioritet: o.prioritet,
+    adresse: o.adresse,
+    beskrivelse: o.beskrivelse,
+    tildeltPatruljer: JSON.stringify(o.tildeltPatruljer),
+    oprettet: o.oprettet,
+    status: o.status,
+  };
+}
+
+export const opgaverApi = {
+  async getAll(): Promise<OpgaveDB[]> {
+    const res = await getAll<OpgaveRow>("opgaver");
+    return res.results.map(rowToOpgave);
+  },
+  async create(o: OpgaveDB): Promise<void> {
+    await create("opgaver", opgaveToRow(o));
+  },
+  async update(id: string, data: Partial<OpgaveDB>): Promise<void> {
+    const row: Record<string, any> = {};
+    if (data.status !== undefined) row.status = data.status;
+    if (data.tildeltPatruljer !== undefined) row.tildeltPatruljer = JSON.stringify(data.tildeltPatruljer);
+    if (data.adresse !== undefined) row.adresse = data.adresse;
+    if (data.beskrivelse !== undefined) row.beskrivelse = data.beskrivelse;
+    await update("opgaver", id, row);
+  },
+  async remove(id: string): Promise<void> {
+    await remove("opgaver", id);
+  },
+};
