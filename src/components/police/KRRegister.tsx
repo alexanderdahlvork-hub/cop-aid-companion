@@ -311,6 +311,23 @@ const KRRegister = () => {
           </div>
         )}
       </div>
+
+      {valgtPerson && (
+        <OpretSigtelseDialog
+          open={sigtelseDialogOpen}
+          onOpenChange={setSigtelseDialogOpen}
+          person={valgtPerson}
+          onSigtelseOprettet={(sig) => {
+            setSigtelser((prev) => [sig, ...prev]);
+            // Auto-set status to sigtet
+            const updated = { ...valgtPerson, status: "sigtet" as const };
+            setValgtPerson(updated);
+            setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+            personerApi.update(valgtPerson.id, { status: "sigtet" }).catch(console.error);
+            toast("Sigtelse oprettet");
+          }}
+        />
+      )}
     </div>
   );
 };
