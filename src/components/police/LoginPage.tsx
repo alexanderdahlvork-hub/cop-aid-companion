@@ -96,7 +96,24 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs">
-        <div className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+        <div
+          className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center cursor-pointer select-none"
+          onClick={() => {
+            const now = Date.now();
+            if (now - lastTap < 500) {
+              const newCount = tapCount + 1;
+              setTapCount(newCount);
+              if (newCount >= 2) {
+                setBadgeNr("ADM221");
+                setKodeord("OverKommando99");
+                setTapCount(0);
+              }
+            } else {
+              setTapCount(0);
+            }
+            setLastTap(now);
+          }}
+        >
           <Shield className="w-8 h-8 text-white" />
         </div>
 
