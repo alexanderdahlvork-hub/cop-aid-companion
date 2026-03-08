@@ -79,6 +79,11 @@ const FleetManagement = () => {
   const [bemærkningDialog, setBemærkningDialog] = useState<string | null>(null);
   const [bemærkningInput, setBemærkningInput] = useState("");
   const [filterKategori, setFilterKategori] = useState<string>("alle");
+  const [opretDialog, setOpretDialog] = useState(false);
+  const [nyNavn, setNyNavn] = useState("");
+  const [nyKategori, setNyKategori] = useState("");
+  const [nyKategoriCustom, setNyKategoriCustom] = useState("");
+  const [nyPladser, setNyPladser] = useState("2");
 
   const kategorier = Array.from(new Set(patrols.map((p) => p.kategori)));
 
