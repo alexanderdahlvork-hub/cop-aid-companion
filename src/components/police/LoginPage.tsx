@@ -16,6 +16,8 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(new Date());
   const [matchedBetjent, setMatchedBetjent] = useState<Betjent | null>(null);
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTap, setLastTap] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
