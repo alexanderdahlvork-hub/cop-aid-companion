@@ -77,7 +77,7 @@ const Index = () => {
           </div>
           <div className="text-right">
             <p className="text-sm font-medium text-foreground">{currentUser.fornavn} {currentUser.efternavn}</p>
-            <p className="text-xs text-muted-foreground">{currentUser.rang}{isAdmin ? " — Admin" : ""}</p>
+            <p className="text-xs text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
           </div>
         </div>
         {activeTab === "ansatte" && <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />}
