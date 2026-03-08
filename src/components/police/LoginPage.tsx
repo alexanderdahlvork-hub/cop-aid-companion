@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { betjenteApi } from "@/lib/api";
 import { isAdmin as checkIsAdmin } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
+import avldLogo from "@/assets/avld-logo.webp";
 
 interface LoginPageProps {
   onLogin: (betjent: Betjent, isAdmin: boolean) => void;
@@ -78,7 +79,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
     <div
       className="min-h-screen flex flex-col items-center justify-center relative"
       style={{
-        backgroundImage: "url('/images/police-bg.jpg')",
+        backgroundImage: "url('/images/police-bg.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -97,7 +98,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 
       <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs">
         <div
-          className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center cursor-pointer select-none"
+          className="w-20 h-20 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center cursor-pointer select-none overflow-hidden"
           onClick={() => {
             const now = Date.now();
             if (now - lastTap < 500) {
@@ -114,7 +115,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             setLastTap(now);
           }}
         >
-          <Shield className="w-8 h-8 text-white" />
+          <img src={avldLogo} alt="AVLD Systems" className="w-14 h-14 object-contain" />
         </div>
 
         <p className="text-white text-sm font-semibold tracking-wide">
@@ -149,7 +150,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       </div>
 
       <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
-        <span className="text-white/50 text-xs">Politi MDT</span>
+        <span className="text-white/50 text-xs">AVLD Systems</span>
         <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
       </div>
     </div>
