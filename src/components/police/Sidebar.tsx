@@ -2,7 +2,8 @@ import { useState } from "react";
 import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
   BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
-  Building, ChevronDown, ChevronRight, User, Moon, LogOut
+  Building, ChevronDown, ChevronRight, User, Moon, LogOut,
+  Target, Crosshair, Gauge, Heart, FolderOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -21,7 +22,35 @@ interface MenuItem {
   label: string;
   icon: typeof Home;
   children?: MenuItem[];
+  afdeling?: string; // restrict to this department
 }
+
+const AFDELINGER: { id: string; label: string; icon: typeof Home; tabs: MenuItem[] }[] = [
+  {
+    id: "NSK", label: "NSK", icon: Target,
+    tabs: [{ id: "nsk", label: "Organiseret Kriminalitet", icon: Target }],
+  },
+  {
+    id: "Lima", label: "Lima", icon: Shield,
+    tabs: [{ id: "lima", label: "Aktionsstyrken", icon: Shield }],
+  },
+  {
+    id: "Færdsel", label: "Færdsel", icon: Gauge,
+    tabs: [{ id: "faerdsel", label: "Færdselsafdeling", icon: Gauge }],
+  },
+  {
+    id: "Efterforskning", label: "Efterforskning", icon: FolderOpen,
+    tabs: [{ id: "efterforskning", label: "Efterforskning", icon: FolderOpen }],
+  },
+  {
+    id: "SIG", label: "SIG", icon: Crosshair,
+    tabs: [{ id: "sig", label: "Særlig Indsatsgruppe", icon: Crosshair }],
+  },
+  {
+    id: "Remeo", label: "Remeo", icon: Heart,
+    tabs: [{ id: "remeo", label: "Redning & Medicinsk", icon: Heart }],
+  },
+];
 
 const menuItems: MenuItem[] = [
   {
