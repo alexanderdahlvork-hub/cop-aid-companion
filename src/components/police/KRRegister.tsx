@@ -321,14 +321,21 @@ const KRRegister = () => {
           open={sigtelseDialogOpen}
           onOpenChange={setSigtelseDialogOpen}
           person={valgtPerson}
-          onSigtelseOprettet={(sig) => {
+          onSigtelseOprettet={async (sig) => {
             setSigtelser((prev) => [sig, ...prev]);
-            // Auto-set status to sigtet
             const updated = { ...valgtPerson, status: "sigtet" as const };
             setValgtPerson(updated);
             setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-            personerApi.update(valgtPerson.id, { status: "sigtet" }).catch(console.error);
-            toast("Sigtelse oprettet");
+            try {
+              await Promise.all([
+                sigtelserApi.create(sig),
+                personerApi.update(valgtPerson.id, { status: "sigtet" }),
+              ]);
+            } catch (err) {
+              console.error("Fejl ved gemning af sigtelse:", err);
+              toast.error("Kunne ikke gemme sigtelsen");
+            }
+            toast("Sigtelse oprettet og gemt");
           }}
         />
       )}
