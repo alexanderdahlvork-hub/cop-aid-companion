@@ -34,7 +34,8 @@ const menuItems: MenuItem[] = [
     id: "database", label: "Database registre", icon: Search,
     children: [
       { id: "kr", label: "Personregister", icon: Users },
-      { id: "fleet", label: "Motorregister", icon: Car },
+      { id: "fleet", label: "Køretøjsregister", icon: Car },
+      { id: "ejendomme", label: "Ejendomsregister", icon: Building },
       { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
     ],
   },

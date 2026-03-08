@@ -57,6 +57,7 @@ const Index = () => {
       case "boeder": return <Bodetakster />;
       case "kr": return <KRRegister />;
       case "fleet": return <FleetManagement />;
+      case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return placeholderTab(AlertTriangle, "Efterlysninger", "Kommer snart");
       case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
       case "kort": return placeholderTab(MapPin, "Kort & GPS", "Kommer snart");

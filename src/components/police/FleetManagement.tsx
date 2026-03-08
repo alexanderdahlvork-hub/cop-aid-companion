@@ -49,8 +49,24 @@ const FleetManagement = () => {
     );
   }
 
+  const filtreret = koeretoejer.filter((k) =>
+    `${k.nummerplade} ${k.maerke} ${k.model} ${k.farve} ${k.tildelt}`
+      .toLowerCase()
+      .includes(soegning.toLowerCase())
+  );
+
   return (
     <div className="space-y-4">
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Søg nummerplade, mærke, model..."
+          value={soegning}
+          onChange={(e) => setSoegning(e.target.value)}
+          className="pl-9 bg-secondary border-border"
+        />
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Total" value={stats.total} icon={Car} color="text-foreground" />
         <StatCard label="Ledige" value={stats.ledig} icon={Car} color="text-success" />
@@ -58,13 +74,13 @@ const FleetManagement = () => {
         <StatCard label="Værksted" value={stats.vaerksted} icon={Wrench} color="text-warning" />
       </div>
 
-      {koeretoejer.length === 0 ? (
+      {filtreret.length === 0 ? (
         <div className="p-8 text-center text-muted-foreground text-sm">
-          Ingen køretøjer registreret endnu
+          Ingen køretøjer fundet
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {koeretoejer.map((k) => {
+          {filtreret.map((k) => {
             const sc = statusConfig[k.status];
             return (
               <Card
