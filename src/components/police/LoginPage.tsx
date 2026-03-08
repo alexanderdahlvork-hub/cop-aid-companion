@@ -79,7 +79,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
     <div
       className="min-h-screen flex flex-col items-center justify-center relative"
       style={{
-        backgroundImage: "url('/images/police-bg.jpg')",
+        backgroundImage: "url('/images/police-bg.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
