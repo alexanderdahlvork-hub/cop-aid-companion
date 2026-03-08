@@ -245,7 +245,6 @@ const KRRegister = () => {
                       key={s}
                       size="sm"
                       variant={valgtPerson.status === s ? "default" : "outline"}
-                      className={valgtPerson.status === s ? "" : ""}
                       disabled={valgtPerson.status === s || updatingStatus}
                       onClick={async () => {
                         setUpdatingStatus(true);
@@ -266,6 +265,44 @@ const KRRegister = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Opret sigtelse */}
+              <div className="pt-2 border-t border-border">
+                <Button
+                  size="sm"
+                  onClick={() => setSigtelseDialogOpen(true)}
+                  className="w-full gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                >
+                  <Scale className="w-4 h-4" />
+                  Opret sigtelse
+                </Button>
+              </div>
+
+              {/* Sigtelse historik */}
+              {sigtelser.filter((s) => s.personId === valgtPerson.id).length > 0 && (
+                <div className="pt-2 border-t border-border space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tidligere sigtelser</p>
+                  {sigtelser.filter((s) => s.personId === valgtPerson.id).map((sig) => (
+                    <div key={sig.id} className="p-3 rounded-lg bg-secondary/50 border border-border space-y-1.5">
+                      <div className="flex justify-between items-start">
+                        <p className="text-sm font-medium text-foreground">Sigtelse — {sig.dato}</p>
+                        <div className="flex gap-1">
+                          {sig.erkender === true && <Badge className="bg-success/20 text-success border-success/30 text-[10px]">Erkender</Badge>}
+                          {sig.erkender === false && <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">Erkender ikke</Badge>}
+                        </div>
+                      </div>
+                      <div className="flex gap-4 text-xs">
+                        <span className="text-warning font-mono font-semibold">{sig.totalBoede.toLocaleString("da-DK")} kr</span>
+                        {sig.faengselMaaneder > 0 && <span className="text-destructive font-semibold">{sig.faengselMaaneder} md. fængsel</span>}
+                        {sig.fratagKoerekort && <span className="text-destructive">Kørekort frataget</span>}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {sig.sigtelseBoeder.map((b) => b.paragraf).join(", ")}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
