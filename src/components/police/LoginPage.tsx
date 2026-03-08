@@ -150,7 +150,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       </div>
 
       <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
-        <span className="text-white/50 text-xs">Politi MDT</span>
+        <span className="text-white/50 text-xs">AVLD Systems</span>
         <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
       </div>
     </div>
