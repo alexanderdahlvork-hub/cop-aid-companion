@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { betjenteApi } from "@/lib/api";
-import { isHiddenAdmin } from "@/lib/permissions";
+import { isAdmin as checkIsAdmin } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
 
 interface LoginPageProps {
@@ -22,7 +22,6 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Lookup badge as user types
   useEffect(() => {
     if (badgeNr.length < 2) {
       setMatchedBetjent(null);
@@ -51,21 +50,6 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       return;
     }
 
-    if (isHiddenAdmin(badgeNr, kodeord)) {
-      const adminBetjent: Betjent = {
-        id: "admin-hidden",
-        badgeNr: "ADM221",
-        fornavn: "Admin",
-        efternavn: "",
-        rang: "Administrator",
-        uddannelser: [],
-        kodeord: "",
-        foersteLogin: false,
-      };
-      onLogin(adminBetjent, true);
-      return;
-    }
-
     setLoading(true);
     try {
       const betjent = await betjenteApi.getByBadge(badgeNr);
@@ -80,7 +64,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         return;
       }
       setError("");
-      onLogin(betjent, false);
+      onLogin(betjent, checkIsAdmin(betjent.rang));
     } catch (err: any) {
       setError("Fejl ved login: " + (err.message || "Ukendt fejl"));
     } finally {
