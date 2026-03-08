@@ -76,3 +76,40 @@ export interface FyretMedarbejder {
   fyretDato: string;
   fyretAf: string;
 }
+
+export interface Sigtelse {
+  id: string;
+  personId: string;
+  personNavn: string;
+  personCpr: string;
+  dato: string;
+  sigtelseBoeder: SigtelseBoede[];
+  totalBoede: number;
+  faengselMaaneder: number;
+  fratagKoerekort: boolean;
+  erkender: boolean | null;
+  involveretBetjente: string[];
+  rapport: SigtelseRapport;
+  skabelonType?: string;
+}
+
+export interface SigtelseBoede {
+  boedeId: string;
+  paragraf: string;
+  beskrivelse: string;
+  beloeb: number;
+  faengselMaaneder: number;
+}
+
+export interface SigtelseRapport {
+  haendelsesforloeb: string;
+  konfiskeredeGenstande: string;
+  magtanvendelse: string;
+  skabelonSvar?: Record<string, string>;
+}
+
+export interface RapportSkabelon {
+  id: string;
+  navn: string;
+  spoergsmaal: string[];
+}
