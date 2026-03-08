@@ -665,6 +665,22 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
         </div>
       </DialogContent>
     </Dialog>
+
+    <FartBeregner
+      open={fartOpen}
+      onOpenChange={setFartOpen}
+      onTilfoejBoede={(beskrivelse, beloeb, klip, frakendelse) => {
+        const id = `fart-${Date.now()}`;
+        setValgteBoeder((prev) => [...prev, {
+          boedeId: id,
+          paragraf: "Fartoverskridelse",
+          beskrivelse,
+          beloeb,
+          faengselMaaneder: 0,
+        }]);
+      }}
+    />
+    </>
   );
 };
 
