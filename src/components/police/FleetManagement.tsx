@@ -67,23 +67,23 @@ const FleetManagement = () => {
     iBrug: patrols.filter((p) => p.medlemmer.length > 0).length,
   };
 
-  const handleSignOn = (patrolId: string) => {
+  const handleSignOn = async (patrolId: string) => {
     if (!badgeInput.trim() || !navnInput.trim()) return;
-    setPatrols((prev) =>
-      prev.map((p) => {
-        if (p.id !== patrolId) return p;
-        if (p.medlemmer.length >= p.pladser) { toast.error("Patruljen er fuld"); return p; }
-        return {
-          ...p,
-          medlemmer: [...p.medlemmer, { badgeNr: badgeInput.trim(), navn: navnInput.trim() }],
-          status: "i_brug",
-        };
-      })
-    );
+    const patrol = patrols.find(p => p.id === patrolId);
+    if (!patrol) return;
+    if (patrol.medlemmer.length >= patrol.pladser) { toast.error("Patruljen er fuld"); return; }
+    const updated = {
+      medlemmer: [...patrol.medlemmer, { badgeNr: badgeInput.trim(), navn: navnInput.trim() }],
+      status: "i_brug" as const,
+    };
+    try {
+      await patruljerApi.update(patrolId, updated);
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
+      toast("Tilmeldt patrulje");
+    } catch (err) { console.error(err); toast.error("Fejl ved tilmelding"); }
     setBadgeInput("");
     setNavnInput("");
     setSignOnDialog(null);
-    toast("Tilmeldt patrulje");
   };
 
   const handleSignOff = (patrolId: string, badgeNr: string) => {
