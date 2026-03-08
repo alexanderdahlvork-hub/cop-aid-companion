@@ -351,6 +351,46 @@ const FleetManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Opret patrulje dialog */}
+      <Dialog open={opretDialog} onOpenChange={setOpretDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Opret ny patrulje</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-1">
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Patrulje navn</Label>
+              <Input value={nyNavn} onChange={(e) => setNyNavn(e.target.value)} placeholder="F.eks. Bravo 41"
+                className="h-8 text-xs mt-0.5 bg-muted/30 border-border" />
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Kategori</Label>
+              <Select value={nyKategori} onValueChange={setNyKategori}>
+                <SelectTrigger className="h-8 text-xs mt-0.5 bg-muted/30 border-border"><SelectValue placeholder="Vælg kategori" /></SelectTrigger>
+                <SelectContent>
+                  {kategorier.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                  <SelectItem value="_custom">+ Ny kategori</SelectItem>
+                </SelectContent>
+              </Select>
+              {nyKategori === "_custom" && (
+                <Input value={nyKategoriCustom} onChange={(e) => setNyKategoriCustom(e.target.value)} placeholder="Kategorinavn"
+                  className="h-8 text-xs mt-1.5 bg-muted/30 border-border" />
+              )}
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Antal pladser</Label>
+              <Input type="number" min="1" max="6" value={nyPladser} onChange={(e) => setNyPladser(e.target.value)}
+                className="h-8 text-xs mt-0.5 bg-muted/30 border-border" />
+            </div>
+            <Button className="w-full h-8 text-xs gap-1.5"
+              disabled={!nyNavn.trim() || (!nyKategori || (nyKategori === "_custom" && !nyKategoriCustom.trim()))}
+              onClick={handleOpretPatrulje}>
+              <Plus className="w-3 h-3" /> Opret patrulje
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
