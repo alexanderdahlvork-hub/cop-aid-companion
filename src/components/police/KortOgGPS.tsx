@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin, Radio, Send, Users, AlertTriangle, Shield, Phone,
   Plus, X, Check, ChevronDown, Clock, Siren, Car, Target,
-  Building, Flame, Heart, Package, CircleDot, Navigation
+  Building, Flame, Heart, Package, CircleDot, Navigation, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
+import { patruljerApi, opgaverApi } from "@/lib/api";
+import type { Patrulje, OpgaveDB } from "@/lib/api";
 
 // ─── Opkaldstyper med anbefalet antal patruljer ───
 interface OpkaldsType {
@@ -46,83 +48,80 @@ const prioritetConfig = {
   kritisk: { label: "Kritisk", color: "bg-destructive/15 text-destructive border-destructive/20", dot: "bg-destructive animate-pulse" },
 };
 
-// ─── Simulerede ledige patruljer (i virkeligheden fra FleetManagement state) ───
-interface LedigPatrulje {
-  id: string;
-  navn: string;
-  kategori: string;
-  medlemmer: string[];
-}
-
-const simuleredeLedige: LedigPatrulje[] = [
-  { id: "bravo-21", navn: "Bravo 21", kategori: "Bravo", medlemmer: [] },
-  { id: "bravo-22", navn: "Bravo 22", kategori: "Bravo", medlemmer: [] },
-  { id: "bravo-23", navn: "Bravo 23", kategori: "Bravo", medlemmer: [] },
-  { id: "bravo-24", navn: "Bravo 24", kategori: "Bravo", medlemmer: [] },
-  { id: "bravo-25", navn: "Bravo 25", kategori: "Bravo", medlemmer: [] },
-  { id: "mike-43", navn: "Mike 43", kategori: "Mike", medlemmer: [] },
-  { id: "mike-44", navn: "Mike 44", kategori: "Mike", medlemmer: [] },
-  { id: "kilo-16", navn: "Kilo 16", kategori: "Kilo", medlemmer: [] },
-  { id: "kilo-17", navn: "Kilo 17", kategori: "Kilo", medlemmer: [] },
-  { id: "romeo-13", navn: "Romeo 13", kategori: "Romeo", medlemmer: [] },
-  { id: "foxtrot-11", navn: "Foxtrot 11", kategori: "Foxtrot", medlemmer: [] },
-];
-
-// ─── Aktiv opgave ───
-interface Opgave {
-  id: string;
-  type: OpkaldsType;
-  adresse: string;
-  beskrivelse: string;
-  tildeltPatruljer: string[];
-  oprettet: string;
-  status: "aktiv" | "undervejs" | "afsluttet";
+function getOpkaldsType(typeId: string): OpkaldsType | undefined {
+  return opkaldsTyper.find(t => t.id === typeId);
 }
 
 const KortOgGPS = () => {
-  const [opgaver, setOpgaver] = useState<Opgave[]>([]);
+  const [opgaver, setOpgaver] = useState<OpgaveDB[]>([]);
+  const [allePatruljer, setAllePatruljer] = useState<Patrulje[]>([]);
+  const [loading, setLoading] = useState(true);
   const [opretDialog, setOpretDialog] = useState(false);
   const [valgtType, setValgtType] = useState<OpkaldsType | null>(null);
   const [adresse, setAdresse] = useState("");
   const [ekstraBeskrivelse, setEkstraBeskrivelse] = useState("");
   const [valgtePatruljer, setValgtePatruljer] = useState<string[]>([]);
   const [typePickerOpen, setTypePickerOpen] = useState(false);
-  const [patruljePanelOpen, setPatruljePanelOpen] = useState(false);
+
+  // Load data from database
+  useEffect(() => {
+    Promise.all([opgaverApi.getAll(), patruljerApi.getAll()])
+      .then(([opg, pat]) => { setOpgaver(opg); setAllePatruljer(pat); })
+      .catch(err => { console.error("Fejl ved indlæsning:", err); toast.error("Kunne ikke indlæse data"); })
+      .finally(() => setLoading(false));
+  }, []);
 
   const tildeltIDs = opgaver.filter(o => o.status !== "afsluttet").flatMap(o => o.tildeltPatruljer);
-  const ledige = simuleredeLedige.filter(p => !tildeltIDs.includes(p.id));
+  const ledige = allePatruljer.filter(p => p.status === "ledig" && !tildeltIDs.includes(p.id));
 
   const togglePatrulje = (id: string) => {
     setValgtePatruljer(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const opretOpgave = () => {
+  const opretOpgave = async () => {
     if (!valgtType || !adresse.trim()) return;
-    const opgave: Opgave = {
+    const opgave: OpgaveDB = {
       id: `opg-${Date.now()}`,
-      type: valgtType,
+      typeId: valgtType.id,
+      typeNavn: valgtType.navn,
+      prioritet: valgtType.prioritet,
       adresse: adresse.trim(),
       beskrivelse: ekstraBeskrivelse,
       tildeltPatruljer: valgtePatruljer,
       oprettet: new Date().toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" }),
       status: valgtePatruljer.length > 0 ? "undervejs" : "aktiv",
     };
-    setOpgaver(prev => [opgave, ...prev]);
+    try {
+      await opgaverApi.create(opgave);
+      setOpgaver(prev => [opgave, ...prev]);
+      toast.success(`Opgave oprettet — ${valgtePatruljer.length} patruljer tildelt`);
+    } catch (err) { console.error(err); toast.error("Fejl ved oprettelse"); }
     setValgtType(null);
     setAdresse("");
     setEkstraBeskrivelse("");
     setValgtePatruljer([]);
     setOpretDialog(false);
-    toast.success(`Opgave oprettet — ${valgtePatruljer.length} patruljer tildelt`);
   };
 
-  const afslutOpgave = (id: string) => {
-    setOpgaver(prev => prev.map(o => o.id === id ? { ...o, status: "afsluttet" } : o));
-    toast("Opgave afsluttet");
+  const afslutOpgave = async (id: string) => {
+    try {
+      await opgaverApi.update(id, { status: "afsluttet" });
+      setOpgaver(prev => prev.map(o => o.id === id ? { ...o, status: "afsluttet" } : o));
+      toast("Opgave afsluttet");
+    } catch (err) { console.error(err); toast.error("Fejl"); }
   };
 
   const aktive = opgaver.filter(o => o.status !== "afsluttet");
   const afsluttede = opgaver.filter(o => o.status === "afsluttet");
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Indlæser dispatch...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -168,12 +167,13 @@ const KortOgGPS = () => {
             )}
 
             {aktive.map(opgave => {
-              const pConf = prioritetConfig[opgave.type.prioritet];
-              const Icon = opgave.type.icon;
+              const type = getOpkaldsType(opgave.typeId);
+              const pConf = prioritetConfig[opgave.prioritet as keyof typeof prioritetConfig] || prioritetConfig.medium;
+              const Icon = type?.icon || Radio;
               return (
                 <div key={opgave.id} className={cn(
                   "rounded-lg border overflow-hidden",
-                  opgave.type.prioritet === "kritisk" ? "border-destructive/30 shadow-sm shadow-destructive/10" : "border-border"
+                  opgave.prioritet === "kritisk" ? "border-destructive/30 shadow-sm shadow-destructive/10" : "border-border"
                 )}>
                   {/* Task header */}
                   <div className="flex items-center justify-between px-4 py-3 bg-muted/20">
@@ -182,7 +182,7 @@ const KortOgGPS = () => {
                         <Icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{opgave.type.navn}</p>
+                        <p className="text-sm font-semibold text-foreground">{opgave.typeNavn}</p>
                         <p className="text-xs text-muted-foreground">{opgave.adresse}</p>
                       </div>
                     </div>
@@ -208,7 +208,7 @@ const KortOgGPS = () => {
                       {opgave.tildeltPatruljer.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {opgave.tildeltPatruljer.map(id => {
-                            const p = simuleredeLedige.find(x => x.id === id);
+                            const p = allePatruljer.find(x => x.id === id);
                             return (
                               <Badge key={id} variant="outline" className="text-[10px] gap-1">
                                 <Car className="w-2.5 h-2.5" /> {p?.navn || id}
@@ -241,7 +241,7 @@ const KortOgGPS = () => {
                     {afsluttede.map(o => (
                       <div key={o.id} className="rounded-md border border-border/50 px-4 py-2 bg-muted/10 opacity-60">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-foreground">{o.type.navn} — {o.adresse}</span>
+                          <span className="text-xs text-foreground">{o.typeNavn} — {o.adresse}</span>
                           <span className="text-[10px] text-muted-foreground">{o.oprettet}</span>
                         </div>
                       </div>
@@ -270,7 +270,7 @@ const KortOgGPS = () => {
                   acc[p.kategori] = acc[p.kategori] || [];
                   acc[p.kategori].push(p);
                   return acc;
-                }, {} as Record<string, LedigPatrulje[]>)
+                }, {} as Record<string, Patrulje[]>)
               ).map(([kat, patruljer]) => (
                 <div key={kat}>
                   <p className="text-[9px] uppercase tracking-wider text-muted-foreground px-2 py-1 font-semibold">{kat}</p>
@@ -298,7 +298,7 @@ const KortOgGPS = () => {
             </DialogHeader>
           </div>
 
-          <ScrollArea className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="px-6 py-5 space-y-5">
 
               {/* Opkaldstype */}
@@ -463,7 +463,7 @@ const KortOgGPS = () => {
               </div>
 
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-muted/10">

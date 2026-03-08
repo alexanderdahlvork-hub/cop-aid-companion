@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { UserPlus, UserMinus, Shield, CircleDot, MessageSquare, Search, AlertCircle, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { UserPlus, UserMinus, Shield, CircleDot, MessageSquare, Search, AlertCircle, Plus, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,23 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
+import { patruljerApi } from "@/lib/api";
+import type { Patrulje } from "@/lib/api";
 
-type PatrolStatus = "ledig" | "i_brug" | "optaget" | "ude_af_drift";
-
-interface PatrolMember {
-  badgeNr: string;
-  navn: string;
-}
-
-interface Patrol {
-  id: string;
-  navn: string;
-  kategori: string;
-  pladser: number;
-  medlemmer: PatrolMember[];
-  status: PatrolStatus;
-  bemærkning: string;
-}
+type PatrolStatus = Patrulje['status'];
 
 const statusConfig: Record<PatrolStatus, { label: string; dot: string; bg: string }> = {
   ledig: { label: "Ledig", dot: "bg-success", bg: "bg-success/10 text-success border-success/20" },
@@ -35,43 +22,9 @@ const statusConfig: Record<PatrolStatus, { label: string; dot: string; bg: strin
   ude_af_drift: { label: "Ude af drift", dot: "bg-destructive", bg: "bg-destructive/10 text-destructive border-destructive/20" },
 };
 
-const initialPatrols: Patrol[] = [
-  // Lima
-  { id: "lima-01", navn: "Lima 01", kategori: "Lima", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Foxtrot
-  { id: "foxtrot-11", navn: "Foxtrot 11", kategori: "Foxtrot", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Bravo
-  ...Array.from({ length: 20 }, (_, i) => ({
-    id: `bravo-${21 + i}`,
-    navn: `Bravo ${21 + i}`,
-    kategori: "Bravo",
-    pladser: 2,
-    medlemmer: [] as PatrolMember[],
-    status: "ledig" as PatrolStatus,
-    bemærkning: "",
-  })),
-  // Mike
-  { id: "mike-20", navn: "Mike 20", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-43", navn: "Mike 43", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-44", navn: "Mike 44", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-45", navn: "Mike 45", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mike-46", navn: "Mike 46", kategori: "Mike", pladser: 1, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Romeo
-  { id: "romeo-13", navn: "Romeo 13", kategori: "Romeo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Mike Kilo
-  { id: "mk-20", navn: "Mike Kilo 20", kategori: "Mike Kilo", pladser: 3, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "mk-35", navn: "Mike Kilo 35", kategori: "Mike Kilo", pladser: 3, medlemmer: [], status: "ledig", bemærkning: "" },
-  // Kilo
-  { id: "kilo-16", navn: "Kilo 16", kategori: "Kilo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "kilo-17", navn: "Kilo 17", kategori: "Kilo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "kilo-18", navn: "Kilo 18", kategori: "Kilo", pladser: 2, medlemmer: [], status: "ledig", bemærkning: "" },
-  // S (Stab)
-  { id: "s-1", navn: "S 1", kategori: "Stab", pladser: 4, medlemmer: [], status: "ledig", bemærkning: "" },
-  { id: "s-2", navn: "S 2", kategori: "Stab", pladser: 4, medlemmer: [], status: "ledig", bemærkning: "" },
-];
-
 const FleetManagement = () => {
-  const [patrols, setPatrols] = useState<Patrol[]>(initialPatrols);
+  const [patrols, setPatrols] = useState<Patrulje[]>([]);
+  const [loading, setLoading] = useState(true);
   const [soegning, setSoegning] = useState("");
   const [signOnDialog, setSignOnDialog] = useState<string | null>(null);
   const [badgeInput, setBadgeInput] = useState("");
@@ -84,6 +37,14 @@ const FleetManagement = () => {
   const [nyKategori, setNyKategori] = useState("");
   const [nyKategoriCustom, setNyKategoriCustom] = useState("");
   const [nyPladser, setNyPladser] = useState("2");
+
+  // Load from database
+  useEffect(() => {
+    patruljerApi.getAll()
+      .then(setPatrols)
+      .catch((err) => { console.error("Fejl ved indlæsning af patruljer:", err); toast.error("Kunne ikke indlæse patruljer"); })
+      .finally(() => setLoading(false));
+  }, []);
 
   const kategorier = Array.from(new Set(patrols.map((p) => p.kategori)));
 
@@ -106,50 +67,57 @@ const FleetManagement = () => {
     iBrug: patrols.filter((p) => p.medlemmer.length > 0).length,
   };
 
-  const handleSignOn = (patrolId: string) => {
+  const handleSignOn = async (patrolId: string) => {
     if (!badgeInput.trim() || !navnInput.trim()) return;
-    setPatrols((prev) =>
-      prev.map((p) => {
-        if (p.id !== patrolId) return p;
-        if (p.medlemmer.length >= p.pladser) { toast.error("Patruljen er fuld"); return p; }
-        return {
-          ...p,
-          medlemmer: [...p.medlemmer, { badgeNr: badgeInput.trim(), navn: navnInput.trim() }],
-          status: "i_brug",
-        };
-      })
-    );
+    const patrol = patrols.find(p => p.id === patrolId);
+    if (!patrol) return;
+    if (patrol.medlemmer.length >= patrol.pladser) { toast.error("Patruljen er fuld"); return; }
+    const updated = {
+      medlemmer: [...patrol.medlemmer, { badgeNr: badgeInput.trim(), navn: navnInput.trim() }],
+      status: "i_brug" as const,
+    };
+    try {
+      await patruljerApi.update(patrolId, updated);
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
+      toast("Tilmeldt patrulje");
+    } catch (err) { console.error(err); toast.error("Fejl ved tilmelding"); }
     setBadgeInput("");
     setNavnInput("");
     setSignOnDialog(null);
-    toast("Tilmeldt patrulje");
   };
 
-  const handleSignOff = (patrolId: string, badgeNr: string) => {
-    setPatrols((prev) =>
-      prev.map((p) => {
-        if (p.id !== patrolId) return p;
-        const updated = p.medlemmer.filter((m) => m.badgeNr !== badgeNr);
-        return { ...p, medlemmer: updated, status: updated.length === 0 ? "ledig" : p.status };
-      })
-    );
-    toast("Afmeldt patrulje");
+  const handleSignOff = async (patrolId: string, badgeNr: string) => {
+    const patrol = patrols.find(p => p.id === patrolId);
+    if (!patrol) return;
+    const updatedMedlemmer = patrol.medlemmer.filter(m => m.badgeNr !== badgeNr);
+    const updated = { medlemmer: updatedMedlemmer, status: updatedMedlemmer.length === 0 ? "ledig" as const : patrol.status };
+    try {
+      await patruljerApi.update(patrolId, updated);
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
+      toast("Afmeldt patrulje");
+    } catch (err) { console.error(err); toast.error("Fejl ved afmelding"); }
   };
 
-  const handleStatusChange = (patrolId: string, status: PatrolStatus) => {
-    setPatrols((prev) => prev.map((p) => p.id === patrolId ? { ...p, status } : p));
+  const handleStatusChange = async (patrolId: string, status: PatrolStatus) => {
+    try {
+      await patruljerApi.update(patrolId, { status });
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, status } : p));
+    } catch (err) { console.error(err); toast.error("Fejl ved statusændring"); }
   };
 
-  const handleBemærkning = (patrolId: string) => {
-    setPatrols((prev) => prev.map((p) => p.id === patrolId ? { ...p, bemærkning: bemærkningInput } : p));
+  const handleBemærkning = async (patrolId: string) => {
+    try {
+      await patruljerApi.update(patrolId, { bemærkning: bemærkningInput });
+      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, bemærkning: bemærkningInput } : p));
+    } catch (err) { console.error(err); toast.error("Fejl"); }
     setBemærkningDialog(null);
     setBemærkningInput("");
   };
 
-  const handleOpretPatrulje = () => {
+  const handleOpretPatrulje = async () => {
     const kat = nyKategori === "_custom" ? nyKategoriCustom.trim() : nyKategori;
     if (!nyNavn.trim() || !kat) return;
-    const newPatrol: Patrol = {
+    const newPatrol: Patrulje = {
       id: `custom-${Date.now()}`,
       navn: nyNavn.trim(),
       kategori: kat,
@@ -158,19 +126,34 @@ const FleetManagement = () => {
       status: "ledig",
       bemærkning: "",
     };
-    setPatrols((prev) => [...prev, newPatrol]);
+    try {
+      await patruljerApi.create(newPatrol);
+      setPatrols(prev => [...prev, newPatrol]);
+      toast("Patrulje oprettet");
+    } catch (err) { console.error(err); toast.error("Fejl ved oprettelse"); }
     setNyNavn("");
     setNyKategori("");
     setNyKategoriCustom("");
     setNyPladser("2");
     setOpretDialog(false);
-    toast("Patrulje oprettet");
   };
 
-  const handleSletPatrulje = (id: string) => {
-    setPatrols((prev) => prev.filter((p) => p.id !== id));
-    toast("Patrulje slettet");
+  const handleSletPatrulje = async (id: string) => {
+    try {
+      await patruljerApi.remove(id);
+      setPatrols(prev => prev.filter(p => p.id !== id));
+      toast("Patrulje slettet");
+    } catch (err) { console.error(err); toast.error("Fejl ved sletning"); }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Indlæser patruljer...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
