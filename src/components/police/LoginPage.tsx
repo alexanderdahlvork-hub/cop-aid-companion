@@ -98,7 +98,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 
       <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs">
         <div
-          className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center cursor-pointer select-none"
+          className="w-20 h-20 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center cursor-pointer select-none overflow-hidden"
           onClick={() => {
             const now = Date.now();
             if (now - lastTap < 500) {
@@ -115,7 +115,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             setLastTap(now);
           }}
         >
-          <Shield className="w-8 h-8 text-white" />
+          <img src={avldLogo} alt="AVLD Systems" className="w-14 h-14 object-contain" />
         </div>
 
         <p className="text-white text-sm font-semibold tracking-wide">
