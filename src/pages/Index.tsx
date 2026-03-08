@@ -75,7 +75,7 @@ const Index = () => {
       case "sig": return <SIGAfdeling />;
       case "remeo": return <RemeoAfdeling />;
       case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
-      case "kort": return placeholderTab(MapPin, "Kort & GPS", "Kommer snart");
+      case "kort": return <KortOgGPS />;
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
       case "profil": return (
         <MinProfil
