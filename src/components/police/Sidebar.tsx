@@ -5,6 +5,7 @@ import {
   Building, ChevronDown, ChevronRight, User, Moon, LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { Betjent } from "@/types/police";
 
 interface SidebarProps {
