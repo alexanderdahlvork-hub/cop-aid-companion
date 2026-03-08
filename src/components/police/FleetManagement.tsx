@@ -288,11 +288,19 @@ const FleetManagement = () => {
                             <MessageSquare className="w-2.5 h-2.5" /> Bemærkning
                           </button>
                         )}
-                        {!isFull && (
-                          <Button size="sm" className="h-5 text-[9px] px-2 gap-1" onClick={() => setSignOnDialog(patrol.id)}>
-                            <UserPlus className="w-2.5 h-2.5" /> Tilmeld
-                          </Button>
-                        )}
+                        <div className="flex items-center gap-1">
+                          {!isFull && (
+                            <Button size="sm" className="h-5 text-[9px] px-2 gap-1" onClick={() => setSignOnDialog(patrol.id)}>
+                              <UserPlus className="w-2.5 h-2.5" /> Tilmeld
+                            </Button>
+                          )}
+                          {patrol.medlemmer.length === 0 && patrol.id.startsWith("custom-") && (
+                            <button onClick={() => handleSletPatrulje(patrol.id)}
+                              className="text-muted-foreground/50 hover:text-destructive transition-colors ml-1">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
