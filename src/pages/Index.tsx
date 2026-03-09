@@ -70,7 +70,7 @@ const Index = () => {
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
       case "kr": return <KRRegister />;
-      case "fleet": return <FleetManagement />;
+      case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement />;
       case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return <Efterlysninger />;
