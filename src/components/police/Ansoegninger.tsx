@@ -156,7 +156,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(indsendelser));
   }, [indsendelser]);
   const [view, setView] = useState<View>("liste");
-  const [activeTab, setActiveTab] = useState<"skabeloner" | "indsendelser" | "mine">("skabeloner");
+  const [activeTab, setActiveTab] = useState<"skabeloner" | "indsendelser">("skabeloner");
   const [selectedSkabelon, setSelectedSkabelon] = useState<AnsoeningSkabelon | null>(null);
   const [selectedIndsendelse, setSelectedIndsendelse] = useState<IndsendelseData | null>(null);
 
