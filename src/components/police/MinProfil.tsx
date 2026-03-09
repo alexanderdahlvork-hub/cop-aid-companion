@@ -219,7 +219,7 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
       </div>
 
       {/* Uddannelser & Certifikater & Titler */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Uddannelser */}
         <div className="bg-card border border-border rounded-lg p-5 space-y-3">
           <button
