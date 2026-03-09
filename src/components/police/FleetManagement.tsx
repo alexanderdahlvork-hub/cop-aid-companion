@@ -129,6 +129,10 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
   const [flytDialog, setFlytDialog] = useState<{ patrolId: string; gruppeId: string } | null>(null);
   const [flytTilGruppe, setFlytTilGruppe] = useState("");
   const [tilfoejTilGruppeDialog, setTilfoejTilGruppeDialog] = useState<string | null>(null);
+  // Move member between patrols
+  const [flytMedlemDialog, setFlytMedlemDialog] = useState<{ fromPatrolId: string; badgeNr: string; navn: string } | null>(null);
+  // Move patrol to group (from patrol card)
+  const [flytPatrulTilGruppeDialog, setFlytPatrulTilGruppeDialog] = useState<string | null>(null);
 
   // Load data
   useEffect(() => {
