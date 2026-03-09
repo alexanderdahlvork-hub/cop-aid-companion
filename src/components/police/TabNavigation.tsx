@@ -11,7 +11,7 @@ const tabs = [
   { id: "kr", label: "Personregister", icon: Users },
   { id: "opret_sag", label: "Opret Sag", icon: FileText },
   { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
-  { id: "fleet", label: "Flådestyring", icon: Radio },
+  { id: "flaade", label: "Flådestyring", icon: Radio },
 ];
 
 const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
