@@ -100,7 +100,45 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
     return sum + s.sigtelseBoeder.reduce((k, b) => k, 0);
   }, 0);
 
-  const opretPerson = async () => {
+  const startEdit = () => {
+    if (!valgtPerson) return;
+    setEditForm({ ...valgtPerson });
+    setEditMode(true);
+  };
+
+  const cancelEdit = () => {
+    setEditMode(false);
+    setEditForm({});
+  };
+
+  const saveEdit = async () => {
+    if (!valgtPerson || !editForm) return;
+    setSaving(true);
+    try {
+      const updates = {
+        fornavn: editForm.fornavn,
+        efternavn: editForm.efternavn,
+        cpr: editForm.cpr,
+        adresse: editForm.adresse,
+        postnr: editForm.postnr,
+        by: editForm.by,
+        telefon: editForm.telefon,
+        noter: editForm.noter,
+      };
+      await personerApi.update(valgtPerson.id, updates);
+      const updated = { ...valgtPerson, ...updates } as Person;
+      setValgtPerson(updated);
+      setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+      setEditMode(false);
+      toast("Personoplysninger opdateret");
+    } catch (err) {
+      console.error(err);
+      toast("Fejl ved opdatering");
+    } finally {
+      setSaving(false);
+    }
+  };
+
     setSaving(true);
     const person: Person = {
       id: Date.now().toString(),
