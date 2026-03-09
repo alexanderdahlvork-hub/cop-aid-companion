@@ -42,21 +42,30 @@ const KRRegister = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [personData, sigtelseData, ejendomData, koeretoejData] = await Promise.all([
-          personerApi.getAll(),
-          sigtelserApi.getAll(),
-          ejendommeApi.getAll(),
-          koeretoejerApi.getAll(),
-        ]);
+        const personData = await personerApi.getAll();
         setPersoner(personData);
+      } catch (err) {
+        console.error("Fejl ved indlæsning af personer:", err);
+      }
+      try {
+        const sigtelseData = await sigtelserApi.getAll();
         setSigtelser(sigtelseData);
+      } catch (err) {
+        console.error("Fejl ved indlæsning af sigtelser:", err);
+      }
+      try {
+        const ejendomData = await ejendommeApi.getAll();
         setEjendomme(ejendomData);
+      } catch (err) {
+        console.error("Fejl ved indlæsning af ejendomme:", err);
+      }
+      try {
+        const koeretoejData = await koeretoejerApi.getAll();
         setKoeretoejer(koeretoejData);
       } catch (err) {
-        console.error("Fejl ved indlæsning:", err);
-      } finally {
-        setLoading(false);
+        console.error("Fejl ved indlæsning af køretøjer:", err);
       }
+      setLoading(false);
     };
     load();
   }, []);
