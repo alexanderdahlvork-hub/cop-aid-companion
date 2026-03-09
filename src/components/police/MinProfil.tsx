@@ -15,6 +15,7 @@ interface MinProfilProps {
   currentUser: Betjent;
   isAdmin: boolean;
   onUserUpdate: (user: Betjent) => void;
+  onTabChange?: (tab: string) => void;
 }
 
 const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
