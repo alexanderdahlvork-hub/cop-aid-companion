@@ -9,7 +9,11 @@ import type { Person, Koeretoej, Sigtelse } from "@/types/police";
 
 type Tab = "personer" | "koeretoejer";
 
-const Efterlysninger = () => {
+interface EfterlysningerProps {
+  onSigtPerson?: (personId: string) => void;
+}
+
+const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
   const [tab, setTab] = useState<Tab>("personer");
   const [personer, setPersoner] = useState<Person[]>([]);
   const [koeretoejer, setKoeretoejer] = useState<Koeretoej[]>([]);
