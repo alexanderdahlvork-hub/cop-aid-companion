@@ -37,14 +37,6 @@ const TopHeader = ({ currentUser, isAdmin }: TopHeaderProps) => {
             className="pl-9 h-9 bg-muted/50 border-border text-sm"
           />
         </div>
-        <button className="h-9 px-3 rounded-md bg-muted/50 border border-border text-xs text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5">
-          <MoreHorizontal className="w-3.5 h-3.5" />
-          Mere
-        </button>
-        <button className="h-9 px-3 rounded-md bg-muted/50 border border-border text-xs text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5">
-          <Circle className="w-3.5 h-3.5" />
-          Mere
-        </button>
       </div>
 
       <div className="flex-1" />
