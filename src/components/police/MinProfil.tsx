@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase,
-  Star, ChevronDown, ChevronRight, CheckCircle2, X
+  Star, ChevronDown, ChevronRight, CheckCircle2, X, Pencil
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,10 @@ interface MinProfilProps {
   currentUser: Betjent;
   isAdmin: boolean;
   onUserUpdate: (user: Betjent) => void;
+  onTabChange?: (tab: string) => void;
 }
 
-const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
+const MinProfil = ({ currentUser, isAdmin, onUserUpdate, onTabChange }: MinProfilProps) => {
   const [imageUrl, setImageUrl] = useState(currentUser.profilBillede || "");
   const [savingImage, setSavingImage] = useState(false);
   const [oldPass, setOldPass] = useState("");
@@ -374,21 +375,30 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
                     {a.status === "godkendt" ? "Godkendt" : a.status === "afvist" ? "Afvist" : "Afventer"}
                   </span>
                   {a.status === "afventer" && (
-                    <button
-                      onClick={() => {
-                        const stored = localStorage.getItem("ansoegninger_indsendelser");
-                        if (stored) {
-                          const all = JSON.parse(stored).filter((i: any) => i.id !== a.id);
-                          localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(all));
-                          setAnsoegninger(ansoegninger.filter(x => x.id !== a.id));
-                          toast("Ansøgning trukket tilbage");
-                        }
-                      }}
-                      className="p-1 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
-                      title="Træk tilbage"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => onTabChange?.("ansoegninger")}
+                        className="p-1 rounded hover:bg-primary/15 text-muted-foreground hover:text-primary transition-colors"
+                        title="Rediger"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const stored = localStorage.getItem("ansoegninger_indsendelser");
+                          if (stored) {
+                            const all = JSON.parse(stored).filter((i: any) => i.id !== a.id);
+                            localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(all));
+                            setAnsoegninger(ansoegninger.filter(x => x.id !== a.id));
+                            toast("Ansøgning trukket tilbage");
+                          }
+                        }}
+                        className="p-1 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
+                        title="Træk tilbage"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
