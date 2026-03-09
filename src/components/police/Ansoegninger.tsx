@@ -156,7 +156,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(indsendelser));
   }, [indsendelser]);
   const [view, setView] = useState<View>("liste");
-  const [activeTab, setActiveTab] = useState<"skabeloner" | "indsendelser" | "mine">("skabeloner");
+  const [activeTab, setActiveTab] = useState<"skabeloner" | "indsendelser">("skabeloner");
   const [selectedSkabelon, setSelectedSkabelon] = useState<AnsoeningSkabelon | null>(null);
   const [selectedIndsendelse, setSelectedIndsendelse] = useState<IndsendelseData | null>(null);
 
@@ -257,7 +257,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     setIndsendelser([ny, ...indsendelser]);
     toast("Ansøgning indsendt!");
     setView("liste");
-    setActiveTab("mine");
+    setActiveTab("skabeloner");
   };
 
   const handleEditIndsendelse = (ind: IndsendelseData) => {
@@ -277,7 +277,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     ));
     toast("Ansøgning opdateret");
     setView("liste");
-    setActiveTab("mine");
+    setActiveTab("skabeloner");
   };
 
   const handleApprove = async (id: string, kommentar: string) => {
@@ -477,7 +477,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
       <div className="space-y-5 max-w-2xl">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold text-foreground">{isEditing ? "Rediger" : "Ansøg"}: {selectedSkabelon.titel}</h1>
-          <Button variant="ghost" size="sm" onClick={() => { setView("liste"); setActiveTab("mine"); }}>
+          <Button variant="ghost" size="sm" onClick={() => { setView("liste"); setActiveTab("skabeloner"); }}>
             <X className="w-4 h-4 mr-1" /> Annuller
           </Button>
         </div>
@@ -518,7 +518,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
                 <Send className="w-4 h-4 mr-1" /> Indsend ansøgning
               </Button>
             )}
-            <Button variant="outline" onClick={() => { setView("liste"); setActiveTab("mine"); }}>Annuller</Button>
+            <Button variant="outline" onClick={() => { setView("liste"); setActiveTab("skabeloner"); }}>Annuller</Button>
           </div>
         </div>
       </div>
@@ -620,7 +620,6 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
         {[
           { id: "skabeloner" as const, label: "Ansøgninger", count: skabeloner.filter(s => s.aktiv).length },
           ...(canManage ? [{ id: "indsendelser" as const, label: "Indsendte", count: afventendeIndsendelser.length }] : []),
-          { id: "mine" as const, label: "Mine ansøgninger", count: mineIndsendelser.length },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -728,39 +727,6 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
         </div>
       )}
 
-      {/* Mine ansøgninger */}
-      {activeTab === "mine" && (
-        <div className="space-y-2">
-          {mineIndsendelser.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Du har ikke indsendt nogen ansøgninger endnu</p>
-          ) : (
-            mineIndsendelser.map((ind) => (
-              <div
-                key={ind.id}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors text-left"
-              >
-                <button onClick={() => openIndsendelse(ind)} className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium text-foreground">{ind.skabelonTitel}</p>
-                  <p className="text-xs text-muted-foreground">Indsendt: {ind.dato}</p>
-                </button>
-                <div className="flex items-center gap-2 shrink-0">
-                  {ind.status === "afventer" && (
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2"
-                      onClick={(e) => { e.stopPropagation(); handleEditIndsendelse(ind); }}>
-                      <Pencil className="w-3 h-3" /> Rediger
-                    </Button>
-                  )}
-                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1", statusColor(ind.status))}>
-                    {statusIcon(ind.status)}
-                    {ind.status === "afventer" ? "Afventer" : ind.status === "godkendt" ? "Godkendt" : "Afvist"}
-                  </span>
-                  {ind.kommentar && <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
     </div>
   );
 };
