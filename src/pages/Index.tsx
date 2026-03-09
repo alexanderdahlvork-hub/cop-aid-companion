@@ -78,7 +78,7 @@ const Index = () => {
       case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement currentUser={currentUser} isAdmin={isAdmin} />;
       case "ejendomme": return <Ejendomsregister />;
-      case "efterlysninger": return <Efterlysninger onSigtPerson={(personId) => { setKrInitialPersonId(personId); setActiveTab("kr"); }} />;
+      case "efterlysninger": return <Efterlysninger onSigtPerson={(personId, sigtelser) => { setSagInitialPersonId(personId); setSagInitialSigtelser(sigtelser); setActiveTab("opret_sag"); }} />;
       case "nsk": return <NSKAfdeling />;
       case "lima": return <LimaAfdeling />;
       case "faerdsel": return <FaerdselAfdeling />;
