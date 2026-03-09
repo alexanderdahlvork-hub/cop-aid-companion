@@ -83,7 +83,7 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 w-full">
       {/* Profile header */}
       <div className="bg-card border border-border rounded-lg p-6">
         <div className="flex items-start gap-5">
