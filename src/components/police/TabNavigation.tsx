@@ -1,4 +1,4 @@
-import { Home, Users, FileText, AlertTriangle, Radio, MoreHorizontal } from "lucide-react";
+import { Home, Users, FileText, AlertTriangle, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabNavigationProps {
@@ -16,7 +16,7 @@ const tabs = [
 
 const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
   return (
-    <div className="h-12 bg-card border-b border-border flex items-center px-4 gap-1 shrink-0 overflow-x-auto">
+    <div className="h-9 bg-card/50 border-b border-border flex items-center px-3 gap-0.5 shrink-0 overflow-x-auto">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -24,26 +24,17 @@ const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-1.5 px-3 py-1 rounded text-[12px] font-medium transition-colors whitespace-nowrap",
               isActive
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
-            <tab.icon className="w-4 h-4" />
+            <tab.icon className="w-3 h-3" />
             {tab.label}
           </button>
         );
       })}
-      
-      {/* Status indicator */}
-      <div className="flex items-center gap-2 ml-2">
-        <div className="w-2 h-2 rounded-full bg-muted-foreground/40" />
-      </div>
-
-      <button className="ml-1 p-2 rounded-md text-muted-foreground hover:bg-muted transition-colors">
-        <MoreHorizontal className="w-4 h-4" />
-      </button>
     </div>
   );
 };

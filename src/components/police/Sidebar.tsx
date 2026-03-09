@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
-  BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
-  Building, ChevronDown, ChevronRight, User, Moon, LogOut,
-  Target, Crosshair, Gauge, Heart, FolderOpen, Circle, FileText as FileTextIcon
+  BadgeCheck, Home, Search, AlertTriangle,
+  Building, User, Moon, LogOut,
+  Target, Crosshair, Gauge, Heart, FolderOpen, Circle,
+  FileText as FileTextIcon, Megaphone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -19,23 +20,20 @@ interface SidebarProps {
 
 interface SidebarSection {
   label: string;
-  icon: typeof Home;
   items: { id: string; label: string; icon: typeof Home }[];
 }
 
 const sections: SidebarSection[] = [
   {
     label: "OVERSIGT",
-    icon: Circle,
     items: [
       { id: "forside", label: "Forside", icon: Home },
-      { id: "opslagstavle", label: "Opslagstavle", icon: FileText },
+      { id: "opslagstavle", label: "Opslagstavle", icon: Megaphone },
       { id: "kort", label: "Aktiv Patrulje", icon: Radio },
     ],
   },
   {
     label: "DATABASE",
-    icon: Search,
     items: [
       { id: "kr", label: "Personregister", icon: Users },
       { id: "koeretoej", label: "Køretøjsregister", icon: Car },
@@ -45,7 +43,6 @@ const sections: SidebarSection[] = [
   },
   {
     label: "SAGER",
-    icon: FileText,
     items: [
       { id: "opret_sag", label: "Opret Sag", icon: FileText },
       { id: "boeder", label: "Bødetakster", icon: FolderOpen },
@@ -54,7 +51,6 @@ const sections: SidebarSection[] = [
   },
   {
     label: "FLÅDESTYRING",
-    icon: Car,
     items: [
       { id: "flaade", label: "Flådestyring", icon: Radio },
       { id: "patruljer", label: "Patruljeenheder", icon: MapPin },
@@ -73,9 +69,7 @@ const AFDELINGER = [
 
 const bottomLinks = [
   { id: "ansatte", label: "Ansatte", icon: BadgeCheck },
-  { id: "kontor", label: "Kontor", icon: Building },
-  { id: "guides_faq", label: "Guides & FAQ", icon: BookOpen },
-  { id: "profil", label: "Systemindstillinger", icon: Settings },
+  { id: "ansoegninger", label: "Ansøgninger", icon: FileTextIcon },
 ];
 
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: SidebarProps) => {
@@ -100,85 +94,80 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
     : AFDELINGER.filter((a) => userAfd.toLowerCase().includes(a.id.toLowerCase()));
 
   return (
-    <div className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col h-full shrink-0">
+    <div className="w-52 bg-sidebar border-r border-sidebar-border flex flex-col h-full shrink-0">
       {/* Title */}
-      <div className="px-4 py-5">
-        <h1 className="text-2xl font-black text-foreground tracking-wide">POLITI</h1>
+      <div className="px-4 py-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-primary/15 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-primary" />
+          </div>
+          <span className="text-sm font-bold text-foreground tracking-wide uppercase">Politi MDT</span>
+        </div>
       </div>
 
       {/* Sections */}
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto pb-4">
+      <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
         {sections.map((section, sectionIdx) => (
           <div key={section.label}>
-            {sectionIdx > 0 && (
-              <div className="my-3 mx-2 border-t border-sidebar-border" />
-            )}
-            <div className="flex items-center gap-2 px-2 mb-2">
-              <section.icon className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{section.label}</span>
-            </div>
-            <div className="space-y-0.5 ml-1">
-              {section.items.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => onTabChange(item.id)}
-                  className={cn(
-                    "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all",
-                    activeTab === item.id
-                      ? "text-primary font-semibold"
-                      : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
-                  )}
-                >
-                  <span className="text-muted-foreground/50">•</span>
-                  <item.icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
+            {sectionIdx > 0 && <div className="my-2 mx-1 border-t border-sidebar-border" />}
+            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest px-2 mb-1">
+              {section.label}
+            </p>
+            {section.items.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2.5 py-[5px] rounded text-[13px] transition-colors",
+                  activeTab === item.id
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                )}
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </button>
+            ))}
           </div>
         ))}
 
         {/* Afdelinger */}
         {visibleAfdelinger.length > 0 && (
           <div>
-            <div className="my-3 mx-2 border-t border-sidebar-border" />
-            <div className="flex items-center gap-2 px-2 mb-2">
-              <Shield className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">AFDELINGER</span>
-            </div>
-            <div className="space-y-0.5 ml-1">
-              {visibleAfdelinger.map((afd) => (
-                <button
-                  key={afd.id}
-                  onClick={() => onTabChange(afd.tab)}
-                  className={cn(
-                    "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all",
-                    activeTab === afd.tab
-                      ? "text-primary font-semibold"
-                      : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
-                  )}
-                >
-                  <span className="text-muted-foreground/50">•</span>
-                  <afd.icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{afd.label}</span>
-                </button>
-              ))}
-            </div>
+            <div className="my-2 mx-1 border-t border-sidebar-border" />
+            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest px-2 mb-1">
+              AFDELINGER
+            </p>
+            {visibleAfdelinger.map((afd) => (
+              <button
+                key={afd.id}
+                onClick={() => onTabChange(afd.tab)}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2.5 py-[5px] rounded text-[13px] transition-colors",
+                  activeTab === afd.tab
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
+                )}
+              >
+                <afd.icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{afd.label}</span>
+              </button>
+            ))}
           </div>
         )}
       </nav>
 
       {/* Bottom links */}
-      <div className="border-t border-sidebar-border px-3 py-3 space-y-0.5">
+      <div className="border-t border-sidebar-border px-2 py-2 space-y-0.5">
         {bottomLinks.map((link) => (
           <button
             key={link.id}
             onClick={() => onTabChange(link.id)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all",
+              "w-full flex items-center gap-2 px-2.5 py-[5px] rounded text-[13px] transition-colors",
               activeTab === link.id
-                ? "text-primary font-semibold"
-                : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
             )}
           >
             <link.icon className="w-3.5 h-3.5 shrink-0" />
@@ -191,66 +180,70 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
       <div ref={profileRef} className="border-t border-sidebar-border relative">
         <button
           onClick={() => setShowProfile(!showProfile)}
-          className="w-full p-3 flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
+          className="w-full px-3 py-2.5 flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
         >
-          <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
-            <Shield className="w-4 h-4 text-warning" />
-          </div>
+          {currentUser.profilBillede ? (
+            <img src={currentUser.profilBillede} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <User className="w-3.5 h-3.5 text-primary" />
+            </div>
+          )}
           <div className="text-left min-w-0 flex-1">
-            <p className="text-xs font-semibold text-sidebar-foreground truncate">
+            <p className="text-[11px] font-semibold text-sidebar-foreground truncate">
               {currentUser.fornavn} {currentUser.efternavn}
             </p>
-            <p className="text-[10px] text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
+            <p className="text-[9px] text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
           </div>
-          <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
+          <div className="w-1.5 h-1.5 rounded-full bg-success" />
         </button>
 
         {/* Profile popup */}
         {showProfile && (
-          <div className="absolute bottom-full left-2 right-2 mb-1 bg-card border border-border rounded-lg shadow-2xl p-3 space-y-2 z-50">
-            <div className="flex items-center gap-2 pb-2 border-b border-border">
-              <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-warning" />
+          <div className="absolute bottom-full left-1 right-1 mb-1 bg-card border border-border rounded-lg shadow-xl p-2.5 space-y-1 z-50">
+            <div className="flex items-center gap-2 pb-2 mb-1 border-b border-border">
+              <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">
-                  {currentUser.fornavn} {currentUser.efternavn} | {currentUser.badgeNr}
+                <p className="text-[11px] font-semibold text-foreground">
+                  {currentUser.fornavn} {currentUser.efternavn}
                 </p>
-                <p className="text-[10px] text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
+                <p className="text-[9px] text-muted-foreground">{currentUser.badgeNr} · {isAdmin ? "Admin" : currentUser.rang}</p>
               </div>
             </div>
 
             <button
               onClick={() => { setShowProfile(false); onTabChange("profil"); }}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted transition-colors"
             >
               <User className="w-3.5 h-3.5" /> Min Profil
             </button>
 
             <button
               onClick={() => { setShowProfile(false); onTabChange("ansoegninger"); }}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted transition-colors"
             >
               <FileTextIcon className="w-3.5 h-3.5" /> Ansøgninger
             </button>
 
             <button
               onClick={toggleTheme}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] hover:bg-muted transition-colors"
             >
               <Moon className="w-3.5 h-3.5 text-foreground" />
-              <span className="text-xs text-foreground">Mørkt Tema</span>
-              <div className={cn("ml-auto w-8 h-4 rounded-full relative transition-colors", theme === "dark" ? "bg-primary" : "bg-muted-foreground/30")}>
-                <div className={cn("absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all", theme === "dark" ? "right-0.5" : "left-0.5")} />
+              <span className="text-foreground">{theme === "dark" ? "Lyst tema" : "Mørkt tema"}</span>
+              <div className={cn("ml-auto w-7 h-3.5 rounded-full relative transition-colors", theme === "dark" ? "bg-primary" : "bg-muted-foreground/30")}>
+                <div className={cn("absolute top-[2px] w-2.5 h-2.5 bg-white rounded-full transition-all", theme === "dark" ? "right-[2px]" : "left-[2px]")} />
               </div>
             </button>
 
-            <div className="border-t border-border pt-2">
+            <div className="border-t border-border pt-1 mt-1">
               <button
                 onClick={() => { setShowProfile(false); onLogout(); }}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-destructive transition-colors"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-muted-foreground hover:text-destructive transition-colors"
               >
-                <LogOut className="w-3.5 h-3.5" /> Luk ned
+                <LogOut className="w-3.5 h-3.5" /> Log ud
               </button>
             </div>
           </div>
