@@ -208,6 +208,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
       skabelonSvar: valgtSkabelon ? skabelonSvar : undefined,
     },
     skabelonType: valgtSkabelon?.id,
+    sagsStatus,
   });
 
   const handleSubmit = () => {
