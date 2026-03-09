@@ -211,6 +211,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
             </button>
 
             <button
+              onClick={() => { setShowProfile(false); onTabChange("ansoegninger"); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
+            >
+              <FileTextIcon className="w-3.5 h-3.5" /> Ansøgninger
+            </button>
+
+            <button
               onClick={toggleTheme}
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted transition-colors"
             >

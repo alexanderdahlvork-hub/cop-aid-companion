@@ -80,6 +80,7 @@ const Index = () => {
       case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
       case "kort": return <KortOgGPS />;
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
+      case "ansoegninger": return <Ansoegninger currentUser={currentUser} isAdmin={isAdmin} />;
       case "profil": return (
         <MinProfil
           currentUser={currentUser}
