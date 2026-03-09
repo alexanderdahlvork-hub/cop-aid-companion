@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Opslagstavle from "@/components/police/Opslagstavle";
 import Sidebar from "@/components/police/Sidebar";
 import TopHeader from "@/components/police/TopHeader";
 import TabNavigation from "@/components/police/TabNavigation";
