@@ -5,9 +5,10 @@ import type { Betjent } from "@/types/police";
 
 interface DashboardProps {
   currentUser: Betjent;
+  onTabChange?: (tab: string) => void;
 }
 
-const Dashboard = ({ currentUser }: DashboardProps) => {
+const Dashboard = ({ currentUser, onTabChange }: DashboardProps) => {
   const [antalEfterlyste, setAntalEfterlyste] = useState(0);
   const [kolleger, setKolleger] = useState<Betjent[]>([]);
 
