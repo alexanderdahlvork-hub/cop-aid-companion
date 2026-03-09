@@ -135,34 +135,31 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
   useEffect(() => {
     if (!open) return;
+    // Reset all fields first
+    setValgteBoeder([]); setFratagKoerekort(false); setErkender(null);
+    setValgteBetjente([]); setHaendelse(""); setKonfiskeret(""); setMagt("");
+    setValgtSkabelon(null); setSkabelonSvar({}); setShowKlipPopup(false);
+    setSoegning(""); setBetjenteOpen(false); setStraffeOpen(false);
+    setKonfiskeretOpen(false); setMagtOpen(false); setSkabelonOpen(false);
+    setDokNavn(""); setDokUrl(""); setDokumenter([]); setDokOpen(false);
+    setKonfiskeretInput(""); setKonfiskeredeGenstande([]);
+    setMagtInput(""); setMagtmidler([]);
+
+    // Then load betjente and auto-select current user
     setLoadingData(true);
     betjenteApi.getAll()
       .then((bt) => {
         setBetjente(bt);
-        // Auto-select current user
         if (currentUser) {
           const match = bt.find(b => b.badgeNr === currentUser.badgeNr);
           if (match) {
-            setValgteBetjente(prev => prev.includes(match.id) ? prev : [match.id]);
+            setValgteBetjente([match.id]);
           }
         }
       })
       .catch(console.error)
       .finally(() => setLoadingData(false));
   }, [open, currentUser]);
-
-  useEffect(() => {
-    if (open) {
-      setValgteBoeder([]); setFratagKoerekort(false); setErkender(null);
-      setValgteBetjente([]); setHaendelse(""); setKonfiskeret(""); setMagt("");
-      setValgtSkabelon(null); setSkabelonSvar({}); setShowKlipPopup(false);
-      setSoegning(""); setBetjenteOpen(false); setStraffeOpen(false);
-      setKonfiskeretOpen(false); setMagtOpen(false); setSkabelonOpen(false);
-      setDokNavn(""); setDokUrl(""); setDokumenter([]); setDokOpen(false);
-      setKonfiskeretInput(""); setKonfiskeredeGenstande([]);
-      setMagtInput(""); setMagtmidler([]);
-    }
-  }, [open]);
 
   const totalBoede = valgteBoeder.reduce((s, b) => s + b.beloeb, 0);
   const totalKlip = valgteBoeder.reduce((s, b) => {
