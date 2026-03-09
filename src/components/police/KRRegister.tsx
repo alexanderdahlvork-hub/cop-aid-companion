@@ -12,6 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { personerApi, sigtelserApi, ejendommeApi, koeretoejerApi } from "@/lib/api";
 import type { Person, Sigtelse, Ejendom, Koeretoej, SigtelseBoede, SagsStatus } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
+import EfterlysningDialog from "./EfterlysningDialog";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { standardBoeder } from "@/data/bodetakster";
