@@ -98,26 +98,33 @@ const Index = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onLogout={() => { setCurrentUser(null); setIsAdmin(false); }}
-        currentUser={currentUser}
-        isAdmin={isAdmin}
-      />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopHeader currentUser={currentUser} isAdmin={isAdmin} />
-        {activeTab === "forside" && <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />}
-        <main className="flex-1 p-5 overflow-y-auto">
-          {renderContent()}
-        </main>
-      </div>
+    <div className="h-screen w-screen flex items-center justify-center bg-black/90 p-3">
+      <div className="relative w-full h-full max-w-[1400px] max-h-[900px] rounded-2xl border-[6px] border-[hsl(220,15%,22%)] bg-background shadow-[0_0_60px_rgba(0,0,0,0.6),inset_0_0_1px_rgba(255,255,255,0.1)] overflow-hidden">
+        {/* Camera dot */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[hsl(220,10%,30%)] z-50" />
 
-      <ChangePasswordDialog
-        open={showChangePassword}
-        onChangePassword={handleChangePassword}
-      />
+        <div className="flex h-full overflow-hidden">
+          <Sidebar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onLogout={() => { setCurrentUser(null); setIsAdmin(false); }}
+            currentUser={currentUser}
+            isAdmin={isAdmin}
+          />
+          <div className="flex-1 flex flex-col min-w-0">
+            <TopHeader currentUser={currentUser} isAdmin={isAdmin} />
+            {activeTab === "forside" && <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />}
+            <main className="flex-1 p-5 overflow-y-auto">
+              {renderContent()}
+            </main>
+          </div>
+        </div>
+
+        <ChangePasswordDialog
+          open={showChangePassword}
+          onChangePassword={handleChangePassword}
+        />
+      </div>
     </div>
   );
 };
