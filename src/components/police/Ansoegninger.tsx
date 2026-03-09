@@ -257,7 +257,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     setIndsendelser([ny, ...indsendelser]);
     toast("Ansøgning indsendt!");
     setView("liste");
-    setActiveTab("mine");
+    setActiveTab("skabeloner");
   };
 
   const handleEditIndsendelse = (ind: IndsendelseData) => {
