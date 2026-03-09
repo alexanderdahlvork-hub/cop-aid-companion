@@ -3,7 +3,7 @@ import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
   BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
   Building, ChevronDown, ChevronRight, User, Moon, LogOut,
-  Target, Crosshair, Gauge, Heart, FolderOpen, Circle
+  Target, Crosshair, Gauge, Heart, FolderOpen, Circle, FileText as FileTextIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
