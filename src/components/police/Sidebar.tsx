@@ -51,7 +51,7 @@ const sections: SidebarSection[] = [
     ],
   },
   {
-    label: "EFTERLYSNINGER",
+    label: "FLÅDESTYRING",
     icon: AlertTriangle,
     items: [
       { id: "efterlysninger", label: "Flådestyring", icon: Radio },
