@@ -139,6 +139,7 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
     }
   };
 
+  const opretPerson = async () => {
     setSaving(true);
     const person: Person = {
       id: Date.now().toString(),
