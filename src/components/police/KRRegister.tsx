@@ -431,152 +431,74 @@ const KRRegister = () => {
               </div>
 
               {personSigtelser.length > 0 ? (
-                <div className="space-y-4">
-                  {personSigtelser.map((sig) => (
-                    <div key={sig.id} className={cn("rounded-lg border overflow-hidden",
-                      sig.sagsStatus === "lukket" ? "border-destructive/40" : "border-border"
-                    )}>
-                      {/* Sigtelse header with date */}
-                      <div className={cn("flex items-center justify-between px-4 py-3 border-b",
-                        sig.sagsStatus === "lukket" ? "bg-destructive/10 border-destructive/20" : "bg-muted/25 border-border"
-                      )}>
-                        <div className="flex items-center gap-3">
-                          <Scale className={cn("w-4 h-4", sig.sagsStatus === "lukket" ? "text-destructive" : "text-primary")} />
-                          <span className={cn("text-sm font-semibold", sig.sagsStatus === "lukket" ? "text-destructive" : "text-foreground")}>Sigtelse — {sig.dato}</span>
-                          {sig.skabelonType && (
-                            <Badge variant="outline" className="text-[10px]">{sig.skabelonType}</Badge>
-                          )}
-                          {sig.sagsStatus && (
-                            <Badge className={cn("text-[10px]", {
-                              "bg-success/15 text-success border-success/20": sig.sagsStatus === "aaben",
-                              "bg-primary/15 text-primary border-primary/20": sig.sagsStatus === "under_efterforskning",
-                              "bg-warning/15 text-warning border-warning/20": sig.sagsStatus === "afventer_retten",
-                              "bg-destructive/15 text-destructive border-destructive/20": sig.sagsStatus === "lukket",
-                            })}>
-                              {{ aaben: "Åben", under_efterforskning: "Under efterforskning", afventer_retten: "Afventer retten", lukket: "Lukket" }[sig.sagsStatus]}
-                            </Badge>
-                          )}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                  {personSigtelser.map((sig) => {
+                    const isLukket = sig.sagsStatus === "lukket";
+                    const statusLabel = { aaben: "Åben", under_efterforskning: "Efterforskning", afventer_retten: "Afventer ret", lukket: "Lukket" }[sig.sagsStatus] || "Åben";
+                    const statusCls = {
+                      aaben: "bg-success/15 text-success",
+                      under_efterforskning: "bg-primary/15 text-primary",
+                      afventer_retten: "bg-warning/15 text-warning",
+                      lukket: "bg-destructive/15 text-destructive",
+                    }[sig.sagsStatus] || "";
+                    return (
+                      <div key={sig.id} className={cn(
+                        "rounded-lg border overflow-hidden cursor-pointer hover:shadow-md transition-shadow",
+                        isLukket ? "border-destructive/40" : "border-border"
+                      )}
+                        onClick={() => {
+                          setRedigerSigtelse(sig);
+                          setRedigerForm({
+                            haendelsesforloeb: sig.rapport.haendelsesforloeb || "",
+                            konfiskeredeGenstande: sig.rapport.konfiskeredeGenstande || "",
+                            magtanvendelse: sig.rapport.magtanvendelse || "",
+                            erkender: sig.erkender,
+                            fratagKoerekort: sig.fratagKoerekort,
+                            sigtelseBoeder: [...sig.sigtelseBoeder],
+                            sagsStatus: sig.sagsStatus || "aaben",
+                          });
+                          setRedigerBoederOpen(false);
+                          setRedigerBoederSoegning("");
+                        }}
+                      >
+                        <div className={cn("px-3 py-2 border-b flex items-center justify-between",
+                          isLukket ? "bg-destructive/10 border-destructive/20" : "bg-muted/25 border-border"
+                        )}>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <Scale className={cn("w-3 h-3 shrink-0", isLukket ? "text-destructive" : "text-primary")} />
+                            <span className={cn("text-[10px] font-semibold truncate", isLukket ? "text-destructive" : "text-foreground")}>{sig.dato}</span>
+                          </div>
+                          <Badge className={cn("text-[8px] px-1.5 py-0 h-4 shrink-0", statusCls)}>{statusLabel}</Badge>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            setRedigerSigtelse(sig);
-                            setRedigerForm({
-                              haendelsesforloeb: sig.rapport.haendelsesforloeb || "",
-                              konfiskeredeGenstande: sig.rapport.konfiskeredeGenstande || "",
-                              magtanvendelse: sig.rapport.magtanvendelse || "",
-                              erkender: sig.erkender,
-                              fratagKoerekort: sig.fratagKoerekort,
-                              sigtelseBoeder: [...sig.sigtelseBoeder],
-                              sagsStatus: sig.sagsStatus || "aaben",
-                            });
-                            setRedigerBoederOpen(false);
-                            setRedigerBoederSoegning("");
-                          }}
-                        >
-                          <Pencil className="w-3 h-3" /> Rediger
-                        </Button>
-                      </div>
-
-                      {/* Charges table */}
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-border bg-muted/15">
-                              <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Beskrivelse</th>
-                              <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Lovhenvisning</th>
-                              <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground">Bøde (DKK)</th>
-                              <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground">Fængsel</th>
-                              <th className="text-center px-4 py-2.5 text-xs font-semibold text-muted-foreground">Klip</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sig.sigtelseBoeder.map((b, i) => (
-                              <tr key={i} className="border-b border-border/30 hover:bg-muted/5 transition-colors">
-                                <td className="px-4 py-2.5 text-sm text-foreground">{b.beskrivelse}</td>
-                                <td className="px-4 py-2.5 text-sm text-muted-foreground font-mono">{b.paragraf || "—"}</td>
-                                <td className="px-4 py-2.5 text-sm font-mono text-warning text-right">{b.beloeb.toLocaleString("da-DK")} kr</td>
-                                <td className="px-4 py-2.5 text-sm text-right">{b.faengselMaaneder > 0 ? `${b.faengselMaaneder} måneder` : "—"}</td>
-                                <td className="px-4 py-2.5 text-sm text-center text-muted-foreground">0</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                          <tfoot>
-                            <tr className="bg-primary/5 border-t border-primary/20">
-                              <td className="px-4 py-3 text-sm font-bold text-foreground">Total</td>
-                              <td />
-                              <td className="px-4 py-3 text-sm font-bold font-mono text-warning text-right">{sig.totalBoede.toLocaleString("da-DK")} DKK</td>
-                              <td className="px-4 py-3 text-sm font-bold text-right">{sig.faengselMaaneder > 0 ? `${sig.faengselMaaneder} måneder` : "—"}</td>
-                              <td className="px-4 py-3 text-sm font-bold text-center">0 point</td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-
-                      {/* Bottom info: erkender, kørekort, betjente */}
-                      <div className="px-4 py-3 border-t border-border bg-muted/10 flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Erkender:</span>
-                          {sig.erkender === true && (
-                            <Badge className="bg-success/15 text-success border-success/20 text-xs px-2">Ja</Badge>
-                          )}
-                          {sig.erkender === false && (
-                            <Badge className="bg-destructive/15 text-destructive border-destructive/20 text-xs px-2">Nej</Badge>
-                          )}
-                          {sig.erkender === null && (
-                            <Badge variant="outline" className="text-xs px-2">Ikke angivet</Badge>
-                          )}
-                        </div>
-                        <div className="w-px h-4 bg-border" />
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Kørekort:</span>
-                          <Badge className={cn("text-xs px-2", sig.fratagKoerekort
-                            ? "bg-destructive/15 text-destructive border-destructive/20"
-                            : "bg-success/15 text-success border-success/20"
-                          )}>
-                            {sig.fratagKoerekort ? "Frataget" : "OK"}
-                          </Badge>
-                        </div>
-                        {sig.involveretBetjente.length > 0 && (
-                          <>
-                            <div className="w-px h-4 bg-border" />
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">Betjente:</span>
-                              <span className="text-xs text-foreground">{sig.involveretBetjente.length} involveret</span>
+                        <div className="px-3 py-2 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-muted-foreground">Bøde</span>
+                            <span className="text-[11px] font-mono font-bold text-warning">{sig.totalBoede.toLocaleString("da-DK")} kr</span>
+                          </div>
+                          {sig.faengselMaaneder > 0 && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-muted-foreground">Fængsel</span>
+                              <span className="text-[11px] font-medium text-foreground">{sig.faengselMaaneder} mdr</span>
                             </div>
-                          </>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-muted-foreground">Erkender</span>
+                            <span className={cn("text-[10px] font-medium",
+                              sig.erkender === true ? "text-success" : sig.erkender === false ? "text-destructive" : "text-muted-foreground"
+                            )}>{sig.erkender === true ? "Ja" : sig.erkender === false ? "Nej" : "—"}</span>
+                          </div>
+                          {sig.sigtelseBoeder.length > 0 && (
+                            <p className="text-[9px] text-muted-foreground/70 truncate">{sig.sigtelseBoeder.map(b => b.beskrivelse).join(", ")}</p>
+                          )}
+                        </div>
+                        {sig.skabelonType && (
+                          <div className="px-3 pb-1.5">
+                            <Badge variant="outline" className="text-[8px] h-4">{sig.skabelonType}</Badge>
+                          </div>
                         )}
                       </div>
-
-                      {/* Rapport summary if present */}
-                      {sig.rapport.haendelsesforloeb && (
-                        <div className="px-4 py-3 border-t border-border/50">
-                          <p className="text-xs font-semibold text-muted-foreground mb-1">Hændelsesforløb</p>
-                          <p className="text-sm text-foreground/80 leading-relaxed">{sig.rapport.haendelsesforloeb}</p>
-                        </div>
-                      )}
-
-                      {/* Konfiskerede + magt */}
-                      {(sig.rapport.konfiskeredeGenstande || sig.rapport.magtanvendelse) && (
-                        <div className="grid grid-cols-2 gap-0 border-t border-border/50">
-                          {sig.rapport.konfiskeredeGenstande && (
-                            <div className="px-4 py-3 border-r border-border/50">
-                              <p className="text-xs font-semibold text-muted-foreground mb-1">Beslaglagte genstande</p>
-                              <p className="text-sm text-foreground/80">{sig.rapport.konfiskeredeGenstande}</p>
-                            </div>
-                          )}
-                          {sig.rapport.magtanvendelse && (
-                            <div className="px-4 py-3">
-                              <p className="text-xs font-semibold text-muted-foreground mb-1">Magtanvendelse</p>
-                              <p className="text-sm text-foreground/80">{sig.rapport.magtanvendelse}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="rounded-lg border border-border bg-muted/10 p-8 text-center">
