@@ -39,6 +39,7 @@ const Index = () => {
   const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [krInitialPersonId, setKrInitialPersonId] = useState<string | null>(null);
 
   const handleLogin = (betjent: Betjent, admin: boolean) => {
     setCurrentUser(betjent);
