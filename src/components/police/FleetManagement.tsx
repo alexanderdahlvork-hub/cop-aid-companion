@@ -67,6 +67,7 @@ interface TaskGroup {
 
 interface FleetManagementProps {
   currentUser: Betjent | null;
+  isAdmin?: boolean;
 }
 
 const STORAGE_KEY = "fleet_patruljer";

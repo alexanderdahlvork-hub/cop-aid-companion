@@ -73,7 +73,7 @@ const Index = () => {
       case "opret_sag": return <OpretSag currentUser={currentUser} />;
       case "kr": return <KRRegister />;
       case "koeretoej": return <Koeretoejsregister />;
-      case "flaade": return <FleetManagement currentUser={currentUser} />;
+      case "flaade": return <FleetManagement currentUser={currentUser} isAdmin={isAdmin} />;
       case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return <Efterlysninger />;
       case "nsk": return <NSKAfdeling />;
