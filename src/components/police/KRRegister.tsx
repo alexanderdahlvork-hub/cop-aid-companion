@@ -326,21 +326,7 @@ const KRRegister = () => {
                     size="sm"
                     variant="outline"
                     className="w-full border-warning/30 text-warning hover:bg-warning/10 hover:text-warning"
-                    disabled={updatingStatus}
-                    onClick={async () => {
-                      setUpdatingStatus(true);
-                      try {
-                        await personerApi.update(valgtPerson.id, { status: "eftersøgt" });
-                        const updated = { ...valgtPerson, status: "eftersøgt" as const };
-                        setValgtPerson(updated);
-                        setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-                        toast("Person er nu efterlyst");
-                      } catch (err) {
-                        console.error(err);
-                        toast("Fejl ved efterlysning");
-                      }
-                      setUpdatingStatus(false);
-                    }}
+                    onClick={() => setEfterlysningDialogOpen(true)}
                   >
                     <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
                     Efterlys person
