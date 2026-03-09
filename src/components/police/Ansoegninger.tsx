@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText, Plus, Pencil, Trash2, Check, X, ChevronDown, ChevronRight,
   Send, Clock, CheckCircle2, XCircle, MessageSquare, GripVertical, Eye
