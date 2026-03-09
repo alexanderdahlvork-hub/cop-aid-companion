@@ -19,6 +19,7 @@ import EfterforskningSide from "@/components/police/afdelinger/EfterforskningSid
 import SIGAfdeling from "@/components/police/afdelinger/SIGAfdeling";
 import RemeoAfdeling from "@/components/police/afdelinger/RemeoAfdeling";
 import KortOgGPS from "@/components/police/KortOgGPS";
+import Ansoegninger from "@/components/police/Ansoegninger";
 import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
@@ -79,6 +80,7 @@ const Index = () => {
       case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
       case "kort": return <KortOgGPS />;
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
+      case "ansoegninger": return <Ansoegninger currentUser={currentUser} isAdmin={isAdmin} />;
       case "profil": return (
         <MinProfil
           currentUser={currentUser}

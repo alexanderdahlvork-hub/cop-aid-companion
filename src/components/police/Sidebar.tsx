@@ -3,7 +3,7 @@ import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
   BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
   Building, ChevronDown, ChevronRight, User, Moon, LogOut,
-  Target, Crosshair, Gauge, Heart, FolderOpen, Circle
+  Target, Crosshair, Gauge, Heart, FolderOpen, Circle, FileText as FileTextIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -208,6 +208,13 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
             >
               <User className="w-3.5 h-3.5" /> Min Profil
+            </button>
+
+            <button
+              onClick={() => { setShowProfile(false); onTabChange("ansoegninger"); }}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
+            >
+              <FileTextIcon className="w-3.5 h-3.5" /> Ansøgninger
             </button>
 
             <button
