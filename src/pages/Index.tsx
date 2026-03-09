@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Opslagstavle from "@/components/police/Opslagstavle";
 import Sidebar from "@/components/police/Sidebar";
 import TopHeader from "@/components/police/TopHeader";
 import TabNavigation from "@/components/police/TabNavigation";
@@ -69,7 +70,7 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "forside": return <Dashboard currentUser={currentUser} onTabChange={setActiveTab} />;
-      case "guides": return placeholderTab(BookOpen, "Guides & FAQ", "Hjælp og vejledninger");
+      case "opslagstavle": return <Opslagstavle currentUser={currentUser} isAdmin={isAdmin} />;
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
