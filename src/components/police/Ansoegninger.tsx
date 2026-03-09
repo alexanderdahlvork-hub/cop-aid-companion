@@ -471,12 +471,13 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
   }
 
   // ─── Apply form ────────────────────────────
-  if (view === "ansog" && selectedSkabelon) {
+  if ((view === "ansog" || view === "rediger_indsendelse") && selectedSkabelon) {
+    const isEditing = view === "rediger_indsendelse";
     return (
       <div className="space-y-5 max-w-2xl">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold text-foreground">Ansøg: {selectedSkabelon.titel}</h1>
-          <Button variant="ghost" size="sm" onClick={() => setView("liste")}>
+          <h1 className="text-lg font-bold text-foreground">{isEditing ? "Rediger" : "Ansøg"}: {selectedSkabelon.titel}</h1>
+          <Button variant="ghost" size="sm" onClick={() => { setView("liste"); setActiveTab("mine"); }}>
             <X className="w-4 h-4 mr-1" /> Annuller
           </Button>
         </div>
@@ -508,10 +509,16 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
           ))}
 
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSubmitApplication} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Send className="w-4 h-4 mr-1" /> Indsend ansøgning
-            </Button>
-            <Button variant="outline" onClick={() => setView("liste")}>Annuller</Button>
+            {isEditing ? (
+              <Button onClick={handleSaveEditedIndsendelse} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Check className="w-4 h-4 mr-1" /> Gem ændringer
+              </Button>
+            ) : (
+              <Button onClick={handleSubmitApplication} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Send className="w-4 h-4 mr-1" /> Indsend ansøgning
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => { setView("liste"); setActiveTab("mine"); }}>Annuller</Button>
           </div>
         </div>
       </div>
