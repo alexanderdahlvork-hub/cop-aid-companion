@@ -90,6 +90,7 @@ interface OpretSigtelseDialogProps {
   onSigtelseOprettet: (sigtelse: Sigtelse) => void;
   tidligereKlip?: number;
   currentUser?: { badgeNr: string; fornavn: string; efternavn: string };
+  initialSigtelser?: Sigtelse[];
 }
 
 const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser }: OpretSigtelseDialogProps) => {
