@@ -38,7 +38,6 @@ const sections: SidebarSection[] = [
     icon: Search,
     items: [
       { id: "kr", label: "Personregister", icon: Users },
-      { id: "fleet", label: "Køretøjsregister", icon: Car },
       { id: "ejendomme", label: "Ejendomsregister", icon: Building },
       { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
     ],
@@ -53,10 +52,11 @@ const sections: SidebarSection[] = [
   },
   {
     label: "FLÅDESTYRING",
-    icon: AlertTriangle,
+    icon: Car,
     items: [
-      { id: "efterlysninger", label: "Flådestyring", icon: Radio },
-      { id: "radio", label: "Patruljeenheder", icon: MapPin },
+      { id: "fleet", label: "Køretøjsregister", icon: Car },
+      { id: "flaade", label: "Flådestyring", icon: Radio },
+      { id: "patruljer", label: "Patruljeenheder", icon: MapPin },
     ],
   },
 ];
@@ -94,9 +94,12 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
       </div>
 
       {/* Sections */}
-      <nav className="flex-1 px-3 space-y-5 overflow-y-auto pb-4">
-        {sections.map((section) => (
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto pb-4">
+        {sections.map((section, sectionIdx) => (
           <div key={section.label}>
+            {sectionIdx > 0 && (
+              <div className="my-3 mx-2 border-t border-sidebar-border" />
+            )}
             <div className="flex items-center gap-2 px-2 mb-2">
               <section.icon className="w-3 h-3 text-primary" />
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{section.label}</span>
@@ -125,6 +128,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
         {/* Afdelinger */}
         {visibleAfdelinger.length > 0 && (
           <div>
+            <div className="my-3 mx-2 border-t border-sidebar-border" />
             <div className="flex items-center gap-2 px-2 mb-2">
               <Shield className="w-3 h-3 text-primary" />
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">AFDELINGER</span>
