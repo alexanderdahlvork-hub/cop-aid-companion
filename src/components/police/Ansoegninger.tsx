@@ -477,7 +477,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
       <div className="space-y-5 max-w-2xl">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold text-foreground">{isEditing ? "Rediger" : "Ansøg"}: {selectedSkabelon.titel}</h1>
-          <Button variant="ghost" size="sm" onClick={() => { setView("liste"); setActiveTab("mine"); }}>
+          <Button variant="ghost" size="sm" onClick={() => { setView("liste"); setActiveTab("skabeloner"); }}>
             <X className="w-4 h-4 mr-1" /> Annuller
           </Button>
         </div>
