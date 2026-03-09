@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save } from "lucide-react";
+import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save, Building, Car, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { personerApi, sigtelserApi } from "@/lib/api";
-import type { Person, Sigtelse } from "@/types/police";
+import { personerApi, sigtelserApi, ejendommeApi, koeretoejerApi } from "@/lib/api";
+import type { Person, Sigtelse, Ejendom, Koeretoej } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,8 @@ const KRRegister = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
+  const [ejendomme, setEjendomme] = useState<Ejendom[]>([]);
+  const [koeretoejer, setKoeretoejer] = useState<Koeretoej[]>([]);
   const [redigerSigtelse, setRedigerSigtelse] = useState<Sigtelse | null>(null);
   const [redigerForm, setRedigerForm] = useState<{ haendelsesforloeb: string; konfiskeredeGenstande: string; magtanvendelse: string; erkender: boolean | null; fratagKoerekort: boolean } | null>(null);
   const [gemmerRedigering, setGemmerRedigering] = useState(false);
@@ -40,12 +42,16 @@ const KRRegister = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [personData, sigtelseData] = await Promise.all([
+        const [personData, sigtelseData, ejendomData, koeretoejData] = await Promise.all([
           personerApi.getAll(),
           sigtelserApi.getAll(),
+          ejendommeApi.getAll(),
+          koeretoejerApi.getAll(),
         ]);
         setPersoner(personData);
         setSigtelser(sigtelseData);
+        setEjendomme(ejendomData);
+        setKoeretoejer(koeretoejData);
       } catch (err) {
         console.error("Fejl ved indlæsning:", err);
       } finally {
@@ -315,7 +321,87 @@ const KRRegister = () => {
               <ReadonlyField label="Oprettet" value={valgtPerson.oprettet} />
             </div>
 
-            {/* Sigtelser */}
+            {/* Telefon highlight */}
+            {valgtPerson.telefon && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/15">
+                <Phone className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Telefonnummer</p>
+                  <p className="text-sm font-mono font-semibold text-foreground">{valgtPerson.telefon}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Ejendomme */}
+            {(() => {
+              const personEjendomme = ejendomme.filter(e =>
+                e.ejerCpr === valgtPerson.cpr ||
+                e.ejer.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase()
+              );
+              return (
+                <div className="space-y-2">
+                  <SectionTitle>Ejendomme ({personEjendomme.length})</SectionTitle>
+                  {personEjendomme.length > 0 ? (
+                    <div className="space-y-2">
+                      {personEjendomme.map((ej) => (
+                        <div key={ej.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                          <Building className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{ej.adresse}</p>
+                            <p className="text-xs text-muted-foreground">{ej.postnr} {ej.by}</p>
+                            <div className="flex gap-3 mt-1">
+                              <span className="text-[10px] text-muted-foreground">Matrikel: {ej.matrikelnr}</span>
+                              <span className="text-[10px] text-muted-foreground">Type: {ej.type}</span>
+                              <span className="text-[10px] text-muted-foreground">Vurd.: {ej.vurdering.toLocaleString("da-DK")} kr.</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Ingen ejendomme registreret</p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Køretøjer */}
+            {(() => {
+              const personBiler = koeretoejer.filter(k =>
+                k.tildelt.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase() ||
+                k.tildelt === valgtPerson.cpr
+              );
+              return (
+                <div className="space-y-2">
+                  <SectionTitle>Køretøjer ({personBiler.length})</SectionTitle>
+                  {personBiler.length > 0 ? (
+                    <div className="space-y-2">
+                      {personBiler.map((bil) => (
+                        <div key={bil.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                          <Car className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-mono font-semibold text-foreground">{bil.nummerplade}</span>
+                              {bil.status === "eftersøgt" && (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-destructive/15 text-destructive">Eftersøgt</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{bil.maerke} {bil.model} ({bil.aargang})</p>
+                            <div className="flex gap-3 mt-1">
+                              <span className="text-[10px] text-muted-foreground">Farve: {bil.farve}</span>
+                              <span className="text-[10px] text-muted-foreground">Km: {bil.km.toLocaleString("da-DK")}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Ingen køretøjer registreret</p>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <SectionTitle>Sigtelser</SectionTitle>
