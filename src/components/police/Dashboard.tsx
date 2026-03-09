@@ -48,7 +48,10 @@ const Dashboard = ({ currentUser, onTabChange }: DashboardProps) => {
         {/* Left */}
         <div className="lg:col-span-2 space-y-5">
           {/* Efterlyste */}
-          <div className="bg-card border border-border rounded-lg p-5">
+          <button
+            onClick={() => onTabChange?.("efterlysninger")}
+            className="w-full bg-card border border-border rounded-lg p-5 text-left hover:bg-muted/30 transition-colors cursor-pointer"
+          >
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-warning" />
               <h3 className="text-base font-bold text-foreground">Efterlyste Personer</h3>
@@ -63,7 +66,7 @@ const Dashboard = ({ currentUser, onTabChange }: DashboardProps) => {
                 <p className="text-sm text-muted-foreground">aktive efterlysninger i registeret</p>
               </div>
             )}
-          </div>
+          </button>
 
           {/* Seneste aktivitet */}
           <div className="bg-card border border-border rounded-lg p-5">
