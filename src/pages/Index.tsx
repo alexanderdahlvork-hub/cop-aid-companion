@@ -20,6 +20,7 @@ import SIGAfdeling from "@/components/police/afdelinger/SIGAfdeling";
 import RemeoAfdeling from "@/components/police/afdelinger/RemeoAfdeling";
 import KortOgGPS from "@/components/police/KortOgGPS";
 import Ansoegninger from "@/components/police/Ansoegninger";
+import Koeretoejsregister from "@/components/police/Koeretoejsregister";
 import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
@@ -69,7 +70,7 @@ const Index = () => {
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
       case "kr": return <KRRegister />;
-      case "fleet": return <FleetManagement />;
+      case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement />;
       case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return <Efterlysninger />;
