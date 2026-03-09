@@ -647,7 +647,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
             </Button>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs">Annuller</Button>
-              <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
+              <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0 || erkender === null}
                 className="h-8 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-1.5">
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scale className="w-3.5 h-3.5" />}
                 Opret sigtelse
