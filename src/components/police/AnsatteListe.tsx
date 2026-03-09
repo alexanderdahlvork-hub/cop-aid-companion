@@ -349,7 +349,7 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Stilling</Label>
-                <Select value={newRang} onValueChange={setNewRang}>
+                <Select value={newRang} onValueChange={handleRangChange}>
                   <SelectTrigger className="mt-1 bg-secondary border-border">
                     <SelectValue placeholder="Vælg rang" />
                   </SelectTrigger>
