@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase,
-  Star, ChevronDown, ChevronRight, CheckCircle2
+  Star, ChevronDown, ChevronRight, CheckCircle2, X
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -363,15 +363,34 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
                   <p className="text-sm font-medium text-foreground">{a.skabelonTitel}</p>
                   <p className="text-xs text-muted-foreground">{a.dato}</p>
                 </div>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  a.status === "godkendt"
-                    ? "bg-success/15 text-success"
-                    : a.status === "afvist"
-                    ? "bg-destructive/15 text-destructive"
-                    : "bg-warning/15 text-warning"
-                }`}>
-                  {a.status === "godkendt" ? "Godkendt" : a.status === "afvist" ? "Afvist" : "Afventer"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    a.status === "godkendt"
+                      ? "bg-success/15 text-success"
+                      : a.status === "afvist"
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-warning/15 text-warning"
+                  }`}>
+                    {a.status === "godkendt" ? "Godkendt" : a.status === "afvist" ? "Afvist" : "Afventer"}
+                  </span>
+                  {a.status === "afventer" && (
+                    <button
+                      onClick={() => {
+                        const stored = localStorage.getItem("ansoegninger_indsendelser");
+                        if (stored) {
+                          const all = JSON.parse(stored).filter((i: any) => i.id !== a.id);
+                          localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(all));
+                          setAnsoegninger(ansoegninger.filter(x => x.id !== a.id));
+                          toast("Ansøgning trukket tilbage");
+                        }
+                      }}
+                      className="p-1 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Træk tilbage"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))
           )}
