@@ -87,6 +87,7 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
       efternavn: newEfternavn,
       rang: newRang,
       uddannelser: newUddannelser,
+      certifikater: newCertifikater,
       tilladelser: newTilladelser,
       kodeord: "1234",
       foersteLogin: true,
