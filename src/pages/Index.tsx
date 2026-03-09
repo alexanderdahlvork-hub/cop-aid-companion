@@ -24,7 +24,7 @@ import Koeretoejsregister from "@/components/police/Koeretoejsregister";
 import OpretSag from "@/components/police/OpretSag";
 import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
-import type { Betjent } from "@/types/police";
+import type { Betjent, Sigtelse } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
   <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3 min-h-[400px]">
@@ -40,6 +40,8 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [krInitialPersonId, setKrInitialPersonId] = useState<string | null>(null);
+  const [sagInitialPersonId, setSagInitialPersonId] = useState<string | null>(null);
+  const [sagInitialSigtelser, setSagInitialSigtelser] = useState<Sigtelse[]>([]);
 
   const handleLogin = (betjent: Betjent, admin: boolean) => {
     setCurrentUser(betjent);
@@ -71,12 +73,12 @@ const Index = () => {
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
-      case "opret_sag": return <OpretSag currentUser={currentUser} />;
+      case "opret_sag": return <OpretSag currentUser={currentUser} initialPersonId={sagInitialPersonId} initialSigtelser={sagInitialSigtelser} />;
       case "kr": return <KRRegister initialPersonId={krInitialPersonId} />;
       case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement currentUser={currentUser} isAdmin={isAdmin} />;
       case "ejendomme": return <Ejendomsregister />;
-      case "efterlysninger": return <Efterlysninger onSigtPerson={(personId) => { setKrInitialPersonId(personId); setActiveTab("kr"); }} />;
+      case "efterlysninger": return <Efterlysninger onSigtPerson={(personId, sigtelser) => { setSagInitialPersonId(personId); setSagInitialSigtelser(sigtelser); setActiveTab("opret_sag"); }} />;
       case "nsk": return <NSKAfdeling />;
       case "lima": return <LimaAfdeling />;
       case "faerdsel": return <FaerdselAfdeling />;

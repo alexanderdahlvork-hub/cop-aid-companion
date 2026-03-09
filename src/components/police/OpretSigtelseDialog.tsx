@@ -90,9 +90,10 @@ interface OpretSigtelseDialogProps {
   onSigtelseOprettet: (sigtelse: Sigtelse) => void;
   tidligereKlip?: number;
   currentUser?: { badgeNr: string; fornavn: string; efternavn: string };
+  initialSigtelser?: Sigtelse[];
 }
 
-const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser }: OpretSigtelseDialogProps) => {
+const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser, initialSigtelser }: OpretSigtelseDialogProps) => {
   const [betjente, setBetjente] = useState<Betjent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -145,6 +146,46 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
     setKonfiskeretInput(""); setKonfiskeredeGenstande([]);
     setMagtInput(""); setMagtmidler([]);
 
+    // Pre-fill from initialSigtelser if provided
+    if (initialSigtelser && initialSigtelser.length > 0) {
+      // Collect all charges from the existing sigtelser
+      const allBoeder: SigtelseBoede[] = [];
+      initialSigtelser.forEach(sig => {
+        sig.sigtelseBoeder.forEach(b => {
+          if (!allBoeder.find(existing => existing.boedeId === b.boedeId)) {
+            allBoeder.push({ ...b });
+          }
+        });
+      });
+      setValgteBoeder(allBoeder);
+      setStraffeOpen(true);
+
+      // Pre-fill rapport from the first sigtelse that has content
+      const rapportSig = initialSigtelser.find(s => s.rapport?.haendelsesforloeb);
+      if (rapportSig) {
+        setHaendelse(rapportSig.rapport.haendelsesforloeb);
+      }
+      const konfSig = initialSigtelser.find(s => s.rapport?.konfiskeredeGenstande);
+      if (konfSig) {
+        setKonfiskeret(konfSig.rapport.konfiskeredeGenstande);
+        const items = konfSig.rapport.konfiskeredeGenstande.split(",").map(s => s.trim()).filter(Boolean);
+        setKonfiskeredeGenstande(items);
+        setKonfiskeretOpen(true);
+      }
+      const magtSig = initialSigtelser.find(s => s.rapport?.magtanvendelse);
+      if (magtSig) {
+        setMagt(magtSig.rapport.magtanvendelse);
+        const items = magtSig.rapport.magtanvendelse.split(",").map(s => s.trim()).filter(Boolean);
+        setMagtmidler(items);
+        setMagtOpen(true);
+      }
+      // Pre-fill skabelon answers
+      const skabelonSig = initialSigtelser.find(s => s.rapport?.skabelonSvar && Object.keys(s.rapport.skabelonSvar).length > 0);
+      if (skabelonSig?.rapport?.skabelonSvar) {
+        setSkabelonSvar(skabelonSig.rapport.skabelonSvar);
+      }
+    }
+
     // Then load betjente and auto-select current user
     setLoadingData(true);
     betjenteApi.getAll()
@@ -159,7 +200,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
       })
       .catch(console.error)
       .finally(() => setLoadingData(false));
-  }, [open, currentUser]);
+  }, [open, currentUser, initialSigtelser]);
 
   const totalBoede = valgteBoeder.reduce((s, b) => s + b.beloeb, 0);
   const totalKlip = valgteBoeder.reduce((s, b) => {

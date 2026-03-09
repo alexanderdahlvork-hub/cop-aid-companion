@@ -10,7 +10,7 @@ import type { Person, Koeretoej, Sigtelse } from "@/types/police";
 type Tab = "personer" | "koeretoejer";
 
 interface EfterlysningerProps {
-  onSigtPerson?: (personId: string) => void;
+  onSigtPerson?: (personId: string, sigtelser: Sigtelse[]) => void;
 }
 
 const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
@@ -197,7 +197,7 @@ const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
         {/* Detail panel */}
         <div className="hidden lg:block flex-1">
           {tab === "personer" && valgtPerson ? (
-            <PersonDetalje person={valgtPerson} sigtelser={getPersonSigtelser(valgtPerson.id)} onSigtPerson={onSigtPerson} />
+            <PersonDetalje person={valgtPerson} sigtelser={getPersonSigtelser(valgtPerson.id)} onSigtPerson={onSigtPerson} allSigtelser={sigtelser} />
           ) : tab === "koeretoejer" && valgtKoeretoj ? (
             <Card className="h-full">
               <CardHeader className="pb-4">
@@ -259,7 +259,7 @@ const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
 };
 
 /** Detail view for a wanted person, including sigtelser/charges */
-const PersonDetalje = ({ person, sigtelser, onSigtPerson }: { person: Person; sigtelser: Sigtelse[]; onSigtPerson?: (personId: string) => void }) => {
+const PersonDetalje = ({ person, sigtelser, onSigtPerson, allSigtelser }: { person: Person; sigtelser: Sigtelse[]; onSigtPerson?: (personId: string, sigtelser: Sigtelse[]) => void; allSigtelser: Sigtelse[] }) => {
   const totalBoede = sigtelser.reduce((s, sig) => s + sig.totalBoede, 0);
   const totalFaengsel = sigtelser.reduce((s, sig) => s + sig.faengselMaaneder, 0);
   // Find the efterlysning-typed sigtelse for begrundelse
@@ -275,8 +275,8 @@ const PersonDetalje = ({ person, sigtelser, onSigtPerson }: { person: Person; si
             <span className="text-sm text-warning font-semibold">AKTIV EFTERLYSNING — PERSON</span>
           </div>
           {onSigtPerson && (
-            <button
-              onClick={() => onSigtPerson(person.id)}
+             <button
+              onClick={() => onSigtPerson(person.id, sigtelser)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
             >
               <Gavel className="w-3.5 h-3.5" />
