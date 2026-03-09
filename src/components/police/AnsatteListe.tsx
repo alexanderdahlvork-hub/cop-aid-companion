@@ -116,9 +116,28 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     setCertSearch("");
   };
 
+  // Standard certifikater og uddannelser alle betjente skal have
+  const standardCertifikater = [
+    "Våbencertifikat A (Pistol)",
+    "Udrykningscertifikat",
+    "Blålyskørsel Niveau 1",
+    "Førstehjælpscertifikat",
+    "Alkometer-certifikat",
+    "Radarcertifikat",
+  ];
+
+  const standardUddannelser = [
+    "Grunduddannelse (PG)",
+    "Politiets Grundkursus",
+    "Kommunikation & Konflikthåndtering",
+    "Første-respondent Uddannelse",
+  ];
+
   const handleRangChange = (rang: string) => {
     setNewRang(rang);
     setNewTilladelser(getDefaultTilladelser(rang));
+    setNewCertifikater(standardCertifikater);
+    setNewUddannelser(standardUddannelser);
   };
 
   const handleAddUddannelse = async () => {
