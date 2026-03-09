@@ -10,6 +10,8 @@ import { sigtelserApi } from "@/lib/api";
 
 interface OpretSagProps {
   currentUser: { badgeNr: string; fornavn: string; efternavn: string };
+  initialPersonId?: string | null;
+  initialSigtelser?: Sigtelse[];
 }
 
 const OpretSag = ({ currentUser }: OpretSagProps) => {
