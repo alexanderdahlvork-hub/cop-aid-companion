@@ -620,7 +620,6 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
         {[
           { id: "skabeloner" as const, label: "Ansøgninger", count: skabeloner.filter(s => s.aktiv).length },
           ...(canManage ? [{ id: "indsendelser" as const, label: "Indsendte", count: afventendeIndsendelser.length }] : []),
-          { id: "mine" as const, label: "Mine ansøgninger", count: mineIndsendelser.length },
         ].map((tab) => (
           <button
             key={tab.id}
