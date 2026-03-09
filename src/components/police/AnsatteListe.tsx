@@ -16,7 +16,7 @@ interface AnsatteListeProps {
   isAdmin: boolean;
 }
 
-const uddannelserOptions = ["Betjent", "Civil", "Romeo", "Helikopter", "LIMA", "LIMA-A", "K9", "SRT", "Teknik", "Efterforskning"];
+
 
 const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   const [ansatte, setAnsatte] = useState<Betjent[]>([]);
