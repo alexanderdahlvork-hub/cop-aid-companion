@@ -42,12 +42,16 @@ const KRRegister = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [personData, sigtelseData] = await Promise.all([
+        const [personData, sigtelseData, ejendomData, koeretoejData] = await Promise.all([
           personerApi.getAll(),
           sigtelserApi.getAll(),
+          ejendommeApi.getAll(),
+          koeretoejerApi.getAll(),
         ]);
         setPersoner(personData);
         setSigtelser(sigtelseData);
+        setEjendomme(ejendomData);
+        setKoeretoejer(koeretoejData);
       } catch (err) {
         console.error("Fejl ved indlæsning:", err);
       } finally {
