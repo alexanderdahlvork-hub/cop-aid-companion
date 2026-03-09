@@ -582,6 +582,54 @@ const KRRegister = () => {
         />
       )}
 
+      {valgtPerson && (
+        <EfterlysningDialog
+          open={efterlysningDialogOpen}
+          onOpenChange={setEfterlysningDialogOpen}
+          person={valgtPerson}
+          onEfterlysningOprettet={async (data) => {
+            try {
+              // Set person as eftersøgt
+              await personerApi.update(valgtPerson.id, { status: "eftersøgt" });
+              const updated = { ...valgtPerson, status: "eftersøgt" as const };
+              setValgtPerson(updated);
+              setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+
+              // Create a sigtelse for the charges if any were selected
+              if (data.sigtelseBoeder.length > 0) {
+                const sig: Sigtelse = {
+                  id: Date.now().toString(),
+                  personId: valgtPerson.id,
+                  personNavn: `${valgtPerson.fornavn} ${valgtPerson.efternavn}`,
+                  personCpr: valgtPerson.cpr,
+                  dato: new Date().toISOString().split("T")[0],
+                  sigtelseBoeder: data.sigtelseBoeder,
+                  totalBoede: data.totalBoede,
+                  faengselMaaneder: data.totalFaengsel,
+                  fratagKoerekort: false,
+                  erkender: null,
+                  involveretBetjente: [],
+                  rapport: {
+                    haendelsesforloeb: data.begrundelse,
+                    konfiskeredeGenstande: "",
+                    magtanvendelse: "",
+                  },
+                  skabelonType: "Efterlysning",
+                  sagsStatus: "aaben",
+                };
+                await sigtelserApi.create(sig);
+                setSigtelser((prev) => [sig, ...prev]);
+              }
+
+              toast("Efterlysning oprettet");
+            } catch (err) {
+              console.error("Fejl ved oprettelse af efterlysning:", err);
+              toast("Fejl ved oprettelse af efterlysning");
+            }
+          }}
+        />
+      )}
+
       {/* Rediger sigtelse dialog */}
       <Dialog open={!!redigerSigtelse} onOpenChange={(open) => { if (!open) { setRedigerSigtelse(null); setRedigerForm(null); } }}>
         <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0 gap-0">
