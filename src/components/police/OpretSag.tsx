@@ -14,7 +14,7 @@ interface OpretSagProps {
   initialSigtelser?: Sigtelse[];
 }
 
-const OpretSag = ({ currentUser }: OpretSagProps) => {
+const OpretSag = ({ currentUser, initialPersonId, initialSigtelser }: OpretSagProps) => {
   const [personer, setPersoner] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -23,10 +23,19 @@ const OpretSag = ({ currentUser }: OpretSagProps) => {
 
   useEffect(() => {
     personerApi.getAll()
-      .then(setPersoner)
+      .then((data) => {
+        setPersoner(data);
+        if (initialPersonId) {
+          const found = data.find(p => p.id === initialPersonId);
+          if (found) {
+            setSelectedPerson(found);
+            setShowSigtelse(true);
+          }
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialPersonId]);
 
   const filtered = personer.filter((p) => {
     const q = search.toLowerCase();
