@@ -217,6 +217,7 @@ function rowToSigtelse(row: SigtelseRow): Sigtelse {
     involveretBetjente: JSON.parse(row.involveretBetjente || "[]"),
     rapport: JSON.parse(row.rapport || "{}"),
     skabelonType: row.skabelonType,
+    sagsStatus: (row.sagsStatus as Sigtelse['sagsStatus']) || 'aaben',
   };
 }
 
