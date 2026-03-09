@@ -38,6 +38,7 @@ const sections: SidebarSection[] = [
     icon: Search,
     items: [
       { id: "kr", label: "Personregister", icon: Users },
+      { id: "koeretoej", label: "Køretøjsregister", icon: Car },
       { id: "ejendomme", label: "Ejendomsregister", icon: Building },
       { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
     ],
