@@ -29,7 +29,7 @@ const sections: SidebarSection[] = [
     icon: Circle,
     items: [
       { id: "forside", label: "Forside", icon: Home },
-      { id: "guides", label: "Seneste Sager", icon: FileText },
+      { id: "opslagstavle", label: "Opslagstavle", icon: FileText },
       { id: "kort", label: "Aktiv Patrulje", icon: Radio },
     ],
   },

@@ -70,7 +70,7 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "forside": return <Dashboard currentUser={currentUser} onTabChange={setActiveTab} />;
-      case "guides": return placeholderTab(BookOpen, "Guides & FAQ", "Hjælp og vejledninger");
+      case "opslagstavle": return <Opslagstavle currentUser={currentUser} isAdmin={isAdmin} />;
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
