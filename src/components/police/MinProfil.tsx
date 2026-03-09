@@ -316,7 +316,7 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
             (baseret på rang: {currentUser.rang})
           </span>
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           {availablePermissions.map((perm) => {
             const hasAccess = effectiveTilladelser.includes(perm.id);
             const isRankDefault = rankDefaults.includes(perm.id);
