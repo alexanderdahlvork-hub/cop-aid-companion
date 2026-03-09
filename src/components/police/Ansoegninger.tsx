@@ -277,7 +277,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     ));
     toast("Ansøgning opdateret");
     setView("liste");
-    setActiveTab("mine");
+    setActiveTab("skabeloner");
   };
 
   const handleApprove = async (id: string, kommentar: string) => {
