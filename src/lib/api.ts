@@ -197,6 +197,7 @@ interface SigtelseRow {
   involveretBetjente: string; // JSON
   rapport: string; // JSON
   skabelonType?: string;
+  sagsStatus?: string;
 }
 
 import type { Sigtelse } from "@/types/police";
@@ -216,6 +217,7 @@ function rowToSigtelse(row: SigtelseRow): Sigtelse {
     involveretBetjente: JSON.parse(row.involveretBetjente || "[]"),
     rapport: JSON.parse(row.rapport || "{}"),
     skabelonType: row.skabelonType,
+    sagsStatus: (row.sagsStatus as Sigtelse['sagsStatus']) || 'aaben',
   };
 }
 
@@ -234,6 +236,7 @@ function sigtelseToRow(s: Sigtelse): Record<string, any> {
     involveretBetjente: JSON.stringify(s.involveretBetjente),
     rapport: JSON.stringify(s.rapport),
     skabelonType: s.skabelonType || "",
+    sagsStatus: s.sagsStatus || "aaben",
   };
 }
 
@@ -254,6 +257,7 @@ export const sigtelserApi = {
     if (data.rapport !== undefined) row.rapport = JSON.stringify(data.rapport);
     if (data.erkender !== undefined) row.erkender = data.erkender === null ? null : data.erkender ? 1 : 0;
     if (data.fratagKoerekort !== undefined) row.fratagKoerekort = data.fratagKoerekort ? 1 : 0;
+    if (data.sagsStatus !== undefined) row.sagsStatus = data.sagsStatus;
     await update("sigtelser", id, row);
   },
   async remove(id: string): Promise<void> {

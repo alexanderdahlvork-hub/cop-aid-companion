@@ -83,6 +83,8 @@ export interface FyretMedarbejder {
   fyretAf: string;
 }
 
+export type SagsStatus = 'aaben' | 'under_efterforskning' | 'afventer_retten' | 'lukket';
+
 export interface Sigtelse {
   id: string;
   personId: string;
@@ -97,6 +99,7 @@ export interface Sigtelse {
   involveretBetjente: string[];
   rapport: SigtelseRapport;
   skabelonType?: string;
+  sagsStatus: SagsStatus;
 }
 
 export interface SigtelseBoede {

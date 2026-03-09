@@ -99,7 +99,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [fratagKoerekort, setFratagKoerekort] = useState(false);
   const [erkender, setErkender] = useState<boolean | null>(null);
   const [valgteBetjente, setValgteBetjente] = useState<string[]>([]);
-
+  const [sagsStatus, setSagsStatus] = useState<import("@/types/police").SagsStatus>("aaben");
   const [haendelse, setHaendelse] = useState("");
   const [konfiskeret, setKonfiskeret] = useState("");
   const [magt, setMagt] = useState("");
@@ -208,9 +208,13 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
       skabelonSvar: valgtSkabelon ? skabelonSvar : undefined,
     },
     skabelonType: valgtSkabelon?.id,
+    sagsStatus,
   });
 
   const handleSubmit = () => {
+    if (erkender === null) {
+      return;
+    }
     setSaving(true);
     if (totalKlip > 0 && !showKlipPopup) {
       setShowKlipPopup(true);
@@ -559,19 +563,38 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
               {/* === Øvrige oplysninger === */}
               <SectionBlock title="Øvrige oplysninger" icon={<FileText className="w-4 h-4" />}>
-                <div className="flex items-center justify-between">
+                {/* Sagsstatus */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Sagsstatus</Label>
+                  <div className="flex gap-1.5">
+                    {([
+                      { value: "aaben", label: "Åben", color: "bg-success/15 text-success border-success/20" },
+                      { value: "under_efterforskning", label: "Under efterforskning", color: "bg-primary/15 text-primary border-primary/20" },
+                      { value: "afventer_retten", label: "Afventer retten", color: "bg-warning/15 text-warning border-warning/20" },
+                      { value: "lukket", label: "Lukket", color: "bg-muted text-muted-foreground border-border" },
+                    ] as const).map((s) => (
+                      <button key={s.value} onClick={() => setSagsStatus(s.value)}
+                        className={cn("px-3 py-1.5 rounded-md border text-[11px] font-medium transition-all",
+                          sagsStatus === s.value ? s.color : "border-border text-muted-foreground hover:bg-muted/30"
+                        )}>
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/30 border border-border">
                     <Checkbox checked={fratagKoerekort} onCheckedChange={(v) => setFratagKoerekort(!!v)} id="koerekort2" />
                     <label htmlFor="koerekort2" className="text-xs font-medium cursor-pointer whitespace-nowrap">Fratag kørekort</label>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground mr-1">Erkender</span>
+                    <span className={cn("text-xs mr-1", erkender === null ? "text-destructive font-semibold" : "text-muted-foreground")}>
+                      Erkender {erkender === null && "*"}
+                    </span>
                     <Button size="sm" variant={erkender === true ? "default" : "outline"} onClick={() => setErkender(true)}
                       className={cn("h-8 w-8 p-0", erkender === true && "bg-success hover:bg-success/90")}>
                       <Check className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setErkender(null)} className="h-8 w-8 p-0">
-                      <ChevronDown className="w-4 h-4" />
                     </Button>
                     <Button size="sm" variant={erkender === false ? "default" : "outline"} onClick={() => setErkender(false)}
                       className={cn("h-8 w-8 p-0", erkender === false && "bg-destructive hover:bg-destructive/90")}>
@@ -579,6 +602,9 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                     </Button>
                   </div>
                 </div>
+                {erkender === null && (
+                  <p className="text-[10px] text-destructive mt-1">* Du skal angive om personen erkender eller ej</p>
+                )}
               </SectionBlock>
 
             </div>
@@ -621,7 +647,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
             </Button>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs">Annuller</Button>
-              <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0}
+              <Button size="sm" onClick={handleSubmit} disabled={saving || valgteBoeder.length === 0 || erkender === null}
                 className="h-8 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-1.5">
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scale className="w-3.5 h-3.5" />}
                 Opret sigtelse
