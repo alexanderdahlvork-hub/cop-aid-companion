@@ -258,6 +258,9 @@ export const sigtelserApi = {
     if (data.erkender !== undefined) row.erkender = data.erkender === null ? null : data.erkender ? 1 : 0;
     if (data.fratagKoerekort !== undefined) row.fratagKoerekort = data.fratagKoerekort ? 1 : 0;
     if (data.sagsStatus !== undefined) row.sagsStatus = data.sagsStatus;
+    if (data.sigtelseBoeder !== undefined) row.sigtelseBoeder = JSON.stringify(data.sigtelseBoeder);
+    if (data.totalBoede !== undefined) row.totalBoede = data.totalBoede;
+    if (data.faengselMaaneder !== undefined) row.faengselMaaneder = data.faengselMaaneder;
     await update("sigtelser", id, row);
   },
   async remove(id: string): Promise<void> {
