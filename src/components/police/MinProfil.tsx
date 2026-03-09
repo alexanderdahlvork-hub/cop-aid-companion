@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase,
   Star, ChevronDown, ChevronRight, CheckCircle2
@@ -76,11 +76,17 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  // Mock applications
-  const ansoegninger = [
-    { id: 1, titel: "Ansøgning om forfremmelse", status: "Afventer", dato: "2025-12-01" },
-    { id: 2, titel: "Kursus: Avanceret efterforskning", status: "Godkendt", dato: "2025-11-15" },
-  ];
+  const [ansoegninger, setAnsoegninger] = useState<{ id: string; skabelonTitel: string; status: string; dato: string }[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("ansoegninger_indsendelser");
+    if (stored) {
+      try {
+        const all = JSON.parse(stored) as { id: string; skabelonTitel: string; ansoegerBadge: string; status: string; dato: string }[];
+        setAnsoegninger(all.filter(a => a.ansoegerBadge === currentUser.badgeNr));
+      } catch { /* ignore */ }
+    }
+  }, [currentUser.badgeNr]);
 
   return (
     <div className="space-y-6 w-full">
@@ -348,21 +354,27 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
           <FileText className="w-4 h-4 text-primary" /> Mine Ansøgninger
         </h2>
         <div className="space-y-2">
-          {ansoegninger.map((a) => (
-            <div key={a.id} className="flex items-center justify-between px-3 py-2.5 rounded-md bg-secondary/50 border border-border">
-              <div>
-                <p className="text-sm font-medium text-foreground">{a.titel}</p>
-                <p className="text-xs text-muted-foreground">{a.dato}</p>
+          {ansoegninger.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">Du har ingen ansøgninger endnu</p>
+          ) : (
+            ansoegninger.map((a) => (
+              <div key={a.id} className="flex items-center justify-between px-3 py-2.5 rounded-md bg-secondary/50 border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{a.skabelonTitel}</p>
+                  <p className="text-xs text-muted-foreground">{a.dato}</p>
+                </div>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  a.status === "godkendt"
+                    ? "bg-success/15 text-success"
+                    : a.status === "afvist"
+                    ? "bg-destructive/15 text-destructive"
+                    : "bg-warning/15 text-warning"
+                }`}>
+                  {a.status === "godkendt" ? "Godkendt" : a.status === "afvist" ? "Afvist" : "Afventer"}
+                </span>
               </div>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                a.status === "Godkendt"
-                  ? "bg-success/15 text-success"
-                  : "bg-warning/15 text-warning"
-              }`}>
-                {a.status}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
