@@ -56,7 +56,6 @@ const sections: SidebarSection[] = [
     label: "FLÅDESTYRING",
     icon: Car,
     items: [
-      { id: "fleet", label: "Køretøjsregister", icon: Car },
       { id: "flaade", label: "Flådestyring", icon: Radio },
       { id: "patruljer", label: "Patruljeenheder", icon: MapPin },
     ],
