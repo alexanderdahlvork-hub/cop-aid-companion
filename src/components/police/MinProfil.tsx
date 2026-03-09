@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase } from "lucide-react";
+import {
+  Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase,
+  Star, ChevronDown, ChevronRight, CheckCircle2
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
 import { toast } from "@/components/ui/sonner";
+import { getDefaultTilladelser, availablePermissions } from "@/lib/permissions";
 
 interface MinProfilProps {
   currentUser: Betjent;
@@ -16,12 +20,12 @@ interface MinProfilProps {
 const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
   const [imageUrl, setImageUrl] = useState(currentUser.profilBillede || "");
   const [savingImage, setSavingImage] = useState(false);
-
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [passError, setPassError] = useState("");
   const [savingPass, setSavingPass] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const handleSaveImage = async () => {
     setSavingImage(true);
@@ -63,14 +67,23 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
     setSavingPass(false);
   };
 
-  // Mock applications data
+  // Compute effective permissions (user's own + rank defaults)
+  const rankDefaults = getDefaultTilladelser(currentUser.rang);
+  const userTilladelser = currentUser.tilladelser || [];
+  const effectiveTilladelser = [...new Set([...rankDefaults, ...userTilladelser])];
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  // Mock applications
   const ansoegninger = [
     { id: 1, titel: "Ansøgning om forfremmelse", status: "Afventer", dato: "2025-12-01" },
     { id: 2, titel: "Kursus: Avanceret efterforskning", status: "Godkendt", dato: "2025-11-15" },
   ];
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl">
       {/* Profile header */}
       <div className="bg-card border border-border rounded-lg p-6">
         <div className="flex items-start gap-5">
@@ -106,6 +119,12 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
                   {currentUser.afdeling}
                 </span>
               )}
+              {(currentUser.titler || []).map((titel, i) => (
+                <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent-foreground text-xs font-medium">
+                  <Star className="w-3 h-3 text-warning" />
+                  {titel}
+                </span>
+              ))}
             </div>
           </div>
           <div className="text-right">
@@ -199,40 +218,127 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
         </div>
       </div>
 
-      {/* Certificates & permissions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Uddannelser & Certifikater & Titler */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Uddannelser */}
         <div className="bg-card border border-border rounded-lg p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Award className="w-4 h-4 text-warning" /> Uddannelser & Certifikater
-          </h2>
-          {currentUser.uddannelser.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {currentUser.uddannelser.map((u, i) => (
+          <button
+            onClick={() => toggleSection("udd")}
+            className="w-full flex items-center justify-between"
+          >
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Award className="w-4 h-4 text-warning" /> Uddannelser
+            </h2>
+            {expandedSection === "udd" ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex flex-wrap gap-1.5">
+            {currentUser.uddannelser.length > 0 ? (
+              currentUser.uddannelser.map((u, i) => (
                 <span key={i} className="px-2 py-1 rounded-md bg-warning/10 text-warning text-xs font-medium border border-warning/20">
                   {u}
                 </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">Ingen uddannelser registreret</p>
-          )}
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">Ingen uddannelser</p>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground">{currentUser.uddannelser.length} uddannelse(r)</p>
         </div>
 
+        {/* Certifikater */}
         <div className="bg-card border border-border rounded-lg p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <BadgeCheck className="w-4 h-4 text-accent" /> Tilladelser
-          </h2>
-          {currentUser.tilladelser && currentUser.tilladelser.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {currentUser.tilladelser.map((t, i) => (
-                <span key={i} className="px-2 py-1 rounded-md bg-accent/10 text-accent text-xs font-medium border border-accent/20">
+          <button
+            onClick={() => toggleSection("cert")}
+            className="w-full flex items-center justify-between"
+          >
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-success" /> Certifikater
+            </h2>
+            {expandedSection === "cert" ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex flex-wrap gap-1.5">
+            {(currentUser.certifikater || []).length > 0 ? (
+              (currentUser.certifikater || []).map((c, i) => (
+                <span key={i} className="px-2 py-1 rounded-md bg-success/10 text-success text-xs font-medium border border-success/20">
+                  {c}
+                </span>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">Ingen certifikater</p>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground">{(currentUser.certifikater || []).length} certifikat(er)</p>
+        </div>
+
+        {/* Titler */}
+        <div className="bg-card border border-border rounded-lg p-5 space-y-3">
+          <button
+            onClick={() => toggleSection("titler")}
+            className="w-full flex items-center justify-between"
+          >
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Star className="w-4 h-4 text-primary" /> Titler & Specialroller
+            </h2>
+            {expandedSection === "titler" ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex flex-wrap gap-1.5">
+            {(currentUser.titler || []).length > 0 ? (
+              (currentUser.titler || []).map((t, i) => (
+                <span key={i} className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium border border-primary/20">
                   {t}
                 </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">Ingen specielle tilladelser</p>
-          )}
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">Ingen titler tildelt</p>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground">{(currentUser.titler || []).length} titel(er)</p>
+        </div>
+      </div>
+
+      {/* Tilladelser */}
+      <div className="bg-card border border-border rounded-lg p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <BadgeCheck className="w-4 h-4 text-accent-foreground" /> Tilladelser
+          <span className="text-[10px] text-muted-foreground font-normal ml-1">
+            (baseret på rang: {currentUser.rang})
+          </span>
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {availablePermissions.map((perm) => {
+            const hasAccess = effectiveTilladelser.includes(perm.id);
+            const isRankDefault = rankDefaults.includes(perm.id);
+            return (
+              <div
+                key={perm.id}
+                className={`px-3 py-2 rounded-md border text-xs transition-colors ${
+                  hasAccess
+                    ? "bg-success/10 border-success/30 text-success"
+                    : "bg-muted/30 border-border text-muted-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${hasAccess ? "bg-success" : "bg-muted-foreground/40"}`} />
+                  <span className="font-medium">{perm.label}</span>
+                </div>
+                {isRankDefault && hasAccess && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Standard for rang</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

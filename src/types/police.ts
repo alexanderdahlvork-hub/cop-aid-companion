@@ -32,6 +32,8 @@ export interface Betjent {
   efternavn: string;
   rang: string;
   uddannelser: string[];
+  certifikater?: string[];
+  titler?: string[];
   afdeling?: string;
   tilladelser?: string[];
   kodeord: string;

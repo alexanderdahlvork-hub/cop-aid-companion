@@ -1,4 +1,4 @@
-import { rangOrder } from "@/data/ansatte";
+import { rangOrder, defaultTilladelserPerRang } from "@/data/ansatte";
 
 export const getRangIndex = (rang: string): number => {
   const idx = rangOrder.indexOf(rang);
@@ -35,6 +35,10 @@ export const canEditOfficer = (userRang: string, targetRang: string, admin: bool
   return getRangIndex(userRang) < getRangIndex(targetRang);
 };
 
+export const getDefaultTilladelser = (rang: string): string[] => {
+  return defaultTilladelserPerRang[rang] || ["kr_read", "rapporter", "radio"];
+};
+
 export interface BetjentPermission {
   id: string;
   label: string;
@@ -49,4 +53,8 @@ export const availablePermissions: BetjentPermission[] = [
   { id: "rapporter", label: "Rapporter", beskrivelse: "Kan oprette og læse rapporter" },
   { id: "radio", label: "Kommunikation", beskrivelse: "Adgang til radiosystemet" },
   { id: "kort", label: "Kort & GPS", beskrivelse: "Adgang til kort og GPS tracking" },
+  { id: "admin_panel", label: "Admin Panel", beskrivelse: "Adgang til administratorpanelet" },
+  { id: "ansatte_manage", label: "Ansatte Styring", beskrivelse: "Kan oprette og redigere ansatte" },
+  { id: "afdelinger_manage", label: "Afdelinger Styring", beskrivelse: "Kan administrere afdelinger" },
+  { id: "efterlysninger_manage", label: "Efterlysninger", beskrivelse: "Kan oprette og fjerne efterlysninger" },
 ];
