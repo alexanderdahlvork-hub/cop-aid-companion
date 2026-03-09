@@ -37,8 +37,11 @@ const KRRegister = () => {
   const [ejendomme, setEjendomme] = useState<Ejendom[]>([]);
   const [koeretoejer, setKoeretoejer] = useState<Koeretoej[]>([]);
   const [redigerSigtelse, setRedigerSigtelse] = useState<Sigtelse | null>(null);
-  const [redigerForm, setRedigerForm] = useState<{ haendelsesforloeb: string; konfiskeredeGenstande: string; magtanvendelse: string; erkender: boolean | null; fratagKoerekort: boolean } | null>(null);
+  const [redigerForm, setRedigerForm] = useState<{ haendelsesforloeb: string; konfiskeredeGenstande: string; magtanvendelse: string; erkender: boolean | null; fratagKoerekort: boolean; sigtelseBoeder: SigtelseBoede[]; sagsStatus: SagsStatus } | null>(null);
   const [gemmerRedigering, setGemmerRedigering] = useState(false);
+  const [redigerBoederOpen, setRedigerBoederOpen] = useState(false);
+  const [redigerBoederSoegning, setRedigerBoederSoegning] = useState("");
+  const [redigerOpenKat, setRedigerOpenKat] = useState<string | null>(null);
 
 
   useEffect(() => {
