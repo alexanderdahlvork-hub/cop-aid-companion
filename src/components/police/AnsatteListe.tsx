@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { rangOrder } from "@/data/ansatte";
-import { canAddEducation, canCreateOfficer, canEditOfficer, canDeleteOfficer, availablePermissions } from "@/lib/permissions";
+import { rangOrder, alleUddannelser, alleCertifikater } from "@/data/ansatte";
+import { canAddEducation, canCreateOfficer, canEditOfficer, canDeleteOfficer, availablePermissions, getDefaultTilladelser } from "@/lib/permissions";
 import { betjenteApi, fyredeApi, rangApi } from "@/lib/api";
 import type { Betjent, FyretMedarbejder } from "@/types/police";
 
