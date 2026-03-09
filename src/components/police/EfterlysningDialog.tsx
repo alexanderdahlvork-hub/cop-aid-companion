@@ -32,6 +32,7 @@ const EfterlysningDialog = ({ open, onOpenChange, person, onEfterlysningOprettet
   const [openKat, setOpenKat] = useState<string | null>(null);
   const [soegning, setSoegning] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const boeder = standardBoeder;
 
