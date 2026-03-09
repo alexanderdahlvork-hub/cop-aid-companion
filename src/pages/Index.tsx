@@ -82,7 +82,7 @@ const Index = () => {
       case "patruljer": return placeholderTab(Radio, "Patruljeenheder", "Kommer snart");
       case "kort": return <KortOgGPS />;
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
-      case "ansoegninger": return <Ansoegninger currentUser={currentUser} isAdmin={isAdmin} />;
+      case "ansoegninger": return <Ansoegninger currentUser={currentUser} isAdmin={isAdmin} onBetjentUpdated={(b) => { if (b.id === currentUser.id) setCurrentUser(b); }} />;
       case "profil": return (
         <MinProfil
           currentUser={currentUser}
