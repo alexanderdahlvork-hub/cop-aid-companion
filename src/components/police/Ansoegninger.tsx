@@ -254,10 +254,55 @@ const Ansoegninger = ({ currentUser, isAdmin }: AnsoegingerProps) => {
     setActiveTab("mine");
   };
 
-  const handleApprove = (id: string, kommentar: string) => {
+  const handleApprove = async (id: string, kommentar: string) => {
+    const ind = indsendelser.find((i) => i.id === id);
+    if (!ind) return;
+
+    // Find skabelon to know kategori
+    const skabelon = skabeloner.find((s) => s.id === ind.skabelonId);
+
     setIndsendelser(indsendelser.map((i) =>
       i.id === id ? { ...i, status: "godkendt" as const, behandletAf: currentUser.badgeNr, kommentar } : i
     ));
+
+    // Auto-assign based on kategori
+    if (skabelon) {
+      try {
+        // Find the target betjent by badge
+        const allBetjente = await betjenteApi.getAll();
+        const target = allBetjente.find((b) => b.badgeNr === ind.ansoegerBadge);
+        if (target) {
+          const updates: Partial<Betjent> = {};
+          if (skabelon.kategori === "uddannelse") {
+            const current = target.uddannelser || [];
+            if (!current.includes(skabelon.titel)) {
+              updates.uddannelser = [...current, skabelon.titel];
+            }
+          } else if (skabelon.kategori === "certifikat") {
+            const current = target.certifikater || [];
+            if (!current.includes(skabelon.titel)) {
+              updates.certifikater = [...current, skabelon.titel];
+            }
+          } else if (skabelon.kategori === "titel") {
+            const current = target.titler || [];
+            if (!current.includes(skabelon.titel)) {
+              updates.titler = [...current, skabelon.titel];
+            }
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await betjenteApi.update(target.id, updates as any);
+            const updatedBetjent = { ...target, ...updates };
+            if (onBetjentUpdated) onBetjentUpdated(updatedBetjent as Betjent);
+            toast(`"${skabelon.titel}" tildelt til ${ind.ansoegerNavn}`);
+          }
+        }
+      } catch (err) {
+        console.error("Fejl ved auto-tildeling:", err);
+        toast("Godkendt, men kunne ikke auto-tildele");
+      }
+    }
+
     toast("Ansøgning godkendt");
     setView("liste");
   };
