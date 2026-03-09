@@ -47,17 +47,6 @@ const TopHeader = ({ currentUser, isAdmin }: TopHeaderProps) => {
         <p className="text-[10px] text-muted-foreground">{datoStr}</p>
       </div>
 
-      {/* User */}
-      <button className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-muted/50 transition-colors">
-        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground">
-          {currentUser.fornavn[0]}{currentUser.efternavn[0]}
-        </div>
-        <div className="text-left hidden lg:block">
-          <p className="text-sm font-semibold text-foreground">{isAdmin ? "Admin" : currentUser.fornavn}</p>
-          <p className="text-[10px] text-muted-foreground">{currentUser.badgeNr} {isAdmin ? "Administrator" : currentUser.rang}</p>
-        </div>
-        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-      </button>
     </div>
   );
 };
