@@ -433,14 +433,28 @@ const KRRegister = () => {
               {personSigtelser.length > 0 ? (
                 <div className="space-y-4">
                   {personSigtelser.map((sig) => (
-                    <div key={sig.id} className="rounded-lg border border-border overflow-hidden">
+                    <div key={sig.id} className={cn("rounded-lg border overflow-hidden",
+                      sig.sagsStatus === "lukket" ? "border-destructive/40" : "border-border"
+                    )}>
                       {/* Sigtelse header with date */}
-                      <div className="flex items-center justify-between px-4 py-3 bg-muted/25 border-b border-border">
+                      <div className={cn("flex items-center justify-between px-4 py-3 border-b",
+                        sig.sagsStatus === "lukket" ? "bg-destructive/10 border-destructive/20" : "bg-muted/25 border-border"
+                      )}>
                         <div className="flex items-center gap-3">
-                          <Scale className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-semibold text-foreground">Sigtelse — {sig.dato}</span>
+                          <Scale className={cn("w-4 h-4", sig.sagsStatus === "lukket" ? "text-destructive" : "text-primary")} />
+                          <span className={cn("text-sm font-semibold", sig.sagsStatus === "lukket" ? "text-destructive" : "text-foreground")}>Sigtelse — {sig.dato}</span>
                           {sig.skabelonType && (
                             <Badge variant="outline" className="text-[10px]">{sig.skabelonType}</Badge>
+                          )}
+                          {sig.sagsStatus && (
+                            <Badge className={cn("text-[10px]", {
+                              "bg-success/15 text-success border-success/20": sig.sagsStatus === "aaben",
+                              "bg-primary/15 text-primary border-primary/20": sig.sagsStatus === "under_efterforskning",
+                              "bg-warning/15 text-warning border-warning/20": sig.sagsStatus === "afventer_retten",
+                              "bg-destructive/15 text-destructive border-destructive/20": sig.sagsStatus === "lukket",
+                            })}>
+                              {{ aaben: "Åben", under_efterforskning: "Under efterforskning", afventer_retten: "Afventer retten", lukket: "Lukket" }[sig.sagsStatus]}
+                            </Badge>
                           )}
                         </div>
                         <Button
