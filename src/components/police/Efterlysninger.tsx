@@ -259,7 +259,7 @@ const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
 };
 
 /** Detail view for a wanted person, including sigtelser/charges */
-const PersonDetalje = ({ person, sigtelser, onSigtPerson }: { person: Person; sigtelser: Sigtelse[]; onSigtPerson?: (personId: string) => void }) => {
+const PersonDetalje = ({ person, sigtelser, onSigtPerson, allSigtelser }: { person: Person; sigtelser: Sigtelse[]; onSigtPerson?: (personId: string, sigtelser: Sigtelse[]) => void; allSigtelser: Sigtelse[] }) => {
   const totalBoede = sigtelser.reduce((s, sig) => s + sig.totalBoede, 0);
   const totalFaengsel = sigtelser.reduce((s, sig) => s + sig.faengselMaaneder, 0);
   // Find the efterlysning-typed sigtelse for begrundelse
