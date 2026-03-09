@@ -99,7 +99,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [fratagKoerekort, setFratagKoerekort] = useState(false);
   const [erkender, setErkender] = useState<boolean | null>(null);
   const [valgteBetjente, setValgteBetjente] = useState<string[]>([]);
-
+  const [sagsStatus, setSagsStatus] = useState<import("@/types/police").SagsStatus>("aaben");
   const [haendelse, setHaendelse] = useState("");
   const [konfiskeret, setKonfiskeret] = useState("");
   const [magt, setMagt] = useState("");
