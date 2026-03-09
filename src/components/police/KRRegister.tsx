@@ -459,12 +459,14 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
             </div>
 
             {/* Noter */}
-            {valgtPerson.noter && (
-              <div className="rounded-lg bg-muted/15 border border-border p-4">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Noter</p>
-                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{valgtPerson.noter}</p>
-              </div>
-            )}
+            <div className="rounded-lg bg-muted/15 border border-border p-4">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Noter</p>
+              {editMode ? (
+                <Textarea className="text-sm" rows={3} value={editForm.noter || ""} onChange={(e) => setEditForm({ ...editForm, noter: e.target.value })} placeholder="Tilføj noter..." />
+              ) : (
+                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{valgtPerson.noter || <span className="text-muted-foreground/50 italic">Ingen noter</span>}</p>
+              )}
+            </div>
 
             {/* Ejendomme & Køretøjer side by side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
