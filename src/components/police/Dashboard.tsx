@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, FileText, AlertTriangle, Users, TrendingUp, BadgeCheck, Building, BookOpen, Settings } from "lucide-react";
+import { Shield, AlertTriangle, Clock, Radio } from "lucide-react";
 import { betjenteApi, personerApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
 
@@ -7,20 +7,7 @@ interface DashboardProps {
   currentUser: Betjent;
 }
 
-const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof FileText; label: string; value: string; color: string }) => (
-  <div className="bg-card border border-border rounded-lg p-5 flex items-center gap-4">
-    <div className={`w-11 h-11 rounded-lg flex items-center justify-center ${color}`}>
-      <Icon className="w-5 h-5" />
-    </div>
-    <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-xl font-bold text-foreground">{value}</p>
-    </div>
-  </div>
-);
-
 const Dashboard = ({ currentUser }: DashboardProps) => {
-  const [antalPersoner, setAntalPersoner] = useState(0);
   const [antalEfterlyste, setAntalEfterlyste] = useState(0);
   const [kolleger, setKolleger] = useState<Betjent[]>([]);
 
@@ -31,8 +18,7 @@ const Dashboard = ({ currentUser }: DashboardProps) => {
           betjenteApi.getAll(),
           personerApi.getAll(),
         ]);
-        setKolleger(betjente.filter(a => a.id !== currentUser.id).slice(0, 3));
-        setAntalPersoner(personer.length);
+        setKolleger(betjente.filter(a => a.id !== currentUser.id).slice(0, 5));
         setAntalEfterlyste(personer.filter(p => p.status === "eftersøgt").length);
       } catch (err) {
         console.error("Dashboard load error:", err);
@@ -41,48 +27,83 @@ const Dashboard = ({ currentUser }: DashboardProps) => {
     load();
   }, [currentUser.id]);
 
+  const now = new Date();
+  const dagNavn = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"];
+  const maanedNavn = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"];
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 p-1">
-        {/* Left: Stats + Seneste Sager */}
+      {/* Welcome */}
+      <div className="bg-card border border-border rounded-lg p-6 mb-5">
+        <h1 className="text-xl font-bold text-foreground">
+          Velkommen tilbage, {currentUser.fornavn}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {dagNavn[now.getDay()]} d. {now.getDate()}. {maanedNavn[now.getMonth()]} {now.getFullYear()} — Badge: {currentUser.badgeNr}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Left */}
         <div className="lg:col-span-2 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <StatCard icon={FileText} label="Total Sager" value="0" color="bg-primary/20 text-primary" />
-            <StatCard icon={TrendingUp} label="Sendt Bøder for" value="0,00 kr." color="bg-success/20 text-success" />
-            <StatCard icon={AlertTriangle} label="Antal efterlysninger" value={String(antalEfterlyste)} color="bg-warning/20 text-warning" />
-            <StatCard icon={Users} label="Antal personer" value={String(antalPersoner)} color="bg-primary/20 text-primary" />
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-bold text-foreground mb-4">Seneste Sager</h2>
-            <p className="text-sm text-muted-foreground">Der er ikke blevet oprettet nogle sager under denne session.</p>
-          </div>
-        </div>
-
-        {/* Right sidebar cards */}
-        <div className="space-y-5">
-          {/* Efterlyste Personer */}
+          {/* Efterlyste */}
           <div className="bg-card border border-border rounded-lg p-5">
-            <h3 className="text-base font-bold text-foreground mb-2">Efterlyste Personer</h3>
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-4 h-4 text-warning" />
+              <h3 className="text-base font-bold text-foreground">Efterlyste Personer</h3>
+            </div>
             {antalEfterlyste === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Ingen efterlyste personer</p>
+              <p className="text-sm text-muted-foreground italic">Ingen efterlyste personer i systemet</p>
             ) : (
-              <p className="text-sm text-muted-foreground">{antalEfterlyste} person(er) eftersøgt</p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-warning/20 flex items-center justify-center">
+                  <span className="text-lg font-bold text-warning">{antalEfterlyste}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">aktive efterlysninger i registeret</p>
+              </div>
             )}
           </div>
 
-          {/* Sagsoverblik */}
+          {/* Seneste aktivitet */}
           <div className="bg-card border border-border rounded-lg p-5">
-            <h3 className="text-base font-bold text-foreground mb-1">Sagsoverblik</h3>
-            <p className="text-3xl font-bold text-foreground">0</p>
-            <p className="text-xs text-success mt-1">↑ 0% fra sidste måned</p>
-            <div className="mt-4 h-20 flex items-end gap-1">
-              {["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"].map((m) => (
-                <div key={m} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full bg-primary/20 rounded-sm" style={{ height: "2px" }} />
-                  <span className="text-[8px] text-muted-foreground">{m}</span>
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-primary" />
+              <h3 className="text-base font-bold text-foreground">Seneste Aktivitet</h3>
+            </div>
+            <p className="text-sm text-muted-foreground italic">Ingen aktivitet registreret endnu i denne session.</p>
+          </div>
+        </div>
+
+        {/* Right */}
+        <div className="space-y-5">
+          {/* Status */}
+          <div className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Radio className="w-4 h-4 text-success" />
+              <h3 className="text-base font-bold text-foreground">Din Status</h3>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Rang</span>
+                <span className="font-medium text-foreground">{currentUser.rang}</span>
+              </div>
+              {currentUser.afdeling && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Afdeling</span>
+                  <span className="font-medium text-foreground">{currentUser.afdeling}</span>
                 </div>
-              ))}
+              )}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Uddannelser</span>
+                <span className="font-medium text-foreground">{currentUser.uddannelser.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Status</span>
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                  <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  I tjeneste
+                </span>
+              </div>
             </div>
           </div>
 
