@@ -510,11 +510,11 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
             </div>
           )}
 
-          {/* Patrol grid */}
-          {grupperet.map((g) => (
-            <div key={g.kategori}>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{g.kategori}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+          {/* Patrol grid - Aktive patruljer */}
+          <div>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Siren className="w-3.5 h-3.5" /> Aktive patruljer
+            </h3>
                 {g.patrols.map((patrol) => {
                   const sc = statusConfig[patrol.status];
                   const isFull = patrol.medlemmer.length >= patrol.pladser;
