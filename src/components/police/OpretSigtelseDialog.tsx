@@ -216,15 +216,29 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   }, "" as string);
   const klipStatus = getKlipStatus(totalKlip, tidligereKlip);
 
+  const getBoederCount = (boedeId: string) => valgteBoeder.filter(v => v.boedeId === boedeId).length;
+
+  const addBoede = (b: Boede) => {
+    setValgteBoeder([...valgteBoeder, {
+      boedeId: b.id, paragraf: b.paragraf, beskrivelse: b.beskrivelse,
+      beloeb: b.beloeb, faengselMaaneder: b.faengselMaaneder || 0,
+    }]);
+  };
+
+  const removeBoede = (boedeId: string) => {
+    const idx = valgteBoeder.findIndex(v => v.boedeId === boedeId);
+    if (idx >= 0) {
+      setValgteBoeder(valgteBoeder.filter((_, i) => i !== idx));
+    }
+  };
+
   const toggleBoede = (b: Boede) => {
     const exists = valgteBoeder.find((v) => v.boedeId === b.id);
     if (exists) {
+      // Remove all of this type
       setValgteBoeder(valgteBoeder.filter((v) => v.boedeId !== b.id));
     } else {
-      setValgteBoeder([...valgteBoeder, {
-        boedeId: b.id, paragraf: b.paragraf, beskrivelse: b.beskrivelse,
-        beloeb: b.beloeb, faengselMaaneder: b.faengselMaaneder || 0,
-      }]);
+      addBoede(b);
     }
   };
 
