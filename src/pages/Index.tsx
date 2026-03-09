@@ -67,6 +67,7 @@ const Index = () => {
       case "guides": return placeholderTab(BookOpen, "Guides & FAQ", "Hjælp og vejledninger");
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
+      case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
       case "kr": return <KRRegister />;
       case "fleet": return <FleetManagement />;
       case "flaade": return <FleetManagement />;
