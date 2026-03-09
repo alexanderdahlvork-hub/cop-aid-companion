@@ -98,8 +98,8 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[hsl(220,16%,7%)] p-2">
-      <div className="relative w-full h-full rounded-xl bg-background overflow-hidden">
+    <div className="h-screen w-screen bg-[hsl(220,16%,7%)] p-3">
+      <div className="relative w-full h-full rounded-2xl bg-background overflow-hidden border border-[hsl(220,12%,20%)] shadow-[0_0_30px_rgba(0,0,0,0.4)]">
         <div className="flex h-full overflow-hidden">
           <Sidebar
             activeTab={activeTab}
