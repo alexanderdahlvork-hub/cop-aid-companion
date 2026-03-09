@@ -448,15 +448,22 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                               <CollapsibleContent>
                                 <div className="mt-0.5 rounded border border-border overflow-hidden divide-y divide-border/30">
                                   {katBoeder.map((b) => {
-                                    const selected = valgteBoeder.some((v) => v.boedeId === b.id);
+                                    const count = getBoederCount(b.id);
+                                    const selected = count > 0;
                                     return (
-                                      <button key={b.id} onClick={() => toggleBoede(b)}
-                                        className={cn("w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors",
+                                      <div key={b.id}
+                                        className={cn("w-full flex items-center gap-2 px-3 py-1.5 transition-colors",
                                           selected ? "bg-primary/5" : "hover:bg-muted/20"
                                         )}>
-                                        <div className={cn("w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0",
-                                          selected ? "bg-primary border-primary" : "border-muted-foreground/25"
-                                        )}>{selected && <Check className="w-2 h-2 text-primary-foreground" />}</div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                          <button onClick={() => removeBoede(b.id)} disabled={count === 0}
+                                            className={cn("w-5 h-5 rounded flex items-center justify-center text-xs font-bold transition-colors",
+                                              count > 0 ? "bg-destructive/15 text-destructive hover:bg-destructive/25" : "bg-muted/30 text-muted-foreground/30 cursor-not-allowed"
+                                            )}>−</button>
+                                          <span className={cn("w-6 text-center text-[11px] font-mono font-semibold", count > 0 ? "text-primary" : "text-muted-foreground/50")}>{count}</span>
+                                          <button onClick={() => addBoede(b)}
+                                            className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold bg-primary/15 text-primary hover:bg-primary/25 transition-colors">+</button>
+                                        </div>
                                         <span className="flex-1 text-[11px] truncate">
                                           {b.paragraf && <span className="text-muted-foreground">{b.paragraf} — </span>}{b.beskrivelse}
                                         </span>
@@ -465,7 +472,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                                           {(b.faengselMaaneder ?? 0) > 0 && <span className="text-destructive font-medium">{b.faengselMaaneder}md</span>}
                                           <span className="font-mono text-warning">{b.beloeb.toLocaleString("da-DK")}kr</span>
                                         </div>
-                                      </button>
+                                      </div>
                                     );
                                   })}
                                 </div>
@@ -481,16 +488,24 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                 {valgteBoeder.length > 0 && (
                   <div className="mt-2 rounded-md border border-border overflow-hidden">
                     <div className="divide-y divide-border/30">
-                      {valgteBoeder.map((b) => (
-                        <div key={b.boedeId} className="flex items-center justify-between px-3 py-1.5 text-[11px]">
-                          <span className="text-foreground truncate pr-2">{b.paragraf && `${b.paragraf} — `}{b.beskrivelse}</span>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="font-mono text-warning">{b.beloeb.toLocaleString("da-DK")} kr</span>
-                            <button onClick={() => setValgteBoeder(valgteBoeder.filter(v => v.boedeId !== b.boedeId))}
-                              className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                      {Array.from(new Set(valgteBoeder.map(b => b.boedeId))).map(boedeId => {
+                        const items = valgteBoeder.filter(v => v.boedeId === boedeId);
+                        const b = items[0];
+                        const count = items.length;
+                        return (
+                          <div key={boedeId} className="flex items-center justify-between px-3 py-1.5 text-[11px]">
+                            <span className="text-foreground truncate pr-2">
+                              {count > 1 && <span className="text-primary font-semibold mr-1">{count}×</span>}
+                              {b.paragraf && `${b.paragraf} — `}{b.beskrivelse}
+                            </span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="font-mono text-warning">{(b.beloeb * count).toLocaleString("da-DK")} kr</span>
+                              <button onClick={() => setValgteBoeder(valgteBoeder.filter(v => v.boedeId !== boedeId))}
+                                className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="flex items-center justify-between px-3 py-2 bg-primary/5 border-t border-primary/15 text-xs">
                       <span className="font-semibold">Total</span>
