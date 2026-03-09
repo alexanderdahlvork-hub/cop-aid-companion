@@ -20,6 +20,7 @@ import SIGAfdeling from "@/components/police/afdelinger/SIGAfdeling";
 import RemeoAfdeling from "@/components/police/afdelinger/RemeoAfdeling";
 import KortOgGPS from "@/components/police/KortOgGPS";
 import Ansoegninger from "@/components/police/Ansoegninger";
+import Koeretoejsregister from "@/components/police/Koeretoejsregister";
 import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
