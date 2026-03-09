@@ -37,6 +37,8 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const [saving, setSaving] = useState(false);
   const [nyPerson, setNyPerson] = useState<Partial<Person>>({ status: "aktiv" });
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<Person>>({});
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
   const [ejendomme, setEjendomme] = useState<Ejendom[]>([]);
