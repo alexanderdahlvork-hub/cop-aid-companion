@@ -43,6 +43,7 @@ const KRRegister = () => {
   const [redigerBoederOpen, setRedigerBoederOpen] = useState(false);
   const [redigerBoederSoegning, setRedigerBoederSoegning] = useState("");
   const [redigerOpenKat, setRedigerOpenKat] = useState<string | null>(null);
+  const [efterlysningDialogOpen, setEfterlysningDialogOpen] = useState(false);
 
 
   useEffect(() => {
