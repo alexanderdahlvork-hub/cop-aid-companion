@@ -518,7 +518,7 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
                 <Send className="w-4 h-4 mr-1" /> Indsend ansøgning
               </Button>
             )}
-            <Button variant="outline" onClick={() => { setView("liste"); setActiveTab("mine"); }}>Annuller</Button>
+            <Button variant="outline" onClick={() => { setView("liste"); setActiveTab("skabeloner"); }}>Annuller</Button>
           </div>
         </div>
       </div>
