@@ -157,6 +157,7 @@ const OpretSag = ({ currentUser }: OpretSagProps) => {
           onOpenChange={(open) => { setShowSigtelse(open); if (!open) setSelectedPerson(null); }}
           person={selectedPerson}
           onSigtelseOprettet={handleSigtelseOprettet}
+          currentUser={currentUser}
         />
       )}
     </div>

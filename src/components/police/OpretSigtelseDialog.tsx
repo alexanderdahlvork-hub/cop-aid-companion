@@ -89,9 +89,10 @@ interface OpretSigtelseDialogProps {
   person: Person;
   onSigtelseOprettet: (sigtelse: Sigtelse) => void;
   tidligereKlip?: number;
+  currentUser?: { badgeNr: string; fornavn: string; efternavn: string };
 }
 
-const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0 }: OpretSigtelseDialogProps) => {
+const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser }: OpretSigtelseDialogProps) => {
   const [betjente, setBetjente] = useState<Betjent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -136,10 +137,19 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
     if (!open) return;
     setLoadingData(true);
     betjenteApi.getAll()
-      .then((bt) => setBetjente(bt))
+      .then((bt) => {
+        setBetjente(bt);
+        // Auto-select current user
+        if (currentUser) {
+          const match = bt.find(b => b.badgeNr === currentUser.badgeNr);
+          if (match) {
+            setValgteBetjente(prev => prev.includes(match.id) ? prev : [match.id]);
+          }
+        }
+      })
       .catch(console.error)
       .finally(() => setLoadingData(false));
-  }, [open]);
+  }, [open, currentUser]);
 
   useEffect(() => {
     if (open) {
