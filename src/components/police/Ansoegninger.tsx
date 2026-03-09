@@ -146,7 +146,7 @@ const defaultIndsendelser: IndsendelseData[] = [
 
 type View = "liste" | "opret" | "rediger" | "vis_indsendelse" | "ansog";
 
-const Ansoegninger = ({ currentUser, isAdmin }: AnsoegingerProps) => {
+const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerProps) => {
   const [skabeloner, setSkabeloner] = useState<AnsoeningSkabelon[]>(defaultSkabeloner);
   const [indsendelser, setIndsendelser] = useState<IndsendelseData[]>(defaultIndsendelser);
   const [view, setView] = useState<View>("liste");
