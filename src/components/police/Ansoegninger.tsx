@@ -144,7 +144,7 @@ const defaultIndsendelser: IndsendelseData[] = [
   },
 ];
 
-type View = "liste" | "opret" | "rediger" | "vis_indsendelse" | "ansog";
+type View = "liste" | "opret" | "rediger" | "vis_indsendelse" | "ansog" | "rediger_indsendelse";
 
 const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerProps) => {
   const [skabeloner, setSkabeloner] = useState<AnsoeningSkabelon[]>(defaultSkabeloner);
@@ -256,6 +256,26 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     };
     setIndsendelser([ny, ...indsendelser]);
     toast("Ansøgning indsendt!");
+    setView("liste");
+    setActiveTab("mine");
+  };
+
+  const handleEditIndsendelse = (ind: IndsendelseData) => {
+    setSelectedIndsendelse(ind);
+    const skabelon = skabeloner.find(s => s.id === ind.skabelonId);
+    if (skabelon) setSelectedSkabelon(skabelon);
+    setAnsogSvar({ ...ind.svar });
+    setView("rediger_indsendelse");
+  };
+
+  const handleSaveEditedIndsendelse = () => {
+    if (!selectedIndsendelse || !selectedSkabelon) return;
+    const unanswered = selectedSkabelon.spoergsmaal.filter((q) => !(ansogSvar[q] || "").trim());
+    if (unanswered.length > 0) { toast("Besvar alle spørgsmål"); return; }
+    setIndsendelser(indsendelser.map(i =>
+      i.id === selectedIndsendelse.id ? { ...i, svar: { ...ansogSvar } } : i
+    ));
+    toast("Ansøgning opdateret");
     setView("liste");
     setActiveTab("mine");
   };
@@ -451,12 +471,13 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
   }
 
   // ─── Apply form ────────────────────────────
-  if (view === "ansog" && selectedSkabelon) {
+  if ((view === "ansog" || view === "rediger_indsendelse") && selectedSkabelon) {
+    const isEditing = view === "rediger_indsendelse";
     return (
       <div className="space-y-5 max-w-2xl">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold text-foreground">Ansøg: {selectedSkabelon.titel}</h1>
-          <Button variant="ghost" size="sm" onClick={() => setView("liste")}>
+          <h1 className="text-lg font-bold text-foreground">{isEditing ? "Rediger" : "Ansøg"}: {selectedSkabelon.titel}</h1>
+          <Button variant="ghost" size="sm" onClick={() => { setView("liste"); setActiveTab("mine"); }}>
             <X className="w-4 h-4 mr-1" /> Annuller
           </Button>
         </div>
@@ -488,10 +509,16 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
           ))}
 
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSubmitApplication} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Send className="w-4 h-4 mr-1" /> Indsend ansøgning
-            </Button>
-            <Button variant="outline" onClick={() => setView("liste")}>Annuller</Button>
+            {isEditing ? (
+              <Button onClick={handleSaveEditedIndsendelse} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Check className="w-4 h-4 mr-1" /> Gem ændringer
+              </Button>
+            ) : (
+              <Button onClick={handleSubmitApplication} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Send className="w-4 h-4 mr-1" /> Indsend ansøgning
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => { setView("liste"); setActiveTab("mine"); }}>Annuller</Button>
           </div>
         </div>
       </div>
@@ -708,23 +735,28 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
             <p className="text-sm text-muted-foreground py-8 text-center">Du har ikke indsendt nogen ansøgninger endnu</p>
           ) : (
             mineIndsendelser.map((ind) => (
-              <button
+              <div
                 key={ind.id}
-                onClick={() => openIndsendelse(ind)}
                 className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors text-left"
               >
-                <div>
+                <button onClick={() => openIndsendelse(ind)} className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-medium text-foreground">{ind.skabelonTitel}</p>
                   <p className="text-xs text-muted-foreground">Indsendt: {ind.dato}</p>
-                </div>
-                <div className="flex items-center gap-2">
+                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  {ind.status === "afventer" && (
+                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2"
+                      onClick={(e) => { e.stopPropagation(); handleEditIndsendelse(ind); }}>
+                      <Pencil className="w-3 h-3" /> Rediger
+                    </Button>
+                  )}
                   <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1", statusColor(ind.status))}>
                     {statusIcon(ind.status)}
                     {ind.status === "afventer" ? "Afventer" : ind.status === "godkendt" ? "Godkendt" : "Afvist"}
                   </span>
                   {ind.kommentar && <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />}
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
