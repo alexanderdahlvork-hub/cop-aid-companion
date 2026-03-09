@@ -129,6 +129,10 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
   const [flytDialog, setFlytDialog] = useState<{ patrolId: string; gruppeId: string } | null>(null);
   const [flytTilGruppe, setFlytTilGruppe] = useState("");
   const [tilfoejTilGruppeDialog, setTilfoejTilGruppeDialog] = useState<string | null>(null);
+  // Move member between patrols
+  const [flytMedlemDialog, setFlytMedlemDialog] = useState<{ fromPatrolId: string; badgeNr: string; navn: string } | null>(null);
+  // Move patrol to group (from patrol card)
+  const [flytPatrulTilGruppeDialog, setFlytPatrulTilGruppeDialog] = useState<string | null>(null);
 
   // Load data
   useEffect(() => {
@@ -326,6 +330,41 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
     setTilfoejTilGruppeDialog(null);
   };
 
+  // Move member from one patrol to another
+  const handleFlytMedlem = async (fromPatrolId: string, badgeNr: string, toPatrolId: string) => {
+    const from = patrols.find(p => p.id === fromPatrolId);
+    const to = patrols.find(p => p.id === toPatrolId);
+    if (!from || !to) return;
+    const member = from.medlemmer.find(m => m.badgeNr === badgeNr);
+    if (!member) return;
+    if (to.medlemmer.length >= to.pladser) { toast.error("Patruljen er fuld"); return; }
+    if (to.medlemmer.some(m => m.badgeNr === badgeNr)) { toast.error("Allerede tilmeldt"); return; }
+
+    const fromUpdated = { medlemmer: from.medlemmer.filter(m => m.badgeNr !== badgeNr), status: from.medlemmer.length <= 1 ? "ledig" as const : from.status };
+    const toUpdated = { medlemmer: [...to.medlemmer, member], status: "i_brug" as const };
+
+    await tryApi(() => patruljerApi.update(fromPatrolId, fromUpdated));
+    await tryApi(() => patruljerApi.update(toPatrolId, toUpdated));
+    updatePatrols(prev => prev.map(p => {
+      if (p.id === fromPatrolId) return { ...p, ...fromUpdated };
+      if (p.id === toPatrolId) return { ...p, ...toUpdated };
+      return p;
+    }));
+    toast(`${member.navn} flyttet til ${to.navn}`);
+    setFlytMedlemDialog(null);
+  };
+
+  // Add patrol to a group from patrol card
+  const handlePatrulTilGruppe = (patrolId: string, gruppeId: string) => {
+    updateGroups(prev => prev.map(g =>
+      g.id === gruppeId && !g.patruljeIds.includes(patrolId)
+        ? { ...g, patruljeIds: [...g.patruljeIds, patrolId] }
+        : g
+    ));
+    toast("Patrulje tilføjet til gruppe");
+    setFlytPatrulTilGruppeDialog(null);
+  };
+
   const bemandede = patrols.filter(p => p.medlemmer.length > 0);
 
   // Filter betjente for tilfoej dialog (exclude already in patrol)
@@ -471,21 +510,28 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
             </div>
           )}
 
-          {/* Patrol grid */}
-          {grupperet.map((g) => (
-            <div key={g.kategori}>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{g.kategori}</h3>
+          {/* Patrol grid - Aktive patruljer */}
+          {filtreret.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <Siren className="w-3.5 h-3.5" /> Aktive patruljer ({filtreret.length})
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                {g.patrols.map((patrol) => {
+                {filtreret.map((patrol) => {
                   const sc = statusConfig[patrol.status];
                   const isFull = patrol.medlemmer.length >= patrol.pladser;
+                  const inGroup = taskGroups.some(g => g.patruljeIds.includes(patrol.id));
                   return (
-                    <div key={patrol.id} className="rounded-lg border border-border bg-card/50 overflow-hidden">
+                    <div key={patrol.id} className={cn(
+                      "rounded-lg border bg-card/50 overflow-hidden",
+                      inGroup ? "border-primary/30" : "border-border"
+                    )}>
                       <div className="flex items-center justify-between px-3 py-2 bg-muted/20 border-b border-border/50">
                         <div className="flex items-center gap-2">
                           <div className={cn("w-2 h-2 rounded-full shrink-0", sc.dot,
                             patrol.medlemmer.length > 0 && "animate-pulse")} />
                           <span className="text-xs font-bold text-foreground">{patrol.navn}</span>
+                          {inGroup && <Badge className="text-[7px] h-3.5 px-1 bg-primary/10 text-primary border-primary/20">I gruppe</Badge>}
                         </div>
                         <div className="flex items-center gap-1">
                           <Select value={patrol.status} onValueChange={(v) => handleStatusChange(patrol.id, v as PatrolStatus)}>
@@ -513,10 +559,16 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                                 <span className="font-mono text-muted-foreground">{m.badgeNr}</span> — {m.navn}
                               </span>
                             </div>
-                            <button onClick={() => handleSignOff(patrol.id, m.badgeNr)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive/80">
-                              <UserMinus className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => setFlytMedlemDialog({ fromPatrolId: patrol.id, badgeNr: m.badgeNr, navn: m.navn })}
+                                className="text-primary/70 hover:text-primary" title="Flyt til anden patrulje">
+                                <ArrowRightLeft className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => handleSignOff(patrol.id, m.badgeNr)}
+                                className="text-destructive hover:text-destructive/80">
+                                <UserMinus className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                         ))}
                         {Array.from({ length: patrol.pladser - patrol.medlemmer.length }).map((_, i) => (
@@ -530,7 +582,7 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                       <div className="flex items-center justify-between px-3 py-1.5 border-t border-border/30 bg-muted/10">
                         {patrol.bemærkning ? (
                           <button onClick={() => { setBemærkningDialog(patrol.id); setBemærkningInput(patrol.bemærkning); }}
-                            className="text-[9px] text-muted-foreground truncate max-w-[45%] hover:text-foreground flex items-center gap-1">
+                            className="text-[9px] text-muted-foreground truncate max-w-[35%] hover:text-foreground flex items-center gap-1">
                             <MessageSquare className="w-2.5 h-2.5 shrink-0" /> {patrol.bemærkning}
                           </button>
                         ) : (
@@ -540,6 +592,12 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                           </button>
                         )}
                         <div className="flex items-center gap-1">
+                          {taskGroups.length > 0 && !inGroup && (
+                            <Button size="sm" variant="outline" className="h-5 text-[9px] px-1.5 gap-0.5"
+                              onClick={() => setFlytPatrulTilGruppeDialog(patrol.id)}>
+                              <Users className="w-2.5 h-2.5" /> Gruppe
+                            </Button>
+                          )}
                           {!isFull && (
                             <Button size="sm" className="h-5 text-[9px] px-2 gap-1"
                               onClick={() => { setTilfoejDialog(patrol.id); setBetjentSoegning(""); }}>
@@ -559,7 +617,7 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                 })}
               </div>
             </div>
-          ))}
+          )}
 
           {patrols.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
@@ -808,6 +866,67 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
               onClick={() => flytDialog && handleFlytPatrol(flytDialog.patrolId, flytDialog.gruppeId, flytTilGruppe)}>
               <ArrowRightLeft className="w-3 h-3" /> Flyt
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Flyt medlem dialog ── */}
+      <Dialog open={!!flytMedlemDialog} onOpenChange={() => setFlytMedlemDialog(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Flyt {flytMedlemDialog?.navn} til anden patrulje</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[250px]">
+            <div className="space-y-1 pt-1">
+              {patrols
+                .filter(p => flytMedlemDialog && p.id !== flytMedlemDialog.fromPatrolId && p.medlemmer.length < p.pladser)
+                .map(p => (
+                  <button key={p.id}
+                    onClick={() => flytMedlemDialog && handleFlytMedlem(flytMedlemDialog.fromPatrolId, flytMedlemDialog.badgeNr, p.id)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted/40 transition-colors text-left">
+                    <div className="flex items-center gap-2">
+                      <div className={cn("w-1.5 h-1.5 rounded-full", statusConfig[p.status].dot)} />
+                      <div>
+                        <span className="text-[11px] font-medium text-foreground">{p.navn}</span>
+                        <span className="text-[9px] text-muted-foreground ml-1">
+                          ({p.medlemmer.length}/{p.pladser})
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRightLeft className="w-3 h-3 text-primary" />
+                  </button>
+                ))}
+              {patrols.filter(p => flytMedlemDialog && p.id !== flytMedlemDialog.fromPatrolId && p.medlemmer.length < p.pladser).length === 0 && (
+                <p className="text-xs text-muted-foreground italic text-center py-4">Ingen patruljer med ledige pladser</p>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Tilføj patrulje til gruppe (fra patrol card) ── */}
+      <Dialog open={!!flytPatrulTilGruppeDialog} onOpenChange={() => setFlytPatrulTilGruppeDialog(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Tilføj patrulje til gruppe</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1 pt-1 max-h-[250px] overflow-y-auto">
+            {taskGroups
+              .filter(g => !g.patruljeIds.includes(flytPatrulTilGruppeDialog || ""))
+              .map(g => (
+                <button key={g.id}
+                  onClick={() => flytPatrulTilGruppeDialog && handlePatrulTilGruppe(flytPatrulTilGruppeDialog, g.id)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted/40 transition-colors text-left">
+                  <div>
+                    <span className="text-[11px] font-medium text-foreground">{g.navn}</span>
+                    <Badge className="text-[8px] ml-2 bg-accent/20 text-accent-foreground border-accent/30">{g.aktion}</Badge>
+                  </div>
+                  <Plus className="w-3 h-3 text-primary" />
+                </button>
+              ))}
+            {taskGroups.filter(g => !g.patruljeIds.includes(flytPatrulTilGruppeDialog || "")).length === 0 && (
+              <p className="text-xs text-muted-foreground italic text-center py-4">Ingen tilgængelige grupper</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
