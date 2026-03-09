@@ -339,10 +339,27 @@ const KRRegister = () => {
                         <div className="flex items-center gap-3">
                           <Scale className="w-4 h-4 text-primary" />
                           <span className="text-sm font-semibold text-foreground">Sigtelse — {sig.dato}</span>
+                          {sig.skabelonType && (
+                            <Badge variant="outline" className="text-[10px]">{sig.skabelonType}</Badge>
+                          )}
                         </div>
-                        {sig.skabelonType && (
-                          <Badge variant="outline" className="text-[10px]">{sig.skabelonType}</Badge>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            setRedigerSigtelse(sig);
+                            setRedigerForm({
+                              haendelsesforloeb: sig.rapport.haendelsesforloeb || "",
+                              konfiskeredeGenstande: sig.rapport.konfiskeredeGenstande || "",
+                              magtanvendelse: sig.rapport.magtanvendelse || "",
+                              erkender: sig.erkender,
+                              fratagKoerekort: sig.fratagKoerekort,
+                            });
+                          }}
+                        >
+                          <Pencil className="w-3 h-3" /> Rediger
+                        </Button>
                       </div>
 
                       {/* Charges table */}
