@@ -68,7 +68,7 @@ const Index = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "forside": return <Dashboard currentUser={currentUser} />;
+      case "forside": return <Dashboard currentUser={currentUser} onTabChange={setActiveTab} />;
       case "guides": return placeholderTab(BookOpen, "Guides & FAQ", "Hjælp og vejledninger");
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
