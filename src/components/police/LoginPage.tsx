@@ -81,17 +81,17 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       style={{
         backgroundImage: "url('/images/police-bg.webp')",
         backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
+        backgroundPosition: "center"
+      }}>
+      
       <div className="absolute inset-0 bg-black/50" />
 
       <div className="relative z-10 text-center mb-16">
         <p className="text-white/80 text-lg font-medium tracking-wide">{datoStr}</p>
         <p
           className="text-white text-7xl font-bold tracking-tight cursor-default transition-all duration-500 hover:tracking-[0.3em] hover:text-primary hover:drop-shadow-[0_0_25px_hsl(213,80%,50%)] hover:scale-110"
-          style={{ fontFamily: "'Inter', sans-serif" }}
-        >
+          style={{ fontFamily: "'Inter', sans-serif" }}>
+          
           {tidStr}
         </p>
       </div>
@@ -113,37 +113,37 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
               setTapCount(0);
             }
             setLastTap(now);
-          }}
-        >
-          <img src={avldLogo} alt="AVLD Systems" className="w-14 h-14 object-contain" />
+          }}>
+          
+          <img alt="AVLD Systems" className="w-14 h-14 object-contain" src="https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fwww.facebook.com%2Fpoliti%2F&ved=0CBYQjRxqFwoTCKCeveu7kpMDFQAAAAAdAAAAABAI&opi=89978449" />
         </div>
 
         <p className="text-white text-sm font-semibold tracking-wide">
-          {matchedBetjent
-            ? `${matchedBetjent.fornavn} ${matchedBetjent.efternavn} | ${matchedBetjent.badgeNr}`
-            : badgeNr
-              ? badgeNr
-              : "Politi Tablet"
+          {matchedBetjent ?
+          `${matchedBetjent.fornavn} ${matchedBetjent.efternavn} | ${matchedBetjent.badgeNr}` :
+          badgeNr ?
+          badgeNr :
+          "Politi Tablet"
           }
         </p>
 
         <Input
           placeholder="Badge nummer"
           value={badgeNr}
-          onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
+          onChange={(e) => {setBadgeNr(e.target.value);setError("");}}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10"
-        />
+          className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10" />
+        
 
         <Input
           type="password"
           placeholder="Angiv adgangskode"
           value={kodeord}
-          onChange={(e) => { setKodeord(e.target.value); setError(""); }}
+          onChange={(e) => {setKodeord(e.target.value);setError("");}}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10"
-          disabled={loading}
-        />
+          disabled={loading} />
+        
 
         {error && <p className="text-xs text-red-400">{error}</p>}
         {loading && <p className="text-xs text-white/60">Logger ind...</p>}
@@ -153,8 +153,8 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         <span className="text-white/50 text-xs">AVLD Systems</span>
         <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LoginPage;
