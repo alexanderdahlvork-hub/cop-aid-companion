@@ -38,7 +38,6 @@ const sections: SidebarSection[] = [
     icon: Search,
     items: [
       { id: "kr", label: "Personregister", icon: Users },
-      { id: "fleet", label: "Køretøjsregister", icon: Car },
       { id: "ejendomme", label: "Ejendomsregister", icon: Building },
       { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
     ],
@@ -53,10 +52,11 @@ const sections: SidebarSection[] = [
   },
   {
     label: "FLÅDESTYRING",
-    icon: AlertTriangle,
+    icon: Car,
     items: [
-      { id: "efterlysninger", label: "Flådestyring", icon: Radio },
-      { id: "radio", label: "Patruljeenheder", icon: MapPin },
+      { id: "fleet", label: "Køretøjsregister", icon: Car },
+      { id: "flaade", label: "Flådestyring", icon: Radio },
+      { id: "patruljer", label: "Patruljeenheder", icon: MapPin },
     ],
   },
 ];
