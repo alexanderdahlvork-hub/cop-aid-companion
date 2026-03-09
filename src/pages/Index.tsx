@@ -39,6 +39,7 @@ const Index = () => {
   const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [krInitialPersonId, setKrInitialPersonId] = useState<string | null>(null);
 
   const handleLogin = (betjent: Betjent, admin: boolean) => {
     setCurrentUser(betjent);
@@ -71,11 +72,11 @@ const Index = () => {
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
       case "opret_sag": return <OpretSag currentUser={currentUser} />;
-      case "kr": return <KRRegister />;
+      case "kr": return <KRRegister initialPersonId={krInitialPersonId} />;
       case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement currentUser={currentUser} isAdmin={isAdmin} />;
       case "ejendomme": return <Ejendomsregister />;
-      case "efterlysninger": return <Efterlysninger />;
+      case "efterlysninger": return <Efterlysninger onSigtPerson={(personId) => { setKrInitialPersonId(personId); setActiveTab("kr"); }} />;
       case "nsk": return <NSKAfdeling />;
       case "lima": return <LimaAfdeling />;
       case "faerdsel": return <FaerdselAfdeling />;

@@ -9,7 +9,11 @@ import type { Person, Koeretoej, Sigtelse } from "@/types/police";
 
 type Tab = "personer" | "koeretoejer";
 
-const Efterlysninger = () => {
+interface EfterlysningerProps {
+  onSigtPerson?: (personId: string) => void;
+}
+
+const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
   const [tab, setTab] = useState<Tab>("personer");
   const [personer, setPersoner] = useState<Person[]>([]);
   const [koeretoejer, setKoeretoejer] = useState<Koeretoej[]>([]);
@@ -190,7 +194,7 @@ const Efterlysninger = () => {
         {/* Detail panel */}
         <div className="hidden lg:block flex-1">
           {tab === "personer" && valgtPerson ? (
-            <PersonDetalje person={valgtPerson} sigtelser={getPersonSigtelser(valgtPerson.id)} />
+            <PersonDetalje person={valgtPerson} sigtelser={getPersonSigtelser(valgtPerson.id)} onSigtPerson={onSigtPerson} />
           ) : tab === "koeretoejer" && valgtKoeretoj ? (
             <Card className="h-full">
               <CardHeader className="pb-4">
@@ -252,7 +256,7 @@ const Efterlysninger = () => {
 };
 
 /** Detail view for a wanted person, including sigtelser/charges */
-const PersonDetalje = ({ person, sigtelser }: { person: Person; sigtelser: Sigtelse[] }) => {
+const PersonDetalje = ({ person, sigtelser, onSigtPerson }: { person: Person; sigtelser: Sigtelse[]; onSigtPerson?: (personId: string) => void }) => {
   const totalBoede = sigtelser.reduce((s, sig) => s + sig.totalBoede, 0);
   const totalFaengsel = sigtelser.reduce((s, sig) => s + sig.faengselMaaneder, 0);
   // Find the efterlysning-typed sigtelse for begrundelse
@@ -262,9 +266,20 @@ const PersonDetalje = ({ person, sigtelser }: { person: Person; sigtelser: Sigte
   return (
     <Card className="h-full overflow-y-auto">
       <CardHeader className="pb-4">
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20 mb-3">
-          <AlertTriangle className="w-5 h-5 text-warning" />
-          <span className="text-sm text-warning font-semibold">AKTIV EFTERLYSNING — PERSON</span>
+        <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10 border border-warning/20 mb-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-warning" />
+            <span className="text-sm text-warning font-semibold">AKTIV EFTERLYSNING — PERSON</span>
+          </div>
+          {onSigtPerson && (
+            <button
+              onClick={() => onSigtPerson(person.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Gavel className="w-3.5 h-3.5" />
+              Gå til sigtelse
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-warning/20 flex items-center justify-center">

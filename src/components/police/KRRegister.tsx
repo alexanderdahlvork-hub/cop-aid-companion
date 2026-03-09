@@ -24,7 +24,11 @@ const statusConfig: Record<Person["status"], { label: string; dot: string; bg: s
   sigtet: { label: "Sigtet", dot: "bg-primary", bg: "bg-primary/10 text-primary border-primary/20" },
 };
 
-const KRRegister = () => {
+interface KRRegisterProps {
+  initialPersonId?: string | null;
+}
+
+const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const [personer, setPersoner] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [soegning, setSoegning] = useState("");
@@ -51,6 +55,11 @@ const KRRegister = () => {
       try {
         const personData = await personerApi.getAll();
         setPersoner(personData);
+        // Auto-select person if initialPersonId is provided
+        if (initialPersonId) {
+          const found = personData.find(p => p.id === initialPersonId);
+          if (found) setValgtPerson(found);
+        }
       } catch (err) {
         console.error("Fejl ved indlæsning af personer:", err);
       }
@@ -75,7 +84,7 @@ const KRRegister = () => {
       setLoading(false);
     };
     load();
-  }, []);
+  }, [initialPersonId]);
 
   const filtreret = personer.filter((p) =>
     `${p.fornavn} ${p.efternavn} ${p.cpr}`.toLowerCase().includes(soegning.toLowerCase())
