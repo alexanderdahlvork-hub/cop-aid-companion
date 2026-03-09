@@ -249,6 +249,13 @@ export const sigtelserApi = {
   async create(s: Sigtelse): Promise<void> {
     await create("sigtelser", sigtelseToRow(s));
   },
+  async update(id: string, data: Partial<Sigtelse>): Promise<void> {
+    const row: Record<string, any> = {};
+    if (data.rapport !== undefined) row.rapport = JSON.stringify(data.rapport);
+    if (data.erkender !== undefined) row.erkender = data.erkender === null ? null : data.erkender ? 1 : 0;
+    if (data.fratagKoerekort !== undefined) row.fratagKoerekort = data.fratagKoerekort ? 1 : 0;
+    await update("sigtelser", id, row);
+  },
   async remove(id: string): Promise<void> {
     await remove("sigtelser", id);
   },

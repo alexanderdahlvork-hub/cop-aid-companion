@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, User, AlertTriangle, Loader2, Scale, X, FileText, Package } from "lucide-react";
+import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,9 @@ const KRRegister = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
+  const [redigerSigtelse, setRedigerSigtelse] = useState<Sigtelse | null>(null);
+  const [redigerForm, setRedigerForm] = useState<{ haendelsesforloeb: string; konfiskeredeGenstande: string; magtanvendelse: string; erkender: boolean | null; fratagKoerekort: boolean } | null>(null);
+  const [gemmerRedigering, setGemmerRedigering] = useState(false);
 
 
   useEffect(() => {
@@ -336,10 +339,27 @@ const KRRegister = () => {
                         <div className="flex items-center gap-3">
                           <Scale className="w-4 h-4 text-primary" />
                           <span className="text-sm font-semibold text-foreground">Sigtelse — {sig.dato}</span>
+                          {sig.skabelonType && (
+                            <Badge variant="outline" className="text-[10px]">{sig.skabelonType}</Badge>
+                          )}
                         </div>
-                        {sig.skabelonType && (
-                          <Badge variant="outline" className="text-[10px]">{sig.skabelonType}</Badge>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            setRedigerSigtelse(sig);
+                            setRedigerForm({
+                              haendelsesforloeb: sig.rapport.haendelsesforloeb || "",
+                              konfiskeredeGenstande: sig.rapport.konfiskeredeGenstande || "",
+                              magtanvendelse: sig.rapport.magtanvendelse || "",
+                              erkender: sig.erkender,
+                              fratagKoerekort: sig.fratagKoerekort,
+                            });
+                          }}
+                        >
+                          <Pencil className="w-3 h-3" /> Rediger
+                        </Button>
                       </div>
 
                       {/* Charges table */}
@@ -482,6 +502,104 @@ const KRRegister = () => {
           }}
         />
       )}
+
+      {/* Rediger sigtelse dialog */}
+      <Dialog open={!!redigerSigtelse} onOpenChange={(open) => { if (!open) { setRedigerSigtelse(null); setRedigerForm(null); } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Rediger sigtelse — {redigerSigtelse?.dato}</DialogTitle>
+          </DialogHeader>
+          {redigerForm && (
+            <div className="space-y-3 pt-1">
+              <div>
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Hændelsesforløb</Label>
+                <Textarea
+                  className="text-sm mt-0.5"
+                  rows={4}
+                  value={redigerForm.haendelsesforloeb}
+                  onChange={(e) => setRedigerForm({ ...redigerForm, haendelsesforloeb: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beslaglagte genstande</Label>
+                <Textarea
+                  className="text-sm mt-0.5"
+                  rows={2}
+                  value={redigerForm.konfiskeredeGenstande}
+                  onChange={(e) => setRedigerForm({ ...redigerForm, konfiskeredeGenstande: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Magtanvendelse</Label>
+                <Textarea
+                  className="text-sm mt-0.5"
+                  rows={2}
+                  value={redigerForm.magtanvendelse}
+                  onChange={(e) => setRedigerForm({ ...redigerForm, magtanvendelse: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Erkender</Label>
+                <Select
+                  value={redigerForm.erkender === null ? "null" : redigerForm.erkender ? "ja" : "nej"}
+                  onValueChange={(v) => setRedigerForm({ ...redigerForm, erkender: v === "null" ? null : v === "ja" })}
+                >
+                  <SelectTrigger className="h-8 text-sm mt-0.5"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="null">Ikke angivet</SelectItem>
+                    <SelectItem value="ja">Ja</SelectItem>
+                    <SelectItem value="nej">Nej</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 py-1">
+                <input
+                  type="checkbox"
+                  id="fratagKoerekort"
+                  checked={redigerForm.fratagKoerekort}
+                  onChange={(e) => setRedigerForm({ ...redigerForm, fratagKoerekort: e.target.checked })}
+                  className="w-4 h-4 accent-primary"
+                />
+                <Label htmlFor="fratagKoerekort" className="text-sm cursor-pointer">Fratag kørekort</Label>
+              </div>
+              <Button
+                className="w-full h-8 text-xs gap-1.5"
+                disabled={gemmerRedigering}
+                onClick={async () => {
+                  if (!redigerSigtelse || !redigerForm) return;
+                  setGemmerRedigering(true);
+                  const opdateret: Sigtelse = {
+                    ...redigerSigtelse,
+                    erkender: redigerForm.erkender,
+                    fratagKoerekort: redigerForm.fratagKoerekort,
+                    rapport: {
+                      ...redigerSigtelse.rapport,
+                      haendelsesforloeb: redigerForm.haendelsesforloeb,
+                      konfiskeredeGenstande: redigerForm.konfiskeredeGenstande,
+                      magtanvendelse: redigerForm.magtanvendelse,
+                    },
+                  };
+                  try {
+                    await sigtelserApi.update(redigerSigtelse.id, opdateret);
+                    setSigtelser((prev) => prev.map((s) => s.id === opdateret.id ? opdateret : s));
+                    toast("Sigtelse opdateret");
+                    setRedigerSigtelse(null);
+                    setRedigerForm(null);
+                  } catch (err) {
+                    toast.error("Kunne ikke gemme ændringer");
+                    console.error(err);
+                  } finally {
+                    setGemmerRedigering(false);
+                  }
+                }}
+              >
+                {gemmerRedigering ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                Gem ændringer
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
