@@ -635,6 +635,102 @@ const KRRegister = () => {
             <ScrollArea className="flex-1 min-h-0">
               <div className="px-6 py-5 space-y-6">
 
+                {/* Section: Bødetakster */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold px-2">Bødetakster</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+
+                  {redigerForm.sigtelseBoeder.length > 0 && (
+                    <div className="rounded-md border border-border overflow-hidden">
+                      <div className="divide-y divide-border/30">
+                        {redigerForm.sigtelseBoeder.map((b, i) => (
+                          <div key={i} className="flex items-center justify-between px-3 py-1.5 text-[11px]">
+                            <span className="text-foreground truncate pr-2">{b.paragraf && `${b.paragraf} — `}{b.beskrivelse}</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="font-mono text-warning">{b.beloeb.toLocaleString("da-DK")} kr</span>
+                              {b.faengselMaaneder > 0 && <span className="text-destructive">{b.faengselMaaneder}md</span>}
+                              <button onClick={() => setRedigerForm({ ...redigerForm, sigtelseBoeder: redigerForm.sigtelseBoeder.filter((_, j) => j !== i) })}
+                                className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between px-3 py-2 bg-primary/5 border-t border-primary/15 text-xs">
+                        <span className="font-semibold">Total</span>
+                        <span className="font-bold font-mono text-warning">
+                          {redigerForm.sigtelseBoeder.reduce((s, b) => s + b.beloeb, 0).toLocaleString("da-DK")} kr
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <Collapsible open={redigerBoederOpen} onOpenChange={setRedigerBoederOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button className="w-full h-9 text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Plus className="w-3.5 h-3.5" /> Tilføj / fjern bøder
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 space-y-2">
+                        <Input placeholder="Søg paragraf eller beskrivelse..." value={redigerBoederSoegning}
+                          onChange={(e) => setRedigerBoederSoegning(e.target.value)} className="bg-muted/30 border-border text-xs h-8" />
+                        <div className="space-y-1 max-h-[250px] overflow-y-auto">
+                          {(() => {
+                            const filtered = redigerBoederSoegning
+                              ? standardBoeder.filter(b => `${b.paragraf} ${b.beskrivelse}`.toLowerCase().includes(redigerBoederSoegning.toLowerCase()))
+                              : standardBoeder;
+                            const kats = Array.from(new Set(filtered.map(b => b.kategori)));
+                            return kats.map(kat => {
+                              const katBoeder = filtered.filter(b => b.kategori === kat);
+                              const isOpen = redigerOpenKat === kat;
+                              return (
+                                <Collapsible key={kat} open={isOpen} onOpenChange={() => setRedigerOpenKat(isOpen ? null : kat)}>
+                                  <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-1.5 rounded bg-muted/40 hover:bg-muted/60 transition-colors">
+                                    <span className="text-[11px] font-medium text-foreground">{kat}</span>
+                                    <ChevronDown className={cn("w-3 h-3 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+                                  </CollapsibleTrigger>
+                                  <CollapsibleContent>
+                                    <div className="mt-0.5 rounded border border-border overflow-hidden divide-y divide-border/30">
+                                      {katBoeder.map(b => {
+                                        const selected = redigerForm.sigtelseBoeder.some(v => v.boedeId === b.id);
+                                        return (
+                                          <button key={b.id} onClick={() => {
+                                            if (selected) {
+                                              setRedigerForm({ ...redigerForm, sigtelseBoeder: redigerForm.sigtelseBoeder.filter(v => v.boedeId !== b.id) });
+                                            } else {
+                                              setRedigerForm({ ...redigerForm, sigtelseBoeder: [...redigerForm.sigtelseBoeder, {
+                                                boedeId: b.id, paragraf: b.paragraf, beskrivelse: b.beskrivelse, beloeb: b.beloeb, faengselMaaneder: b.faengselMaaneder || 0,
+                                              }] });
+                                            }
+                                          }}
+                                            className={cn("w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors",
+                                              selected ? "bg-primary/5" : "hover:bg-muted/20"
+                                            )}>
+                                            <div className={cn("w-3.5 h-3.5 rounded-sm border flex items-center justify-center shrink-0",
+                                              selected ? "bg-primary border-primary" : "border-muted-foreground/25"
+                                            )}>{selected && <Check className="w-2 h-2 text-primary-foreground" />}</div>
+                                            <span className="flex-1 text-[11px] truncate">
+                                              {b.paragraf && <span className="text-muted-foreground">{b.paragraf} — </span>}{b.beskrivelse}
+                                            </span>
+                                            <span className="font-mono text-[9px] text-warning">{b.beloeb.toLocaleString("da-DK")}kr</span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+
                 {/* Section: Rapport */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
@@ -685,6 +781,26 @@ const KRRegister = () => {
                     <div className="h-px flex-1 bg-border" />
                     <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold px-2">Status</span>
                     <div className="h-px flex-1 bg-border" />
+                  </div>
+
+                  {/* Sagsstatus */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium text-foreground">Sagsstatus</Label>
+                    <div className="flex gap-1.5">
+                      {([
+                        { value: "aaben" as const, label: "Åben", color: "bg-success/15 text-success border-success/20" },
+                        { value: "under_efterforskning" as const, label: "Under efterforskning", color: "bg-primary/15 text-primary border-primary/20" },
+                        { value: "afventer_retten" as const, label: "Afventer retten", color: "bg-warning/15 text-warning border-warning/20" },
+                        { value: "lukket" as const, label: "Lukket", color: "bg-destructive/15 text-destructive border-destructive/20" },
+                      ]).map((s) => (
+                        <button key={s.value} onClick={() => setRedigerForm({ ...redigerForm, sagsStatus: s.value })}
+                          className={cn("px-3 py-1.5 rounded-md border text-[11px] font-medium transition-all",
+                            redigerForm.sagsStatus === s.value ? s.color : "border-border text-muted-foreground hover:bg-muted/30"
+                          )}>
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
