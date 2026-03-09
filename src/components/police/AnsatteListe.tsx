@@ -458,32 +458,56 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
 
       {/* Add education dialog */}
       <Dialog open={showAddUdd} onOpenChange={setShowAddUdd}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Tilføj uddannelse</DialogTitle>
+            <DialogTitle>Tilføj uddannelse / certifikat</DialogTitle>
             <DialogDescription>
               {uddTarget?.fornavn} {uddTarget?.efternavn}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <div className="grid grid-cols-2 gap-2">
-              {uddannelserOptions
-                .filter(u => !uddTarget?.uddannelser.includes(u))
-                .map(udd => (
-                  <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                    <Checkbox
-                      checked={selectedUdd.includes(udd)}
-                      onCheckedChange={(checked) => {
-                        setSelectedUdd(checked ? [...selectedUdd, udd] : selectedUdd.filter(u => u !== udd));
-                      }}
-                    />
-                    {udd}
-                  </label>
-                ))}
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Uddannelser</Label>
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleUddannelser
+                  .filter(u => !uddTarget?.uddannelser.includes(u))
+                  .map(udd => (
+                    <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={selectedUdd.includes(udd)}
+                        onCheckedChange={(checked) => {
+                          setSelectedUdd(checked ? [...selectedUdd, udd] : selectedUdd.filter(u => u !== udd));
+                        }}
+                      />
+                      {udd}
+                    </label>
+                  ))}
+                {alleUddannelser.filter(u => !uddTarget?.uddannelser.includes(u)).length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Alle uddannelser tilføjet</p>
+                )}
+              </div>
             </div>
-            {uddannelserOptions.filter(u => !uddTarget?.uddannelser.includes(u)).length === 0 && (
-              <p className="text-sm text-muted-foreground italic">Alle uddannelser er allerede tilføjet</p>
-            )}
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Certifikater</Label>
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleCertifikater
+                  .filter(c => !(uddTarget?.certifikater || []).includes(c))
+                  .map(cert => (
+                    <label key={cert} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={selectedUdd.includes(cert)}
+                        onCheckedChange={(checked) => {
+                          setSelectedUdd(checked ? [...selectedUdd, cert] : selectedUdd.filter(u => u !== cert));
+                        }}
+                      />
+                      {cert}
+                    </label>
+                  ))}
+                {alleCertifikater.filter(c => !(uddTarget?.certifikater || []).includes(c)).length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Alle certifikater tilføjet</p>
+                )}
+              </div>
+            </div>
             <div className="flex gap-2 pt-2">
               <Button onClick={handleAddUddannelse} disabled={selectedUdd.length === 0 || saving} className="bg-success hover:bg-success/90 text-success-foreground">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
