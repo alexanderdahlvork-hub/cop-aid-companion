@@ -188,7 +188,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
       </div>
 
       {/* User bar */}
-      <div className="border-t border-sidebar-border relative">
+      <div ref={profileRef} className="border-t border-sidebar-border relative">
         <button
           onClick={() => setShowProfile(!showProfile)}
           className="w-full p-3 flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
