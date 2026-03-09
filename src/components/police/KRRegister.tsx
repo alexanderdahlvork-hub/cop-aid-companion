@@ -12,6 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { personerApi, sigtelserApi, ejendommeApi, koeretoejerApi } from "@/lib/api";
 import type { Person, Sigtelse, Ejendom, Koeretoej, SigtelseBoede, SagsStatus } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
+import EfterlysningDialog from "./EfterlysningDialog";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { standardBoeder } from "@/data/bodetakster";
@@ -42,6 +43,7 @@ const KRRegister = () => {
   const [redigerBoederOpen, setRedigerBoederOpen] = useState(false);
   const [redigerBoederSoegning, setRedigerBoederSoegning] = useState("");
   const [redigerOpenKat, setRedigerOpenKat] = useState<string | null>(null);
+  const [efterlysningDialogOpen, setEfterlysningDialogOpen] = useState(false);
 
 
   useEffect(() => {
@@ -324,21 +326,7 @@ const KRRegister = () => {
                     size="sm"
                     variant="outline"
                     className="w-full border-warning/30 text-warning hover:bg-warning/10 hover:text-warning"
-                    disabled={updatingStatus}
-                    onClick={async () => {
-                      setUpdatingStatus(true);
-                      try {
-                        await personerApi.update(valgtPerson.id, { status: "eftersøgt" });
-                        const updated = { ...valgtPerson, status: "eftersøgt" as const };
-                        setValgtPerson(updated);
-                        setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-                        toast("Person er nu efterlyst");
-                      } catch (err) {
-                        console.error(err);
-                        toast("Fejl ved efterlysning");
-                      }
-                      setUpdatingStatus(false);
-                    }}
+                    onClick={() => setEfterlysningDialogOpen(true)}
                   >
                     <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
                     Efterlys person
@@ -590,6 +578,54 @@ const KRRegister = () => {
               toast.error("Kunne ikke gemme sigtelsen");
             }
             toast("Sigtelse oprettet og gemt");
+          }}
+        />
+      )}
+
+      {valgtPerson && (
+        <EfterlysningDialog
+          open={efterlysningDialogOpen}
+          onOpenChange={setEfterlysningDialogOpen}
+          person={valgtPerson}
+          onEfterlysningOprettet={async (data) => {
+            try {
+              // Set person as eftersøgt
+              await personerApi.update(valgtPerson.id, { status: "eftersøgt" });
+              const updated = { ...valgtPerson, status: "eftersøgt" as const };
+              setValgtPerson(updated);
+              setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+
+              // Create a sigtelse for the charges if any were selected
+              if (data.sigtelseBoeder.length > 0) {
+                const sig: Sigtelse = {
+                  id: Date.now().toString(),
+                  personId: valgtPerson.id,
+                  personNavn: `${valgtPerson.fornavn} ${valgtPerson.efternavn}`,
+                  personCpr: valgtPerson.cpr,
+                  dato: new Date().toISOString().split("T")[0],
+                  sigtelseBoeder: data.sigtelseBoeder,
+                  totalBoede: data.totalBoede,
+                  faengselMaaneder: data.totalFaengsel,
+                  fratagKoerekort: false,
+                  erkender: null,
+                  involveretBetjente: [],
+                  rapport: {
+                    haendelsesforloeb: data.begrundelse,
+                    konfiskeredeGenstande: "",
+                    magtanvendelse: "",
+                  },
+                  skabelonType: "Efterlysning",
+                  sagsStatus: "aaben",
+                };
+                await sigtelserApi.create(sig);
+                setSigtelser((prev) => [sig, ...prev]);
+              }
+
+              toast("Efterlysning oprettet");
+            } catch (err) {
+              console.error("Fejl ved oprettelse af efterlysning:", err);
+              toast("Fejl ved oprettelse af efterlysning");
+            }
           }}
         />
       )}
