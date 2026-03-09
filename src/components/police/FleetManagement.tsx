@@ -511,20 +511,27 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
           )}
 
           {/* Patrol grid - Aktive patruljer */}
-          <div>
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <Siren className="w-3.5 h-3.5" /> Aktive patruljer
-            </h3>
-                {g.patrols.map((patrol) => {
+          {filtreret.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <Siren className="w-3.5 h-3.5" /> Aktive patruljer ({filtreret.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                {filtreret.map((patrol) => {
                   const sc = statusConfig[patrol.status];
                   const isFull = patrol.medlemmer.length >= patrol.pladser;
+                  const inGroup = taskGroups.some(g => g.patruljeIds.includes(patrol.id));
                   return (
-                    <div key={patrol.id} className="rounded-lg border border-border bg-card/50 overflow-hidden">
+                    <div key={patrol.id} className={cn(
+                      "rounded-lg border bg-card/50 overflow-hidden",
+                      inGroup ? "border-primary/30" : "border-border"
+                    )}>
                       <div className="flex items-center justify-between px-3 py-2 bg-muted/20 border-b border-border/50">
                         <div className="flex items-center gap-2">
                           <div className={cn("w-2 h-2 rounded-full shrink-0", sc.dot,
                             patrol.medlemmer.length > 0 && "animate-pulse")} />
                           <span className="text-xs font-bold text-foreground">{patrol.navn}</span>
+                          {inGroup && <Badge className="text-[7px] h-3.5 px-1 bg-primary/10 text-primary border-primary/20">I gruppe</Badge>}
                         </div>
                         <div className="flex items-center gap-1">
                           <Select value={patrol.status} onValueChange={(v) => handleStatusChange(patrol.id, v as PatrolStatus)}>
@@ -552,10 +559,16 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                                 <span className="font-mono text-muted-foreground">{m.badgeNr}</span> — {m.navn}
                               </span>
                             </div>
-                            <button onClick={() => handleSignOff(patrol.id, m.badgeNr)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive/80">
-                              <UserMinus className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => setFlytMedlemDialog({ fromPatrolId: patrol.id, badgeNr: m.badgeNr, navn: m.navn })}
+                                className="text-primary/70 hover:text-primary" title="Flyt til anden patrulje">
+                                <ArrowRightLeft className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => handleSignOff(patrol.id, m.badgeNr)}
+                                className="text-destructive hover:text-destructive/80">
+                                <UserMinus className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                         ))}
                         {Array.from({ length: patrol.pladser - patrol.medlemmer.length }).map((_, i) => (
@@ -569,7 +582,7 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                       <div className="flex items-center justify-between px-3 py-1.5 border-t border-border/30 bg-muted/10">
                         {patrol.bemærkning ? (
                           <button onClick={() => { setBemærkningDialog(patrol.id); setBemærkningInput(patrol.bemærkning); }}
-                            className="text-[9px] text-muted-foreground truncate max-w-[45%] hover:text-foreground flex items-center gap-1">
+                            className="text-[9px] text-muted-foreground truncate max-w-[35%] hover:text-foreground flex items-center gap-1">
                             <MessageSquare className="w-2.5 h-2.5 shrink-0" /> {patrol.bemærkning}
                           </button>
                         ) : (
@@ -579,6 +592,12 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                           </button>
                         )}
                         <div className="flex items-center gap-1">
+                          {taskGroups.length > 0 && !inGroup && (
+                            <Button size="sm" variant="outline" className="h-5 text-[9px] px-1.5 gap-0.5"
+                              onClick={() => setFlytPatrulTilGruppeDialog(patrol.id)}>
+                              <Users className="w-2.5 h-2.5" /> Gruppe
+                            </Button>
+                          )}
                           {!isFull && (
                             <Button size="sm" className="h-5 text-[9px] px-2 gap-1"
                               onClick={() => { setTilfoejDialog(patrol.id); setBetjentSoegning(""); }}>
@@ -598,7 +617,7 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
                 })}
               </div>
             </div>
-          ))}
+          )}
 
           {patrols.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
