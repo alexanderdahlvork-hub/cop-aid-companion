@@ -1,4 +1,4 @@
-import { Home, Users, FileText, AlertTriangle, Radio, Target, MoreHorizontal } from "lucide-react";
+import { Home, Users, FileText, AlertTriangle, Radio, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabNavigationProps {
@@ -12,7 +12,6 @@ const tabs = [
   { id: "opret_sag", label: "Opret Sag", icon: FileText },
   { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
   { id: "fleet", label: "Flådestyring", icon: Radio },
-  { id: "nsk", label: "NSK", icon: Target },
 ];
 
 const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
