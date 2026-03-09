@@ -10,7 +10,7 @@ import type { Person, Koeretoej, Sigtelse } from "@/types/police";
 type Tab = "personer" | "koeretoejer";
 
 interface EfterlysningerProps {
-  onSigtPerson?: (personId: string) => void;
+  onSigtPerson?: (personId: string, sigtelser: Sigtelse[]) => void;
 }
 
 const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
