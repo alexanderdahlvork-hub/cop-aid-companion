@@ -1,4 +1,4 @@
-import { Home, Users, FileText, AlertTriangle, Radio, zontal } from "lucide-react";
+import { Home, Users, FileText, AlertTriangle, Radio, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabNavigationProps {
