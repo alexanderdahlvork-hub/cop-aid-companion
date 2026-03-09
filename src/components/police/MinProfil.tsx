@@ -134,7 +134,7 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Profile image */}
         <div className="bg-card border border-border rounded-lg p-5 space-y-3">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -219,7 +219,7 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
       </div>
 
       {/* Uddannelser & Certifikater & Titler */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Uddannelser */}
         <div className="bg-card border border-border rounded-lg p-5 space-y-3">
           <button
@@ -316,7 +316,7 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
             (baseret på rang: {currentUser.rang})
           </span>
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           {availablePermissions.map((perm) => {
             const hasAccess = effectiveTilladelser.includes(perm.id);
             const isRankDefault = rankDefaults.includes(perm.id);
