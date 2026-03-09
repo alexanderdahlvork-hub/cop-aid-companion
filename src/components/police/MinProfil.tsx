@@ -76,11 +76,17 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  // Mock applications
-  const ansoegninger = [
-    { id: 1, titel: "Ansøgning om forfremmelse", status: "Afventer", dato: "2025-12-01" },
-    { id: 2, titel: "Kursus: Avanceret efterforskning", status: "Godkendt", dato: "2025-11-15" },
-  ];
+  const [ansoegninger, setAnsoegninger] = useState<{ id: string; skabelonTitel: string; status: string; dato: string }[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("ansoegninger_indsendelser");
+    if (stored) {
+      try {
+        const all = JSON.parse(stored) as { id: string; skabelonTitel: string; ansoegerBadge: string; status: string; dato: string }[];
+        setAnsoegninger(all.filter(a => a.ansoegerBadge === currentUser.badgeNr));
+      } catch { /* ignore */ }
+    }
+  }, [currentUser.badgeNr]);
 
   return (
     <div className="space-y-6 w-full">

@@ -152,6 +152,9 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     const stored = localStorage.getItem("ansoegninger_indsendelser");
     return stored ? JSON.parse(stored) : defaultIndsendelser;
   });
+  useEffect(() => {
+    localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(indsendelser));
+  }, [indsendelser]);
   const [view, setView] = useState<View>("liste");
   const [activeTab, setActiveTab] = useState<"skabeloner" | "indsendelser" | "mine">("skabeloner");
   const [selectedSkabelon, setSelectedSkabelon] = useState<AnsoeningSkabelon | null>(null);
