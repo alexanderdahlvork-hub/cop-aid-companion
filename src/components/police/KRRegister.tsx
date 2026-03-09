@@ -455,7 +455,11 @@ const KRRegister = () => {
                               magtanvendelse: sig.rapport.magtanvendelse || "",
                               erkender: sig.erkender,
                               fratagKoerekort: sig.fratagKoerekort,
+                              sigtelseBoeder: [...sig.sigtelseBoeder],
+                              sagsStatus: sig.sagsStatus || "aaben",
                             });
+                            setRedigerBoederOpen(false);
+                            setRedigerBoederSoegning("");
                           }}
                         >
                           <Pencil className="w-3 h-3" /> Rediger
