@@ -242,54 +242,69 @@ const KRRegister = () => {
       {/* Right: Detail view — inspired by reference but custom design */}
       {valgtPerson ? (
         <ScrollArea className="flex-1 h-full max-h-[calc(100vh-4rem)]">
-          <div className="p-5 space-y-5 max-w-3xl">
+          <div className="p-6 space-y-6">
             {/* Back button on mobile */}
             <button
               onClick={() => setValgtPerson(null)}
-              className="lg:hidden flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-2"
+              className="lg:hidden flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               <X className="w-3.5 h-3.5" /> Tilbage
             </button>
 
-            {/* Person header row */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+            {/* Hero header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-base font-bold text-primary">
                   {valgtPerson.fornavn[0]}{valgtPerson.efternavn[0]}
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
-                  <p className="text-xs text-muted-foreground font-mono">{valgtPerson.cpr}</p>
+                  <h2 className="text-lg font-semibold text-foreground tracking-tight">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className="text-xs text-muted-foreground font-mono">{valgtPerson.cpr}</span>
+                    {valgtPerson.telefon && (
+                      <>
+                        <span className="text-muted-foreground/30">·</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {valgtPerson.telefon}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <Badge className={cn("text-[10px] border", statusConfig[valgtPerson.status].bg)}>
+                <span className={cn("w-1.5 h-1.5 rounded-full mr-1.5", statusConfig[valgtPerson.status].dot)} />
                 {statusConfig[valgtPerson.status].label}
               </Badge>
             </div>
 
             {valgtPerson.status === "eftersøgt" && (
-              <div className="flex items-center gap-2 p-2.5 rounded-md bg-warning/8 border border-warning/15">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/8 border border-warning/15">
                 <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
-                <span className="text-xs text-warning font-medium">Denne person er eftersøgt</span>
+                <span className="text-xs text-warning font-medium">Denne person er aktivt eftersøgt</span>
               </div>
             )}
 
-            {/* Info fields — dark input style like reference */}
-            <div className="space-y-3">
-              <SectionTitle>Personoplysninger</SectionTitle>
-              <div className="grid grid-cols-2 gap-3">
-                <ReadonlyField label="Fornavn" value={valgtPerson.fornavn} />
-                <ReadonlyField label="Efternavn" value={valgtPerson.efternavn} />
-                <ReadonlyField label="CPR-nummer" value={valgtPerson.cpr} />
-                <ReadonlyField label="Telefon" value={valgtPerson.telefon || "—"} />
-                <ReadonlyField label="Adresse" value={valgtPerson.adresse} />
-                <ReadonlyField label="Postnr / By" value={`${valgtPerson.postnr} ${valgtPerson.by}`} />
+            {/* Quick info grid */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="rounded-lg bg-muted/20 p-3">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Adresse</p>
+                <p className="text-sm text-foreground">{valgtPerson.adresse || "—"}</p>
+                <p className="text-xs text-muted-foreground">{valgtPerson.postnr} {valgtPerson.by}</p>
+              </div>
+              <div className="rounded-lg bg-muted/20 p-3">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Oprettet</p>
+                <p className="text-sm text-foreground">{valgtPerson.oprettet}</p>
+              </div>
+              <div className="rounded-lg bg-muted/20 p-3">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Sigtelser</p>
+                <p className="text-sm font-semibold text-foreground">{personSigtelser.length}</p>
+                {totalBoede > 0 && <p className="text-[10px] text-warning font-mono">{totalBoede.toLocaleString("da-DK")} kr i bøder</p>}
               </div>
             </div>
 
-            {/* Status */}
-            <div className="space-y-2">
-              <SectionTitle>Status</SectionTitle>
+            {/* Status & actions row */}
+            <div className="flex items-center gap-3">
               <Select
                 value={valgtPerson.status}
                 onValueChange={async (v) => {
@@ -306,7 +321,7 @@ const KRRegister = () => {
                   setUpdatingStatus(false);
                 }}
               >
-                <SelectTrigger className="h-9 text-xs bg-muted/30 border-border">
+                <SelectTrigger className="h-9 text-xs bg-muted/20 border-border w-44">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -320,157 +335,128 @@ const KRRegister = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="mt-2">
-                {valgtPerson.status !== "eftersøgt" ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full border-warning/30 text-warning hover:bg-warning/10 hover:text-warning"
-                    onClick={() => setEfterlysningDialogOpen(true)}
-                  >
-                    <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
-                    Efterlys person
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full border-success/30 text-success hover:bg-success/10 hover:text-success"
-                    disabled={updatingStatus}
-                    onClick={async () => {
-                      setUpdatingStatus(true);
-                      try {
-                        await personerApi.update(valgtPerson.id, { status: "aktiv" });
-                        const updated = { ...valgtPerson, status: "aktiv" as const };
-                        setValgtPerson(updated);
-                        setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-                        toast("Efterlysning fjernet");
-                      } catch (err) {
-                        console.error(err);
-                        toast("Fejl ved fjernelse af efterlysning");
-                      }
-                      setUpdatingStatus(false);
-                    }}
-                  >
-                    <Check className="w-3.5 h-3.5 mr-1.5" />
-                    Fjern efterlysning
-                  </Button>
-                )}
-              </div>
+              {valgtPerson.status !== "eftersøgt" ? (
+                <Button size="sm" variant="outline"
+                  className="h-9 border-warning/30 text-warning hover:bg-warning/10 hover:text-warning"
+                  onClick={() => setEfterlysningDialogOpen(true)}>
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1.5" /> Efterlys
+                </Button>
+              ) : (
+                <Button size="sm" variant="outline"
+                  className="h-9 border-success/30 text-success hover:bg-success/10 hover:text-success"
+                  disabled={updatingStatus}
+                  onClick={async () => {
+                    setUpdatingStatus(true);
+                    try {
+                      await personerApi.update(valgtPerson.id, { status: "aktiv" });
+                      const updated = { ...valgtPerson, status: "aktiv" as const };
+                      setValgtPerson(updated);
+                      setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+                      toast("Efterlysning fjernet");
+                    } catch (err) {
+                      console.error(err);
+                      toast("Fejl ved fjernelse af efterlysning");
+                    }
+                    setUpdatingStatus(false);
+                  }}>
+                  <Check className="w-3.5 h-3.5 mr-1.5" /> Fjern efterlysning
+                </Button>
+              )}
             </div>
 
-            {/* Beskrivelse / noter */}
+            {/* Noter */}
             {valgtPerson.noter && (
-              <div className="space-y-2">
-                <SectionTitle>Beskrivelse</SectionTitle>
-                <div className="bg-muted/30 border border-border rounded-md p-3 text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap min-h-[60px]">
-                  {valgtPerson.noter}
-                </div>
+              <div className="rounded-lg bg-muted/15 border border-border p-4">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Noter</p>
+                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{valgtPerson.noter}</p>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <ReadonlyField label="Oprettet af" value="System" />
-              <ReadonlyField label="Oprettet" value={valgtPerson.oprettet} />
-            </div>
-
-            {/* Telefon highlight */}
-            {valgtPerson.telefon && (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/15">
-                <Phone className="w-4 h-4 text-primary" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Telefonnummer</p>
-                  <p className="text-sm font-mono font-semibold text-foreground">{valgtPerson.telefon}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Ejendomme */}
-            {(() => {
-              const personEjendomme = ejendomme.filter(e =>
-                e.ejerCpr === valgtPerson.cpr ||
-                e.ejer.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase()
-              );
-              return (
-                <div className="space-y-2">
-                  <SectionTitle>Ejendomme ({personEjendomme.length})</SectionTitle>
-                  {personEjendomme.length > 0 ? (
-                    <div className="space-y-2">
-                      {personEjendomme.map((ej) => (
-                        <div key={ej.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
-                          <Building className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground">{ej.adresse}</p>
-                            <p className="text-xs text-muted-foreground">{ej.postnr} {ej.by}</p>
-                            <div className="flex gap-3 mt-1">
-                              <span className="text-[10px] text-muted-foreground">Matrikel: {ej.matrikelnr}</span>
-                              <span className="text-[10px] text-muted-foreground">Type: {ej.type}</span>
-                              <span className="text-[10px] text-muted-foreground">Vurd.: {ej.vurdering.toLocaleString("da-DK")} kr.</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+            {/* Ejendomme & Køretøjer side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {(() => {
+                const personEjendomme = ejendomme.filter(e =>
+                  e.ejerCpr === valgtPerson.cpr ||
+                  e.ejer.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase()
+                );
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Building className="w-3.5 h-3.5 text-muted-foreground" />
+                      <h3 className="text-xs font-semibold text-foreground">Ejendomme</h3>
+                      <span className="text-[10px] text-muted-foreground">({personEjendomme.length})</span>
                     </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic">Ingen ejendomme registreret</p>
-                  )}
-                </div>
-              );
-            })()}
+                    {personEjendomme.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {personEjendomme.map((ej) => (
+                          <div key={ej.id} className="p-2.5 rounded-md bg-muted/15 border border-border/50 text-xs">
+                            <p className="font-medium text-foreground truncate">{ej.adresse}</p>
+                            <p className="text-[10px] text-muted-foreground">{ej.postnr} {ej.by} · {ej.type} · {ej.vurdering.toLocaleString("da-DK")} kr</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground/60 italic pl-5">Ingen ejendomme</p>
+                    )}
+                  </div>
+                );
+              })()}
 
-            {/* Køretøjer */}
-            {(() => {
-              const personBiler = koeretoejer.filter(k =>
-                k.tildelt.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase() ||
-                k.tildelt === valgtPerson.cpr
-              );
-              return (
-                <div className="space-y-2">
-                  <SectionTitle>Køretøjer ({personBiler.length})</SectionTitle>
-                  {personBiler.length > 0 ? (
-                    <div className="space-y-2">
-                      {personBiler.map((bil) => (
-                        <div key={bil.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
-                          <Car className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0">
+              {(() => {
+                const personBiler = koeretoejer.filter(k =>
+                  k.tildelt.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase() ||
+                  k.tildelt === valgtPerson.cpr
+                );
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Car className="w-3.5 h-3.5 text-muted-foreground" />
+                      <h3 className="text-xs font-semibold text-foreground">Køretøjer</h3>
+                      <span className="text-[10px] text-muted-foreground">({personBiler.length})</span>
+                    </div>
+                    {personBiler.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {personBiler.map((bil) => (
+                          <div key={bil.id} className="p-2.5 rounded-md bg-muted/15 border border-border/50 text-xs">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-mono font-semibold text-foreground">{bil.nummerplade}</span>
+                              <span className="font-mono font-semibold text-foreground">{bil.nummerplade}</span>
                               {bil.status === "eftersøgt" && (
                                 <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-destructive/15 text-destructive">Eftersøgt</span>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground">{bil.maerke} {bil.model} ({bil.aargang})</p>
-                            <div className="flex gap-3 mt-1">
-                              <span className="text-[10px] text-muted-foreground">Farve: {bil.farve}</span>
-                              <span className="text-[10px] text-muted-foreground">Km: {bil.km.toLocaleString("da-DK")}</span>
-                            </div>
+                            <p className="text-[10px] text-muted-foreground">{bil.maerke} {bil.model} · {bil.farve} · {bil.km.toLocaleString("da-DK")} km</p>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic">Ingen køretøjer registreret</p>
-                  )}
-                </div>
-              );
-            })()}
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground/60 italic pl-5">Ingen køretøjer</p>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
 
-            <div className="space-y-4">
+            {/* Sigtelser */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <SectionTitle>Sigtelser</SectionTitle>
+                <div className="flex items-center gap-2">
+                  <Scale className="w-3.5 h-3.5 text-muted-foreground" />
+                  <h3 className="text-xs font-semibold text-foreground">Sigtelser</h3>
+                  <span className="text-[10px] text-muted-foreground">({personSigtelser.length})</span>
+                </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => setSigtelseDialogOpen(true)} className="h-8 text-xs gap-1.5">
-                    <Plus className="w-3.5 h-3.5" /> Tilføj sigtelse
+                  <Button size="sm" onClick={() => setSigtelseDialogOpen(true)} className="h-7 text-[11px] gap-1 px-2.5">
+                    <Plus className="w-3 h-3" /> Ny sigtelse
                   </Button>
-                  <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5"
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2.5"
                     onClick={() => toast("Bødeforlæg-funktion kommer snart")}>
-                    <FileText className="w-3.5 h-3.5" /> Opret bødeforlæg
+                    <FileText className="w-3 h-3" /> Bødeforlæg
                   </Button>
                 </div>
               </div>
 
               {personSigtelser.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                <div className="space-y-1.5">
                   {personSigtelser.map((sig) => {
                     const isLukket = sig.sagsStatus === "lukket";
                     const statusLabel = { aaben: "Åben", under_efterforskning: "Efterforskning", afventer_retten: "Afventer ret", lukket: "Lukket" }[sig.sagsStatus] || "Åben";
@@ -481,10 +467,11 @@ const KRRegister = () => {
                       lukket: "bg-destructive/15 text-destructive",
                     }[sig.sagsStatus] || "";
                     return (
-                      <div key={sig.id} className={cn(
-                        "rounded-lg border overflow-hidden cursor-pointer hover:shadow-md transition-shadow",
-                        isLukket ? "border-destructive/40" : "border-border"
-                      )}
+                      <div key={sig.id}
+                        className={cn(
+                          "flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition-all hover:bg-muted/20",
+                          isLukket ? "border-destructive/30 bg-destructive/5" : "border-border"
+                        )}
                         onClick={() => {
                           setRedigerSigtelse(sig);
                           setRedigerForm({
@@ -500,50 +487,31 @@ const KRRegister = () => {
                           setRedigerBoederSoegning("");
                         }}
                       >
-                        <div className={cn("px-3 py-2 border-b flex items-center justify-between",
-                          isLukket ? "bg-destructive/10 border-destructive/20" : "bg-muted/25 border-border"
-                        )}>
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <Scale className={cn("w-3 h-3 shrink-0", isLukket ? "text-destructive" : "text-primary")} />
-                            <span className={cn("text-[10px] font-semibold truncate", isLukket ? "text-destructive" : "text-foreground")}>{sig.dato}</span>
-                          </div>
-                          <Badge className={cn("text-[8px] px-1.5 py-0 h-4 shrink-0", statusCls)}>{statusLabel}</Badge>
-                        </div>
-                        <div className="px-3 py-2 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-muted-foreground">Bøde</span>
-                            <span className="text-[11px] font-mono font-bold text-warning">{sig.totalBoede.toLocaleString("da-DK")} kr</span>
-                          </div>
-                          {sig.faengselMaaneder > 0 && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] text-muted-foreground">Fængsel</span>
-                              <span className="text-[11px] font-medium text-foreground">{sig.faengselMaaneder} mdr</span>
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-muted-foreground">Erkender</span>
-                            <span className={cn("text-[10px] font-medium",
-                              sig.erkender === true ? "text-success" : sig.erkender === false ? "text-destructive" : "text-muted-foreground"
-                            )}>{sig.erkender === true ? "Ja" : sig.erkender === false ? "Nej" : "—"}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-foreground">{sig.dato}</span>
+                            {sig.skabelonType && <Badge variant="outline" className="text-[8px] h-4">{sig.skabelonType}</Badge>}
+                            <Badge className={cn("text-[8px] px-1.5 py-0 h-4", statusCls)}>{statusLabel}</Badge>
                           </div>
                           {sig.sigtelseBoeder.length > 0 && (
-                            <p className="text-[9px] text-muted-foreground/70 truncate">{sig.sigtelseBoeder.map(b => b.beskrivelse).join(", ")}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{sig.sigtelseBoeder.map(b => b.beskrivelse).join(", ")}</p>
                           )}
                         </div>
-                        {sig.skabelonType && (
-                          <div className="px-3 pb-1.5">
-                            <Badge variant="outline" className="text-[8px] h-4">{sig.skabelonType}</Badge>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-4 shrink-0">
+                          {sig.totalBoede > 0 && <span className="text-xs font-mono font-bold text-warning">{sig.totalBoede.toLocaleString("da-DK")} kr</span>}
+                          {sig.faengselMaaneder > 0 && <span className="text-xs font-mono font-medium text-foreground">{sig.faengselMaaneder} mdr</span>}
+                          <span className={cn("text-[10px] font-medium",
+                            sig.erkender === true ? "text-success" : sig.erkender === false ? "text-destructive" : "text-muted-foreground"
+                          )}>{sig.erkender === true ? "Erkender" : sig.erkender === false ? "Nægter" : "—"}</span>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <div className="rounded-lg border border-border bg-muted/10 p-8 text-center">
-                  <Scale className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Ingen sigtelser registreret</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Tryk "Tilføj sigtelse" for at oprette en</p>
+                <div className="rounded-lg border border-dashed border-border p-8 text-center">
+                  <Scale className="w-6 h-6 text-muted-foreground/20 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">Ingen sigtelser</p>
                 </div>
               )}
             </div>
