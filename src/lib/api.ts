@@ -254,7 +254,6 @@ export const sigtelserApi = {
     if (data.rapport !== undefined) row.rapport = JSON.stringify(data.rapport);
     if (data.erkender !== undefined) row.erkender = data.erkender === null ? null : data.erkender ? 1 : 0;
     if (data.fratagKoerekort !== undefined) row.fratagKoerekort = data.fratagKoerekort ? 1 : 0;
-    if (data.sagStatus !== undefined) row.sagStatus = data.sagStatus;
     await update("sigtelser", id, row);
   },
   async remove(id: string): Promise<void> {
