@@ -24,7 +24,7 @@ import Koeretoejsregister from "@/components/police/Koeretoejsregister";
 import OpretSag from "@/components/police/OpretSag";
 import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
-import type { Betjent } from "@/types/police";
+import type { Betjent, Sigtelse } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
   <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3 min-h-[400px]">
