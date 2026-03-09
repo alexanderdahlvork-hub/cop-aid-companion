@@ -12,7 +12,9 @@ const tabs = [
   { id: "opret_sag", label: "Opret Sag", icon: FileText },
   { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
   { id: "fleet", label: "Flådestyring", icon: Radio },
-  { id: "nst TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
+];
+
+const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
   return (
     <div className="h-12 bg-card border-b border-border flex items-center px-4 gap-1 shrink-0 overflow-x-auto">
       {tabs.map((tab) => {
