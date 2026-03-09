@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { betjenteApi } from "@/lib/api";
 import { isAdmin as checkIsAdmin } from "@/lib/permissions";
 import type { Betjent } from "@/types/police";
-import avldLogo from "@/assets/avld-logo.webp";
 
 interface LoginPageProps {
   onLogin: (betjent: Betjent, isAdmin: boolean) => void;
@@ -42,10 +41,10 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   }, [badgeNr]);
 
   const dagNavn = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"];
-  const maanedNavn = ["januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"];
+  const maanedNavn = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
 
   const datoStr = `${dagNavn[now.getDay()]} ${now.getDate()}. ${maanedNavn[now.getMonth()]}`;
-  const tidStr = `${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}`;
+  const tidStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   const handleLogin = async () => {
     if (!badgeNr || !kodeord) {
@@ -82,26 +81,26 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         backgroundImage: "url('/images/police-bg.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center"
-      }}>
-      
-      <div className="absolute inset-0 bg-black/50" />
+      }}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
 
-      <div className="relative z-10 text-center mb-16">
-        <p className="text-white/80 text-lg font-medium tracking-wide">{datoStr}</p>
+      <div className="relative z-10 text-center mb-12">
+        <p className="text-white/60 text-sm font-medium tracking-widest uppercase">{datoStr}</p>
         <p
-          className="text-white text-7xl font-bold tracking-tight cursor-default transition-all duration-500 hover:tracking-[0.3em] hover:text-primary hover:drop-shadow-[0_0_25px_hsl(213,80%,50%)] hover:scale-110"
-          style={{ fontFamily: "'Inter', sans-serif" }}>
-          
+          className="text-white text-6xl font-bold tracking-tight mt-1 cursor-default transition-all duration-500 hover:tracking-[0.2em] hover:text-primary"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
           {tidStr}
         </p>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs">
+      <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-[280px]">
         <div
-          className="w-20 h-20 rounded-full bg-background/20 backdrop-blur-sm border border-white/20 flex items-center justify-center cursor-pointer select-none overflow-hidden"
+          className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 flex items-center justify-center cursor-pointer select-none overflow-hidden transition-transform hover:scale-105"
           onClick={() => {
-            const now = Date.now();
-            if (now - lastTap < 500) {
+            const nowMs = Date.now();
+            if (nowMs - lastTap < 500) {
               const newCount = tapCount + 1;
               setTapCount(newCount);
               if (newCount >= 2) {
@@ -112,49 +111,47 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             } else {
               setTapCount(0);
             }
-            setLastTap(now);
-          }}>
-          
-          <img alt="AVLD Systems" className="w-14 h-14 object-contain" src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png" />
+            setLastTap(nowMs);
+          }}
+        >
+          <img alt="AVLD Systems" className="w-10 h-10 object-contain" src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png" />
         </div>
 
-        <p className="text-white text-sm font-semibold tracking-wide">
-          {matchedBetjent ?
-          `${matchedBetjent.fornavn} ${matchedBetjent.efternavn} | ${matchedBetjent.badgeNr}` :
-          badgeNr ?
-          badgeNr :
-          "Politi Tablet"
+        <p className="text-white/80 text-[13px] font-medium">
+          {matchedBetjent
+            ? `${matchedBetjent.fornavn} ${matchedBetjent.efternavn}`
+            : "Politi MDT"
           }
         </p>
 
         <Input
           placeholder="Badge nummer"
           value={badgeNr}
-          onChange={(e) => {setBadgeNr(e.target.value);setError("");}}
+          onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10" />
-        
+          className="bg-white/8 backdrop-blur-sm border-white/15 text-white placeholder:text-white/30 text-center h-9 text-[13px]"
+        />
 
         <Input
           type="password"
-          placeholder="Angiv adgangskode"
+          placeholder="Adgangskode"
           value={kodeord}
-          onChange={(e) => {setKodeord(e.target.value);setError("");}}
+          onChange={(e) => { setKodeord(e.target.value); setError(""); }}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          className="bg-black/40 backdrop-blur-sm border-white/20 text-white placeholder:text-white/40 text-center h-10"
-          disabled={loading} />
-        
+          className="bg-white/8 backdrop-blur-sm border-white/15 text-white placeholder:text-white/30 text-center h-9 text-[13px]"
+          disabled={loading}
+        />
 
-        {error && <p className="text-xs text-red-400">{error}</p>}
-        {loading && <p className="text-xs text-white/60">Logger ind...</p>}
+        {error && <p className="text-[11px] text-red-400">{error}</p>}
+        {loading && <p className="text-[11px] text-white/50">Logger ind...</p>}
       </div>
 
-      <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
-        <span className="text-white/50 text-xs">AVLD Systems</span>
-        <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
+      <div className="absolute bottom-3 right-4 z-10 flex items-center gap-1.5">
+        <span className="text-white/30 text-[10px]">AVLD Systems</span>
+        <div className="w-1.5 h-1.5 rounded-full bg-success" />
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default LoginPage;

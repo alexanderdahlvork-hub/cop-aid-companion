@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Opslagstavle from "@/components/police/Opslagstavle";
 import Sidebar from "@/components/police/Sidebar";
 import TopHeader from "@/components/police/TopHeader";
 import TabNavigation from "@/components/police/TabNavigation";
@@ -13,6 +12,7 @@ import ChangePasswordDialog from "@/components/police/ChangePasswordDialog";
 import Dashboard from "@/components/police/Dashboard";
 import MinProfil from "@/components/police/MinProfil";
 import Efterlysninger from "@/components/police/Efterlysninger";
+import Opslagstavle from "@/components/police/Opslagstavle";
 import NSKAfdeling from "@/components/police/afdelinger/NSKAfdeling";
 import LimaAfdeling from "@/components/police/afdelinger/LimaAfdeling";
 import FaerdselAfdeling from "@/components/police/afdelinger/FaerdselAfdeling";
@@ -23,15 +23,15 @@ import KortOgGPS from "@/components/police/KortOgGPS";
 import Ansoegninger from "@/components/police/Ansoegninger";
 import Koeretoejsregister from "@/components/police/Koeretoejsregister";
 import OpretSag from "@/components/police/OpretSag";
-import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
+import { FileText, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent, Sigtelse } from "@/types/police";
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
-  <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-3 min-h-[400px]">
-    {(() => { const Icon = icon; return <Icon className="w-10 h-10 opacity-30" />; })()}
-    <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-    <p className="text-sm">{desc}</p>
+  <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-2 min-h-[300px]">
+    {(() => { const Icon = icon; return <Icon className="w-8 h-8 opacity-20" />; })()}
+    <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+    <p className="text-[12px]">{desc}</p>
   </div>
 );
 
@@ -103,8 +103,8 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[hsl(220,16%,7%)] p-4">
-      <div className="relative w-full h-full rounded-2xl bg-background overflow-hidden border-2 border-[hsl(220,12%,22%)] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+    <div className="h-screen w-screen bg-[hsl(222,20%,5%)] p-3">
+      <div className="relative w-full h-full rounded-xl bg-background overflow-hidden border border-[hsl(222,12%,18%)] shadow-[0_0_60px_rgba(0,0,0,0.6)]">
         <div className="flex h-full overflow-hidden">
           <Sidebar
             activeTab={activeTab}
@@ -116,7 +116,7 @@ const Index = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <TopHeader currentUser={currentUser} isAdmin={isAdmin} />
             {activeTab === "forside" && <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />}
-            <main className="flex-1 p-5 overflow-y-auto">
+            <main className="flex-1 p-4 overflow-y-auto">
               {renderContent()}
             </main>
           </div>
