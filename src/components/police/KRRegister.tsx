@@ -321,7 +321,87 @@ const KRRegister = () => {
               <ReadonlyField label="Oprettet" value={valgtPerson.oprettet} />
             </div>
 
-            {/* Sigtelser */}
+            {/* Telefon highlight */}
+            {valgtPerson.telefon && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/15">
+                <Phone className="w-4 h-4 text-primary" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Telefonnummer</p>
+                  <p className="text-sm font-mono font-semibold text-foreground">{valgtPerson.telefon}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Ejendomme */}
+            {(() => {
+              const personEjendomme = ejendomme.filter(e =>
+                e.ejerCpr === valgtPerson.cpr ||
+                e.ejer.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase()
+              );
+              return (
+                <div className="space-y-2">
+                  <SectionTitle>Ejendomme ({personEjendomme.length})</SectionTitle>
+                  {personEjendomme.length > 0 ? (
+                    <div className="space-y-2">
+                      {personEjendomme.map((ej) => (
+                        <div key={ej.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                          <Building className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{ej.adresse}</p>
+                            <p className="text-xs text-muted-foreground">{ej.postnr} {ej.by}</p>
+                            <div className="flex gap-3 mt-1">
+                              <span className="text-[10px] text-muted-foreground">Matrikel: {ej.matrikelnr}</span>
+                              <span className="text-[10px] text-muted-foreground">Type: {ej.type}</span>
+                              <span className="text-[10px] text-muted-foreground">Vurd.: {ej.vurdering.toLocaleString("da-DK")} kr.</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Ingen ejendomme registreret</p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Køretøjer */}
+            {(() => {
+              const personBiler = koeretoejer.filter(k =>
+                k.tildelt.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase() ||
+                k.tildelt === valgtPerson.cpr
+              );
+              return (
+                <div className="space-y-2">
+                  <SectionTitle>Køretøjer ({personBiler.length})</SectionTitle>
+                  {personBiler.length > 0 ? (
+                    <div className="space-y-2">
+                      {personBiler.map((bil) => (
+                        <div key={bil.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+                          <Car className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-mono font-semibold text-foreground">{bil.nummerplade}</span>
+                              {bil.status === "eftersøgt" && (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-destructive/15 text-destructive">Eftersøgt</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{bil.maerke} {bil.model} ({bil.aargang})</p>
+                            <div className="flex gap-3 mt-1">
+                              <span className="text-[10px] text-muted-foreground">Farve: {bil.farve}</span>
+                              <span className="text-[10px] text-muted-foreground">Km: {bil.km.toLocaleString("da-DK")}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">Ingen køretøjer registreret</p>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <SectionTitle>Sigtelser</SectionTitle>
