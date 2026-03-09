@@ -73,7 +73,7 @@ const Index = () => {
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
       case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
-      case "opret_sag": return <OpretSag currentUser={currentUser} />;
+      case "opret_sag": return <OpretSag currentUser={currentUser} initialPersonId={sagInitialPersonId} initialSigtelser={sagInitialSigtelser} />;
       case "kr": return <KRRegister initialPersonId={krInitialPersonId} />;
       case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement currentUser={currentUser} isAdmin={isAdmin} />;
