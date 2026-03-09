@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
   BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
@@ -81,6 +81,18 @@ const bottomLinks = [
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: SidebarProps) => {
   const { theme, toggleTheme } = useTheme();
   const [showProfile, setShowProfile] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showProfile) return;
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfile(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showProfile]);
 
   const userAfd = currentUser.afdeling || "";
   const visibleAfdelinger = isAdmin
@@ -176,7 +188,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
       </div>
 
       {/* User bar */}
-      <div className="border-t border-sidebar-border relative">
+      <div ref={profileRef} className="border-t border-sidebar-border relative">
         <button
           onClick={() => setShowProfile(!showProfile)}
           className="w-full p-3 flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
