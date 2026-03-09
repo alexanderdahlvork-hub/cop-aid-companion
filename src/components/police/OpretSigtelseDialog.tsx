@@ -212,6 +212,9 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   });
 
   const handleSubmit = () => {
+    if (erkender === null) {
+      return;
+    }
     setSaving(true);
     if (totalKlip > 0 && !showKlipPopup) {
       setShowKlipPopup(true);
