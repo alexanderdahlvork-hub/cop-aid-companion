@@ -110,7 +110,15 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     setNewEfternavn("");
     setNewRang("");
     setNewUddannelser([]);
+    setNewCertifikater([]);
     setNewTilladelser([]);
+    setUddSearch("");
+    setCertSearch("");
+  };
+
+  const handleRangChange = (rang: string) => {
+    setNewRang(rang);
+    setNewTilladelser(getDefaultTilladelser(rang));
   };
 
   const handleAddUddannelse = async () => {
