@@ -330,6 +330,41 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
     setTilfoejTilGruppeDialog(null);
   };
 
+  // Move member from one patrol to another
+  const handleFlytMedlem = async (fromPatrolId: string, badgeNr: string, toPatrolId: string) => {
+    const from = patrols.find(p => p.id === fromPatrolId);
+    const to = patrols.find(p => p.id === toPatrolId);
+    if (!from || !to) return;
+    const member = from.medlemmer.find(m => m.badgeNr === badgeNr);
+    if (!member) return;
+    if (to.medlemmer.length >= to.pladser) { toast.error("Patruljen er fuld"); return; }
+    if (to.medlemmer.some(m => m.badgeNr === badgeNr)) { toast.error("Allerede tilmeldt"); return; }
+
+    const fromUpdated = { medlemmer: from.medlemmer.filter(m => m.badgeNr !== badgeNr), status: from.medlemmer.length <= 1 ? "ledig" as const : from.status };
+    const toUpdated = { medlemmer: [...to.medlemmer, member], status: "i_brug" as const };
+
+    await tryApi(() => patruljerApi.update(fromPatrolId, fromUpdated));
+    await tryApi(() => patruljerApi.update(toPatrolId, toUpdated));
+    updatePatrols(prev => prev.map(p => {
+      if (p.id === fromPatrolId) return { ...p, ...fromUpdated };
+      if (p.id === toPatrolId) return { ...p, ...toUpdated };
+      return p;
+    }));
+    toast(`${member.navn} flyttet til ${to.navn}`);
+    setFlytMedlemDialog(null);
+  };
+
+  // Add patrol to a group from patrol card
+  const handlePatrulTilGruppe = (patrolId: string, gruppeId: string) => {
+    updateGroups(prev => prev.map(g =>
+      g.id === gruppeId && !g.patruljeIds.includes(patrolId)
+        ? { ...g, patruljeIds: [...g.patruljeIds, patrolId] }
+        : g
+    ));
+    toast("Patrulje tilføjet til gruppe");
+    setFlytPatrulTilGruppeDialog(null);
+  };
+
   const bemandede = patrols.filter(p => p.medlemmer.length > 0);
 
   // Filter betjente for tilfoej dialog (exclude already in patrol)
