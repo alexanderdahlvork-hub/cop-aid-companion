@@ -124,6 +124,30 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
     ledig: patrols.filter((p) => p.status === "ledig" && p.medlemmer.length === 0).length,
   };
 
+  // Helper: update patrols state + persist
+  const updatePatrols = useCallback((updater: (prev: Patrulje[]) => Patrulje[]) => {
+    setPatrols(prev => {
+      const next = updater(prev);
+      if (useLocalStorage) saveToStorage(STORAGE_KEY, next);
+      return next;
+    });
+  }, [useLocalStorage]);
+
+  const updateGroups = useCallback((updater: (prev: TaskGroup[]) => TaskGroup[]) => {
+    setTaskGroups(prev => {
+      const next = updater(prev);
+      saveToStorage(GROUPS_KEY, next);
+      return next;
+    });
+  }, []);
+
+  // Try API, always update local state regardless
+  const tryApi = async (fn: () => Promise<void>) => {
+    if (!useLocalStorage) {
+      try { await fn(); } catch { /* localStorage fallback already applied */ }
+    }
+  };
+
   const handleSignOn = async (patrolId: string) => {
     if (!badgeInput.trim() || !navnInput.trim()) return;
     const patrol = patrols.find(p => p.id === patrolId);
@@ -133,11 +157,9 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
       medlemmer: [...patrol.medlemmer, { badgeNr: badgeInput.trim(), navn: navnInput.trim() }],
       status: "i_brug" as const,
     };
-    try {
-      await patruljerApi.update(patrolId, updated);
-      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
-      toast("Tilmeldt patrulje");
-    } catch (err) { console.error(err); toast.error("Fejl ved tilmelding"); }
+    await tryApi(() => patruljerApi.update(patrolId, updated));
+    updatePatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
+    toast("Tilmeldt patrulje");
     setBadgeInput("");
     setNavnInput("");
     setSignOnDialog(null);
@@ -148,25 +170,19 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
     if (!patrol) return;
     const updatedMedlemmer = patrol.medlemmer.filter(m => m.badgeNr !== badgeNr);
     const updated = { medlemmer: updatedMedlemmer, status: updatedMedlemmer.length === 0 ? "ledig" as const : patrol.status };
-    try {
-      await patruljerApi.update(patrolId, updated);
-      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
-      toast("Afmeldt patrulje");
-    } catch (err) { console.error(err); toast.error("Fejl ved afmelding"); }
+    await tryApi(() => patruljerApi.update(patrolId, updated));
+    updatePatrols(prev => prev.map(p => p.id === patrolId ? { ...p, ...updated } : p));
+    toast("Afmeldt patrulje");
   };
 
   const handleStatusChange = async (patrolId: string, status: PatrolStatus) => {
-    try {
-      await patruljerApi.update(patrolId, { status });
-      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, status } : p));
-    } catch (err) { console.error(err); toast.error("Fejl ved statusændring"); }
+    await tryApi(() => patruljerApi.update(patrolId, { status }));
+    updatePatrols(prev => prev.map(p => p.id === patrolId ? { ...p, status } : p));
   };
 
   const handleBemærkning = async (patrolId: string) => {
-    try {
-      await patruljerApi.update(patrolId, { bemærkning: bemærkningInput });
-      setPatrols(prev => prev.map(p => p.id === patrolId ? { ...p, bemærkning: bemærkningInput } : p));
-    } catch (err) { console.error(err); toast.error("Fejl"); }
+    await tryApi(() => patruljerApi.update(patrolId, { bemærkning: bemærkningInput }));
+    updatePatrols(prev => prev.map(p => p.id === patrolId ? { ...p, bemærkning: bemærkningInput } : p));
     setBemærkningDialog(null);
     setBemærkningInput("");
   };
@@ -188,11 +204,9 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
       status: medlemmer.length > 0 ? "i_brug" : "ledig",
       bemærkning: "",
     };
-    try {
-      await patruljerApi.create(newPatrol);
-      setPatrols(prev => [...prev, newPatrol]);
-      toast(autoTilmeld && currentUser ? "Patrulje oprettet — du er tilmeldt" : "Patrulje oprettet");
-    } catch (err) { console.error(err); toast.error("Fejl ved oprettelse"); }
+    await tryApi(() => patruljerApi.create(newPatrol));
+    updatePatrols(prev => [...prev, newPatrol]);
+    toast(autoTilmeld && currentUser ? "Patrulje oprettet — du er tilmeldt" : "Patrulje oprettet");
     setNyNavn("");
     setNyKategori("");
     setNyKategoriCustom("");
@@ -202,12 +216,10 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
   };
 
   const handleSletPatrulje = async (id: string) => {
-    try {
-      await patruljerApi.remove(id);
-      setPatrols(prev => prev.filter(p => p.id !== id));
-      setTaskGroups(prev => prev.map(g => ({ ...g, patruljeIds: g.patruljeIds.filter(pid => pid !== id) })));
-      toast("Patrulje slettet");
-    } catch (err) { console.error(err); toast.error("Fejl ved sletning"); }
+    await tryApi(() => patruljerApi.remove(id));
+    updatePatrols(prev => prev.filter(p => p.id !== id));
+    updateGroups(prev => prev.map(g => ({ ...g, patruljeIds: g.patruljeIds.filter(pid => pid !== id) })));
+    toast("Patrulje slettet");
   };
 
   const handleOpretGruppe = () => {
@@ -221,7 +233,7 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
       lederNavn: lederPatrol?.navn || "",
       patruljeIds: [gruppeLeder, ...gruppePatruljer.filter(id => id !== gruppeLeder)],
     };
-    setTaskGroups(prev => [...prev, newGroup]);
+    updateGroups(prev => [...prev, newGroup]);
     toast("Opgavegruppe oprettet");
     setGruppeNavn("");
     setGruppeRadio("");
@@ -231,7 +243,7 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
   };
 
   const handleFlytPatrol = (patrolId: string, fromGruppeId: string, toGruppeId: string) => {
-    setTaskGroups(prev => prev.map(g => {
+    updateGroups(prev => prev.map(g => {
       if (g.id === fromGruppeId) return { ...g, patruljeIds: g.patruljeIds.filter(id => id !== patrolId) };
       if (g.id === toGruppeId) return { ...g, patruljeIds: [...g.patruljeIds, patrolId] };
       return g;
@@ -242,12 +254,12 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
   };
 
   const handleSletGruppe = (gruppeId: string) => {
-    setTaskGroups(prev => prev.filter(g => g.id !== gruppeId));
+    updateGroups(prev => prev.filter(g => g.id !== gruppeId));
     toast("Opgavegruppe slettet");
   };
 
   const handleFjernFraGruppe = (patrolId: string, gruppeId: string) => {
-    setTaskGroups(prev => prev.map(g =>
+    updateGroups(prev => prev.map(g =>
       g.id === gruppeId ? { ...g, patruljeIds: g.patruljeIds.filter(id => id !== patrolId) } : g
     ));
   };
