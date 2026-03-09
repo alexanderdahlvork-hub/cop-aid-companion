@@ -99,7 +99,7 @@ const PatrolIcon = ({ type, className }: { type: string; className?: string }) =
   }
 };
 
-const FleetManagement = ({ currentUser }: FleetManagementProps) => {
+const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
   const [patrols, setPatrols] = useState<Patrulje[]>([]);
   const [loading, setLoading] = useState(true);
   const [useLocalStorage, setUseLocalStorage] = useState(false);
