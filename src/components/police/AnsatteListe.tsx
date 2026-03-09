@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { rangOrder } from "@/data/ansatte";
-import { canAddEducation, canCreateOfficer, canEditOfficer, canDeleteOfficer, availablePermissions } from "@/lib/permissions";
+import { rangOrder, alleUddannelser, alleCertifikater } from "@/data/ansatte";
+import { canAddEducation, canCreateOfficer, canEditOfficer, canDeleteOfficer, availablePermissions, getDefaultTilladelser } from "@/lib/permissions";
 import { betjenteApi, fyredeApi, rangApi } from "@/lib/api";
 import type { Betjent, FyretMedarbejder } from "@/types/police";
 
@@ -16,7 +16,7 @@ interface AnsatteListeProps {
   isAdmin: boolean;
 }
 
-const uddannelserOptions = ["Betjent", "Civil", "Romeo", "Helikopter", "LIMA", "LIMA-A", "K9", "SRT", "Teknik", "Efterforskning"];
+
 
 const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   const [ansatte, setAnsatte] = useState<Betjent[]>([]);
@@ -39,8 +39,11 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   const [newEfternavn, setNewEfternavn] = useState("");
   const [newRang, setNewRang] = useState("");
   const [newUddannelser, setNewUddannelser] = useState<string[]>([]);
+  const [newCertifikater, setNewCertifikater] = useState<string[]>([]);
   const [newTilladelser, setNewTilladelser] = useState<string[]>([]);
   const [selectedUdd, setSelectedUdd] = useState<string[]>([]);
+  const [uddSearch, setUddSearch] = useState("");
+  const [certSearch, setCertSearch] = useState("");
 
   const canCreate = canCreateOfficer(currentUser.rang);
   const canEducate = canAddEducation(currentUser.rang);
@@ -84,6 +87,7 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
       efternavn: newEfternavn,
       rang: newRang,
       uddannelser: newUddannelser,
+      certifikater: newCertifikater,
       tilladelser: newTilladelser,
       kodeord: "1234",
       foersteLogin: true,
@@ -106,7 +110,15 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
     setNewEfternavn("");
     setNewRang("");
     setNewUddannelser([]);
+    setNewCertifikater([]);
     setNewTilladelser([]);
+    setUddSearch("");
+    setCertSearch("");
+  };
+
+  const handleRangChange = (rang: string) => {
+    setNewRang(rang);
+    setNewTilladelser(getDefaultTilladelser(rang));
   };
 
   const handleAddUddannelse = async () => {
@@ -337,7 +349,7 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Stilling</Label>
-                <Select value={newRang} onValueChange={setNewRang}>
+                <Select value={newRang} onValueChange={handleRangChange}>
                   <SelectTrigger className="mt-1 bg-secondary border-border">
                     <SelectValue placeholder="Vælg rang" />
                   </SelectTrigger>
@@ -363,19 +375,52 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
             <p className="text-xs text-muted-foreground italic">Standardkodeord: 1234 — betjenten skal ændre det ved første login.</p>
 
             <div>
-              <Label className="text-xs text-muted-foreground mb-2 block">Uddannelser</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {uddannelserOptions.map(udd => (
-                  <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                    <Checkbox
-                      checked={newUddannelser.includes(udd)}
-                      onCheckedChange={(checked) => {
-                        setNewUddannelser(checked ? [...newUddannelser, udd] : newUddannelser.filter(u => u !== udd));
-                      }}
-                    />
-                    {udd}
-                  </label>
-                ))}
+              <Label className="text-xs text-muted-foreground mb-2 block">Uddannelser ({newUddannelser.length} valgt)</Label>
+              <Input
+                placeholder="Søg uddannelse..."
+                value={uddSearch}
+                onChange={(e) => setUddSearch(e.target.value)}
+                className="mb-2 bg-secondary border-border text-sm"
+              />
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleUddannelser
+                  .filter(u => u.toLowerCase().includes(uddSearch.toLowerCase()))
+                  .map(udd => (
+                    <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={newUddannelser.includes(udd)}
+                        onCheckedChange={(checked) => {
+                          setNewUddannelser(checked ? [...newUddannelser, udd] : newUddannelser.filter(u => u !== udd));
+                        }}
+                      />
+                      {udd}
+                    </label>
+                  ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">Certifikater ({newCertifikater.length} valgt)</Label>
+              <Input
+                placeholder="Søg certifikat..."
+                value={certSearch}
+                onChange={(e) => setCertSearch(e.target.value)}
+                className="mb-2 bg-secondary border-border text-sm"
+              />
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleCertifikater
+                  .filter(c => c.toLowerCase().includes(certSearch.toLowerCase()))
+                  .map(cert => (
+                    <label key={cert} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={newCertifikater.includes(cert)}
+                        onCheckedChange={(checked) => {
+                          setNewCertifikater(checked ? [...newCertifikater, cert] : newCertifikater.filter(c => c !== cert));
+                        }}
+                      />
+                      {cert}
+                    </label>
+                  ))}
               </div>
             </div>
 
@@ -413,32 +458,56 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
 
       {/* Add education dialog */}
       <Dialog open={showAddUdd} onOpenChange={setShowAddUdd}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Tilføj uddannelse</DialogTitle>
+            <DialogTitle>Tilføj uddannelse / certifikat</DialogTitle>
             <DialogDescription>
               {uddTarget?.fornavn} {uddTarget?.efternavn}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <div className="grid grid-cols-2 gap-2">
-              {uddannelserOptions
-                .filter(u => !uddTarget?.uddannelser.includes(u))
-                .map(udd => (
-                  <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                    <Checkbox
-                      checked={selectedUdd.includes(udd)}
-                      onCheckedChange={(checked) => {
-                        setSelectedUdd(checked ? [...selectedUdd, udd] : selectedUdd.filter(u => u !== udd));
-                      }}
-                    />
-                    {udd}
-                  </label>
-                ))}
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Uddannelser</Label>
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleUddannelser
+                  .filter(u => !uddTarget?.uddannelser.includes(u))
+                  .map(udd => (
+                    <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={selectedUdd.includes(udd)}
+                        onCheckedChange={(checked) => {
+                          setSelectedUdd(checked ? [...selectedUdd, udd] : selectedUdd.filter(u => u !== udd));
+                        }}
+                      />
+                      {udd}
+                    </label>
+                  ))}
+                {alleUddannelser.filter(u => !uddTarget?.uddannelser.includes(u)).length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Alle uddannelser tilføjet</p>
+                )}
+              </div>
             </div>
-            {uddannelserOptions.filter(u => !uddTarget?.uddannelser.includes(u)).length === 0 && (
-              <p className="text-sm text-muted-foreground italic">Alle uddannelser er allerede tilføjet</p>
-            )}
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Certifikater</Label>
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleCertifikater
+                  .filter(c => !(uddTarget?.certifikater || []).includes(c))
+                  .map(cert => (
+                    <label key={cert} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={selectedUdd.includes(cert)}
+                        onCheckedChange={(checked) => {
+                          setSelectedUdd(checked ? [...selectedUdd, cert] : selectedUdd.filter(u => u !== cert));
+                        }}
+                      />
+                      {cert}
+                    </label>
+                  ))}
+                {alleCertifikater.filter(c => !(uddTarget?.certifikater || []).includes(c)).length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Alle certifikater tilføjet</p>
+                )}
+              </div>
+            </div>
             <div className="flex gap-2 pt-2">
               <Button onClick={handleAddUddannelse} disabled={selectedUdd.length === 0 || saving} className="bg-success hover:bg-success/90 text-success-foreground">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
