@@ -115,7 +115,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             setLastTap(now);
           }}>
           
-          <img alt="AVLD Systems" className="w-14 h-14 object-contain" src="https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fwww.facebook.com%2Fpoliti%2F&ved=0CBYQjRxqFwoTCKCeveu7kpMDFQAAAAAdAAAAABAI&opi=89978449" />
+          <img alt="AVLD Systems" className="w-14 h-14 object-contain" src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png" />
         </div>
 
         <p className="text-white text-sm font-semibold tracking-wide">
