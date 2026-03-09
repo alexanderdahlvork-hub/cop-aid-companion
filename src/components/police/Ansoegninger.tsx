@@ -17,6 +17,8 @@ import { betjenteApi } from "@/lib/api";
 interface AnsoegingerProps {
   currentUser: Betjent;
   isAdmin: boolean;
+  alleBetjente?: Betjent[];
+  onBetjentUpdated?: (betjent: Betjent) => void;
 }
 
 interface AnsoeningSkabelon {
