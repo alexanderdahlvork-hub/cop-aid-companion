@@ -98,12 +98,9 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-black/90 p-3">
-      <div className="relative w-full h-full max-w-[1400px] max-h-[900px] rounded-2xl border-[6px] border-[hsl(220,15%,22%)] bg-background shadow-[0_0_60px_rgba(0,0,0,0.6),inset_0_0_1px_rgba(255,255,255,0.1)] overflow-hidden">
-        {/* Camera dot */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[hsl(220,10%,30%)] z-50" />
-
-        <div className="flex h-full overflow-hidden">
+    <div className="h-screen w-screen flex items-center justify-center bg-[hsl(220,15%,8%)] p-4">
+      <div className="relative w-full h-full rounded-[20px] bg-background overflow-hidden shadow-[0_0_0_3px_hsl(220,12%,18%),0_0_0_5px_hsl(220,10%,12%),0_8px_40px_rgba(0,0,0,0.5)]">
+        <div className="flex h-full overflow-hidden rounded-[16px]">
           <Sidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
