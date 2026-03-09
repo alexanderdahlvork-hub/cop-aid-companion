@@ -460,7 +460,30 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
                                             className={cn("w-5 h-5 rounded flex items-center justify-center text-xs font-bold transition-colors",
                                               count > 0 ? "bg-destructive/15 text-destructive hover:bg-destructive/25" : "bg-muted/30 text-muted-foreground/30 cursor-not-allowed"
                                             )}>−</button>
-                                          <span className={cn("w-6 text-center text-[11px] font-mono font-semibold", count > 0 ? "text-primary" : "text-muted-foreground/50")}>{count}</span>
+                                          <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={count}
+                                            onChange={(e) => {
+                                              const val = parseInt(e.target.value) || 0;
+                                              const current = getBoederCount(b.id);
+                                              if (val > current) {
+                                                const toAdd = val - current;
+                                                const newEntries = Array.from({ length: toAdd }, () => ({
+                                                  boedeId: b.id, paragraf: b.paragraf, beskrivelse: b.beskrivelse,
+                                                  beloeb: b.beloeb, faengselMaaneder: b.faengselMaaneder || 0,
+                                                }));
+                                                setValgteBoeder([...valgteBoeder, ...newEntries]);
+                                              } else if (val < current) {
+                                                let remaining = current - val;
+                                                setValgteBoeder(valgteBoeder.filter(v => {
+                                                  if (v.boedeId === b.id && remaining > 0) { remaining--; return false; }
+                                                  return true;
+                                                }));
+                                              }
+                                            }}
+                                            className={cn("w-7 h-5 text-center text-[11px] font-mono font-semibold bg-transparent border border-border/50 rounded focus:outline-none focus:border-primary", count > 0 ? "text-primary" : "text-muted-foreground/50")}
+                                          />
                                           <button onClick={() => addBoede(b)}
                                             className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold bg-primary/15 text-primary hover:bg-primary/25 transition-colors">+</button>
                                         </div>
