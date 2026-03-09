@@ -148,7 +148,10 @@ type View = "liste" | "opret" | "rediger" | "vis_indsendelse" | "ansog";
 
 const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerProps) => {
   const [skabeloner, setSkabeloner] = useState<AnsoeningSkabelon[]>(defaultSkabeloner);
-  const [indsendelser, setIndsendelser] = useState<IndsendelseData[]>(defaultIndsendelser);
+  const [indsendelser, setIndsendelser] = useState<IndsendelseData[]>(() => {
+    const stored = localStorage.getItem("ansoegninger_indsendelser");
+    return stored ? JSON.parse(stored) : defaultIndsendelser;
+  });
   const [view, setView] = useState<View>("liste");
   const [activeTab, setActiveTab] = useState<"skabeloner" | "indsendelser" | "mine">("skabeloner");
   const [selectedSkabelon, setSelectedSkabelon] = useState<AnsoeningSkabelon | null>(null);

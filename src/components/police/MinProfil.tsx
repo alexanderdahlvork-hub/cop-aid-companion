@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase,
   Star, ChevronDown, ChevronRight, CheckCircle2
