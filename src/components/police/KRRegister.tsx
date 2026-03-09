@@ -860,6 +860,10 @@ const KRRegister = () => {
                   ...redigerSigtelse,
                   erkender: redigerForm.erkender,
                   fratagKoerekort: redigerForm.fratagKoerekort,
+                  sigtelseBoeder: redigerForm.sigtelseBoeder,
+                  totalBoede: redigerForm.sigtelseBoeder.reduce((s, b) => s + b.beloeb, 0),
+                  faengselMaaneder: redigerForm.sigtelseBoeder.reduce((s, b) => s + b.faengselMaaneder, 0),
+                  sagsStatus: redigerForm.sagsStatus,
                   rapport: {
                     ...redigerSigtelse.rapport,
                     haendelsesforloeb: redigerForm.haendelsesforloeb,
