@@ -19,7 +19,7 @@ export interface Koeretoej {
   model: string;
   aargang: string;
   farve: string;
-  status: 'aktiv' | 'i_brug' | 'vedligehold' | 'ude_af_drift';
+  status: 'aktiv' | 'i_brug' | 'vedligehold' | 'ude_af_drift' | 'eftersøgt';
   tildelt: string;
   sidstService: string;
   km: number;
