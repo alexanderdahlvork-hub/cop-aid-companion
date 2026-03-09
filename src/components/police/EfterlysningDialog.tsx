@@ -32,6 +32,7 @@ const EfterlysningDialog = ({ open, onOpenChange, person, onEfterlysningOprettet
   const [openKat, setOpenKat] = useState<string | null>(null);
   const [soegning, setSoegning] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const boeder = standardBoeder;
 
@@ -56,6 +57,10 @@ const EfterlysningDialog = ({ open, onOpenChange, person, onEfterlysningOprettet
   };
 
   const handleSubmit = () => {
+    setShowConfirm(true);
+  };
+
+  const confirmSubmit = () => {
     setSaving(true);
     onEfterlysningOprettet({
       begrundelse,
@@ -64,13 +69,70 @@ const EfterlysningDialog = ({ open, onOpenChange, person, onEfterlysningOprettet
       totalFaengsel,
     });
     setSaving(false);
+    setShowConfirm(false);
     onOpenChange(false);
-    // Reset
     setBegrundelse("");
     setValgteBoeder([]);
     setStraffeOpen(false);
     setSoegning("");
   };
+
+  if (showConfirm) {
+    return (
+      <Dialog open={open} onOpenChange={(o) => { if (!o) { setShowConfirm(false); onOpenChange(false); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-warning">
+              <AlertTriangle className="w-5 h-5" /> Bekræft efterlysning
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-foreground">
+              Er du sikker på, at du vil efterlyse <span className="font-semibold">{person.fornavn} {person.efternavn}</span>?
+            </p>
+            <div className="rounded-lg bg-warning/10 border border-warning/20 p-3 space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Person</span>
+                <span className="font-medium text-foreground">{person.fornavn} {person.efternavn}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">CPR</span>
+                <span className="font-mono text-foreground">{person.cpr}</span>
+              </div>
+              {valgteBoeder.length > 0 && (
+                <>
+                  <div className="border-t border-warning/20 pt-2 flex justify-between text-xs">
+                    <span className="text-muted-foreground">Antal forhold</span>
+                    <span className="font-bold text-foreground">{valgteBoeder.length}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Samlet bøde</span>
+                    <span className="font-mono font-bold text-warning">{totalBoede.toLocaleString("da-DK")} kr</span>
+                  </div>
+                  {totalFaengsel > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Fængsel</span>
+                      <span className="font-mono font-bold text-destructive">{totalFaengsel} mdr</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Personen vil blive markeret som eftersøgt og vil fremgå på efterlysningslisten.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowConfirm(false)}>Tilbage</Button>
+              <Button className="flex-1 bg-warning hover:bg-warning/90 text-warning-foreground" onClick={confirmSubmit}>
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />}
+                Bekræft efterlysning
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
