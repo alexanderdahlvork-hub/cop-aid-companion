@@ -69,6 +69,7 @@ const Index = () => {
       case "boeder": return <Bodetakster />;
       case "kr": return <KRRegister />;
       case "fleet": return <FleetManagement />;
+      case "flaade": return <FleetManagement />;
       case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return <Efterlysninger />;
       case "nsk": return <NSKAfdeling />;
@@ -77,7 +78,7 @@ const Index = () => {
       case "efterforskning": return <EfterforskningSide />;
       case "sig": return <SIGAfdeling />;
       case "remeo": return <RemeoAfdeling />;
-      case "radio": return placeholderTab(Radio, "Kommunikation", "Kommer snart");
+      case "patruljer": return placeholderTab(Radio, "Patruljeenheder", "Kommer snart");
       case "kort": return <KortOgGPS />;
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");
       case "ansoegninger": return <Ansoegninger currentUser={currentUser} isAdmin={isAdmin} />;
