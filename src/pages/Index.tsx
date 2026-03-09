@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Sidebar from "@/components/police/Sidebar";
+import TopHeader from "@/components/police/TopHeader";
+import TabNavigation from "@/components/police/TabNavigation";
 import KRRegister from "@/components/police/KRRegister";
 import FleetManagement from "@/components/police/FleetManagement";
 import Ejendomsregister from "@/components/police/Ejendomsregister";
@@ -17,7 +19,7 @@ import EfterforskningSide from "@/components/police/afdelinger/EfterforskningSid
 import SIGAfdeling from "@/components/police/afdelinger/SIGAfdeling";
 import RemeoAfdeling from "@/components/police/afdelinger/RemeoAfdeling";
 import KortOgGPS from "@/components/police/KortOgGPS";
-import { FileText, MapPin, Radio, Settings, AlertTriangle, Building, BookOpen } from "lucide-react";
+import { FileText, MapPin, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
 import type { Betjent } from "@/types/police";
 
@@ -89,7 +91,7 @@ const Index = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -97,9 +99,13 @@ const Index = () => {
         currentUser={currentUser}
         isAdmin={isAdmin}
       />
-      <main className="flex-1 p-4 lg:p-6 overflow-y-auto relative">
-        {renderContent()}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopHeader currentUser={currentUser} isAdmin={isAdmin} />
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <main className="flex-1 p-5 overflow-y-auto">
+          {renderContent()}
+        </main>
+      </div>
 
       <ChangePasswordDialog
         open={showChangePassword}

@@ -3,7 +3,7 @@ import {
   Shield, Users, Car, FileText, Radio, MapPin, Settings,
   BadgeCheck, Scale, Home, BookOpen, Search, AlertTriangle,
   Building, ChevronDown, ChevronRight, User, Moon, LogOut,
-  Target, Crosshair, Gauge, Heart, FolderOpen
+  Target, Crosshair, Gauge, Heart, FolderOpen, Circle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -17,201 +17,160 @@ interface SidebarProps {
   isAdmin: boolean;
 }
 
-interface MenuItem {
-  id: string;
+interface SidebarSection {
   label: string;
   icon: typeof Home;
-  children?: MenuItem[];
-  afdeling?: string; // restrict to this department
+  items: { id: string; label: string; icon: typeof Home }[];
 }
 
-const AFDELINGER: { id: string; label: string; icon: typeof Home; tabs: MenuItem[] }[] = [
+const sections: SidebarSection[] = [
   {
-    id: "NSK", label: "NSK", icon: Target,
-    tabs: [{ id: "nsk", label: "Organiseret Kriminalitet", icon: Target }],
-  },
-  {
-    id: "Lima", label: "Lima", icon: Shield,
-    tabs: [{ id: "lima", label: "Aktionsstyrken", icon: Shield }],
-  },
-  {
-    id: "Færdsel", label: "Færdsel", icon: Gauge,
-    tabs: [{ id: "faerdsel", label: "Færdselsafdeling", icon: Gauge }],
-  },
-  {
-    id: "Efterforskning", label: "Efterforskning", icon: FolderOpen,
-    tabs: [{ id: "efterforskning", label: "Efterforskning", icon: FolderOpen }],
-  },
-  {
-    id: "SIG", label: "SIG", icon: Crosshair,
-    tabs: [{ id: "sig", label: "Særlig Indsatsgruppe", icon: Crosshair }],
-  },
-  {
-    id: "Remeo", label: "Remeo", icon: Heart,
-    tabs: [{ id: "remeo", label: "Redning & Medicinsk", icon: Heart }],
-  },
-];
-
-const menuItems: MenuItem[] = [
-  {
-    id: "hjem", label: "Hjem", icon: Home,
-    children: [
+    label: "OVERSIGT",
+    icon: Circle,
+    items: [
       { id: "forside", label: "Forside", icon: Home },
-      { id: "guides", label: "Guides & FAQ", icon: BookOpen },
+      { id: "guides", label: "Seneste Sager", icon: FileText },
+      { id: "kort", label: "Aktiv Patrulje", icon: Radio },
     ],
   },
   {
-    id: "database", label: "Database registre", icon: Search,
-    children: [
+    label: "DATABASE",
+    icon: Search,
+    items: [
       { id: "kr", label: "Personregister", icon: Users },
       { id: "fleet", label: "Køretøjsregister", icon: Car },
       { id: "ejendomme", label: "Ejendomsregister", icon: Building },
-      { id: "efterlysninger", label: "Efterlysninger", icon: AlertTriangle },
     ],
   },
   {
-    id: "flaade", label: "Flådestyring & Opkald", icon: Radio,
-    children: [
-      { id: "radio", label: "Kommunikation", icon: Radio },
-      { id: "kort", label: "Kort", icon: MapPin },
+    label: "SAGER",
+    icon: FileText,
+    items: [
+      { id: "opret_sag", label: "Opret Sag", icon: FileText },
+      { id: "boeder", label: "Sagsarkiv", icon: FolderOpen },
     ],
   },
-  { id: "boeder", label: "Bødetakster", icon: Scale },
-  { id: "kontor", label: "Kontor", icon: Building },
   {
-    id: "ansatte_group", label: "Ansatte", icon: BadgeCheck,
-    children: [
-      { id: "ansatte", label: "Alle ansatte", icon: Users },
+    label: "EFTERLYSNINGER",
+    icon: AlertTriangle,
+    items: [
+      { id: "efterlysninger", label: "Flådestyring", icon: Radio },
+      { id: "radio", label: "Patruljeenheder", icon: MapPin },
     ],
   },
 ];
 
+const AFDELINGER = [
+  { id: "NSK", label: "NSK", icon: Target, tab: "nsk" },
+  { id: "Lima", label: "Lima", icon: Shield, tab: "lima" },
+  { id: "Færdsel", label: "Færdsel", icon: Gauge, tab: "faerdsel" },
+  { id: "Efterforskning", label: "Efterforskning", icon: FolderOpen, tab: "efterforskning" },
+  { id: "SIG", label: "SIG", icon: Crosshair, tab: "sig" },
+  { id: "Remeo", label: "Remeo", icon: Heart, tab: "remeo" },
+];
+
+const bottomLinks = [
+  { id: "ansatte", label: "Ansatte", icon: BadgeCheck },
+  { id: "kontor", label: "Kontor", icon: Building },
+  { id: "guides_faq", label: "Guides & FAQ", icon: BookOpen },
+  { id: "profil", label: "Systemindstillinger", icon: Settings },
+];
+
 const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: SidebarProps) => {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ hjem: true, database: true });
-  const [showProfile, setShowProfile] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const [showProfile, setShowProfile] = useState(false);
 
-  const toggleGroup = (id: string) => {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const isActiveInGroup = (item: MenuItem): boolean => {
-    if (item.children) return item.children.some((c) => c.id === activeTab);
-    return item.id === activeTab;
-  };
+  const userAfd = currentUser.afdeling || "";
+  const visibleAfdelinger = isAdmin
+    ? AFDELINGER
+    : AFDELINGER.filter((a) => userAfd.toLowerCase().includes(a.id.toLowerCase()));
 
   return (
-    <div className="w-20 lg:w-60 bg-sidebar border-r border-sidebar-border flex flex-col h-screen relative">
-      {/* Header */}
-      <div className="p-3 border-b border-sidebar-border flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-          <Shield className="w-4 h-4 text-primary" />
-        </div>
-        <div className="hidden lg:block min-w-0">
-          <h1 className="font-bold text-sidebar-foreground text-xs tracking-wide">Rigspolitiet</h1>
-          <p className="text-[10px] text-muted-foreground truncate">Adgang baseret på stilling</p>
-        </div>
+    <div className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col h-full shrink-0">
+      {/* Title */}
+      <div className="px-4 py-5">
+        <h1 className="text-2xl font-black text-foreground tracking-wide">POLITI</h1>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        {menuItems.map((item) => {
-          if (item.children) {
-            const isOpen = expanded[item.id] ?? false;
-            const isActive = isActiveInGroup(item);
-            return (
-              <div key={item.id}>
+      {/* Sections */}
+      <nav className="flex-1 px-3 space-y-5 overflow-y-auto pb-4">
+        {sections.map((section) => (
+          <div key={section.label}>
+            <div className="flex items-center gap-2 px-2 mb-2">
+              <section.icon className="w-3 h-3 text-primary" />
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{section.label}</span>
+            </div>
+            <div className="space-y-0.5 ml-1">
+              {section.items.map((item) => (
                 <button
-                  onClick={() => toggleGroup(item.id)}
+                  key={item.id}
+                  onClick={() => onTabChange(item.id)}
                   className={cn(
-                    "w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all",
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-sidebar-accent-foreground"
+                    "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all",
+                    activeTab === item.id
+                      ? "text-primary font-semibold"
+                      : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
                   )}
                 >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="hidden lg:block flex-1 text-left">{item.label}</span>
-                  <span className="hidden lg:block">
-                    {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                  </span>
+                  <span className="text-muted-foreground/50">•</span>
+                  <item.icon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{item.label}</span>
                 </button>
-                {isOpen && (
-                  <div className="ml-4 lg:ml-6 space-y-0.5">
-                    {item.children.map((child) => (
-                      <button
-                        key={child.id}
-                        onClick={() => onTabChange(child.id)}
-                        className={cn(
-                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-all",
-                          activeTab === child.id
-                            ? "bg-primary/15 text-primary font-semibold"
-                            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                        )}
-                      >
-                        <child.icon className="w-3.5 h-3.5 shrink-0" />
-                        <span className="hidden lg:block">{child.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
-              className={cn(
-                "w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs font-medium transition-all",
-                activeTab === item.id
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <item.icon className="w-4 h-4 shrink-0" />
-              <span className="hidden lg:block">{item.label}</span>
-            </button>
-          );
-        })}
-
-        {/* Afdelinger */}
-        {(() => {
-          const userAfd = currentUser.afdeling || "";
-          const visibleAfdelinger = isAdmin
-            ? AFDELINGER
-            : AFDELINGER.filter((a) => userAfd.toLowerCase().includes(a.id.toLowerCase()));
-          
-          if (visibleAfdelinger.length === 0) return null;
-          
-          return (
-            <div className="pt-3 mt-3 border-t border-sidebar-border">
-              <p className="text-[10px] text-muted-foreground px-2 mb-1 hidden lg:block uppercase tracking-wider">Min afdeling</p>
-              {visibleAfdelinger.map((afd) => (
-                <div key={afd.id}>
-                  {afd.tabs.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => onTabChange(t.id)}
-                      className={cn(
-                        "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-all",
-                        activeTab === t.id
-                          ? "bg-primary/15 text-primary font-semibold"
-                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      )}
-                    >
-                      <afd.icon className="w-3.5 h-3.5 shrink-0" />
-                      <span className="hidden lg:block">{afd.label}</span>
-                    </button>
-                  ))}
-                </div>
               ))}
             </div>
-          );
-        })()}
+          </div>
+        ))}
+
+        {/* Afdelinger */}
+        {visibleAfdelinger.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 px-2 mb-2">
+              <Shield className="w-3 h-3 text-primary" />
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">AFDELINGER</span>
+            </div>
+            <div className="space-y-0.5 ml-1">
+              {visibleAfdelinger.map((afd) => (
+                <button
+                  key={afd.id}
+                  onClick={() => onTabChange(afd.tab)}
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all",
+                    activeTab === afd.tab
+                      ? "text-primary font-semibold"
+                      : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+                  )}
+                >
+                  <span className="text-muted-foreground/50">•</span>
+                  <afd.icon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{afd.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
-      {/* Bottom user bar */}
-      <div className="border-t border-sidebar-border">
+      {/* Bottom links */}
+      <div className="border-t border-sidebar-border px-3 py-3 space-y-0.5">
+        {bottomLinks.map((link) => (
+          <button
+            key={link.id}
+            onClick={() => onTabChange(link.id)}
+            className={cn(
+              "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-all",
+              activeTab === link.id
+                ? "text-primary font-semibold"
+                : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+            )}
+          >
+            <link.icon className="w-3.5 h-3.5 shrink-0" />
+            <span>{link.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* User bar */}
+      <div className="border-t border-sidebar-border relative">
         <button
           onClick={() => setShowProfile(!showProfile)}
           className="w-full p-3 flex items-center gap-2 hover:bg-sidebar-accent transition-colors"
@@ -219,17 +178,18 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
           <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center shrink-0">
             <Shield className="w-4 h-4 text-warning" />
           </div>
-          <div className="hidden lg:block text-left min-w-0">
+          <div className="text-left min-w-0 flex-1">
             <p className="text-xs font-semibold text-sidebar-foreground truncate">
-              {currentUser.fornavn} {currentUser.efternavn} | {currentUser.badgeNr}
+              {currentUser.fornavn} {currentUser.efternavn}
             </p>
             <p className="text-[10px] text-muted-foreground">{isAdmin ? "Administrator" : currentUser.rang}</p>
           </div>
+          <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
         </button>
 
         {/* Profile popup */}
         {showProfile && (
-          <div className="absolute bottom-16 left-2 right-2 bg-card border border-border rounded-lg shadow-2xl p-3 space-y-2 z-50">
+          <div className="absolute bottom-full left-2 right-2 mb-1 bg-card border border-border rounded-lg shadow-2xl p-3 space-y-2 z-50">
             <div className="flex items-center gap-2 pb-2 border-b border-border">
               <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
                 <Shield className="w-4 h-4 text-warning" />
@@ -242,12 +202,6 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
               </div>
             </div>
 
-            <button
-              onClick={() => { setShowProfile(false); onTabChange("profil"); }}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
-            >
-              <Settings className="w-3.5 h-3.5" /> Mine Ansøgninger
-            </button>
             <button
               onClick={() => { setShowProfile(false); onTabChange("profil"); }}
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-foreground hover:bg-muted transition-colors"
@@ -276,12 +230,6 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, currentUser, isAdmin }: Sid
             </div>
           </div>
         )}
-      </div>
-
-      {/* Bottom status */}
-      <div className="px-3 py-2 flex items-center gap-2 border-t border-sidebar-border">
-        <div className="w-2 h-2 rounded-full bg-success animate-pulse-glow" />
-        <span className="hidden lg:block text-[10px] text-muted-foreground">Online</span>
       </div>
     </div>
   );
