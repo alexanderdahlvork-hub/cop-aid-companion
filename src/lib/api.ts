@@ -236,6 +236,7 @@ function sigtelseToRow(s: Sigtelse): Record<string, any> {
     involveretBetjente: JSON.stringify(s.involveretBetjente),
     rapport: JSON.stringify(s.rapport),
     skabelonType: s.skabelonType || "",
+    sagsStatus: s.sagsStatus || "aaben",
   };
 }
 
