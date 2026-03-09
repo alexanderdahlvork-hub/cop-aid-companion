@@ -39,8 +39,11 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
   const [newEfternavn, setNewEfternavn] = useState("");
   const [newRang, setNewRang] = useState("");
   const [newUddannelser, setNewUddannelser] = useState<string[]>([]);
+  const [newCertifikater, setNewCertifikater] = useState<string[]>([]);
   const [newTilladelser, setNewTilladelser] = useState<string[]>([]);
   const [selectedUdd, setSelectedUdd] = useState<string[]>([]);
+  const [uddSearch, setUddSearch] = useState("");
+  const [certSearch, setCertSearch] = useState("");
 
   const canCreate = canCreateOfficer(currentUser.rang);
   const canEducate = canAddEducation(currentUser.rang);
