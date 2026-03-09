@@ -260,6 +260,26 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     setActiveTab("mine");
   };
 
+  const handleEditIndsendelse = (ind: IndsendelseData) => {
+    setSelectedIndsendelse(ind);
+    const skabelon = skabeloner.find(s => s.id === ind.skabelonId);
+    if (skabelon) setSelectedSkabelon(skabelon);
+    setAnsogSvar({ ...ind.svar });
+    setView("rediger_indsendelse");
+  };
+
+  const handleSaveEditedIndsendelse = () => {
+    if (!selectedIndsendelse || !selectedSkabelon) return;
+    const unanswered = selectedSkabelon.spoergsmaal.filter((q) => !(ansogSvar[q] || "").trim());
+    if (unanswered.length > 0) { toast("Besvar alle spørgsmål"); return; }
+    setIndsendelser(indsendelser.map(i =>
+      i.id === selectedIndsendelse.id ? { ...i, svar: { ...ansogSvar } } : i
+    ));
+    toast("Ansøgning opdateret");
+    setView("liste");
+    setActiveTab("mine");
+  };
+
   const handleApprove = async (id: string, kommentar: string) => {
     const ind = indsendelser.find((i) => i.id === id);
     if (!ind) return;
