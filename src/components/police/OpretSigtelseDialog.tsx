@@ -93,7 +93,7 @@ interface OpretSigtelseDialogProps {
   initialSigtelser?: Sigtelse[];
 }
 
-const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser }: OpretSigtelseDialogProps) => {
+const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser, initialSigtelser }: OpretSigtelseDialogProps) => {
   const [betjente, setBetjente] = useState<Betjent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
