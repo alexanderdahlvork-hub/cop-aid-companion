@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UserPlus, UserMinus, Shield, MessageSquare, Search, AlertCircle, Plus, Trash2, Loader2, Users, Radio, Crown, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,9 +37,24 @@ interface FleetManagementProps {
   currentUser: Betjent | null;
 }
 
+const STORAGE_KEY = "fleet_patruljer";
+const GROUPS_KEY = "fleet_grupper";
+
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+}
+
+function saveToStorage<T>(key: string, data: T) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
 const FleetManagement = ({ currentUser }: FleetManagementProps) => {
   const [patrols, setPatrols] = useState<Patrulje[]>([]);
   const [loading, setLoading] = useState(true);
+  const [useLocalStorage, setUseLocalStorage] = useState(false);
   const [soegning, setSoegning] = useState("");
   const [signOnDialog, setSignOnDialog] = useState<string | null>(null);
   const [badgeInput, setBadgeInput] = useState("");
@@ -53,8 +68,6 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
   const [nyKategoriCustom, setNyKategoriCustom] = useState("");
   const [nyPladser, setNyPladser] = useState("2");
   const [autoTilmeld, setAutoTilmeld] = useState(true);
-
-  // Task groups (local state for now)
   const [taskGroups, setTaskGroups] = useState<TaskGroup[]>([]);
   const [opretGruppeDialog, setOpretGruppeDialog] = useState(false);
   const [gruppeNavn, setGruppeNavn] = useState("");
@@ -64,11 +77,31 @@ const FleetManagement = ({ currentUser }: FleetManagementProps) => {
   const [flytDialog, setFlytDialog] = useState<{ patrolId: string; gruppeId: string } | null>(null);
   const [flytTilGruppe, setFlytTilGruppe] = useState("");
 
+  // Persist patrols when they change (if using localStorage)
+  const persistPatrols = useCallback((data: Patrulje[]) => {
+    if (useLocalStorage) saveToStorage(STORAGE_KEY, data);
+  }, [useLocalStorage]);
+
+  const persistGroups = useCallback((data: TaskGroup[]) => {
+    saveToStorage(GROUPS_KEY, data);
+  }, []);
+
+  // Load patrols: try API first, fall back to localStorage
   useEffect(() => {
     patruljerApi.getAll()
-      .then(setPatrols)
-      .catch((err) => { console.error("Fejl ved indlæsning af patruljer:", err); toast.error("Kunne ikke indlæse patruljer"); })
+      .then((data) => {
+        setPatrols(data);
+        setUseLocalStorage(false);
+      })
+      .catch(() => {
+        // DB table doesn't exist, use localStorage
+        const local = loadFromStorage<Patrulje[]>(STORAGE_KEY, []);
+        setPatrols(local);
+        setUseLocalStorage(true);
+      })
       .finally(() => setLoading(false));
+
+    setTaskGroups(loadFromStorage<TaskGroup[]>(GROUPS_KEY, []));
   }, []);
 
   const kategorier = Array.from(new Set(patrols.map((p) => p.kategori)));
