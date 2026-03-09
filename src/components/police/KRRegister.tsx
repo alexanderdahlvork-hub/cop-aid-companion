@@ -32,6 +32,9 @@ const KRRegister = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
+  const [redigerSigtelse, setRedigerSigtelse] = useState<Sigtelse | null>(null);
+  const [redigerForm, setRedigerForm] = useState<{ haendelsesforloeb: string; konfiskeredeGenstande: string; magtanvendelse: string; erkender: boolean | null; fratagKoerekort: boolean } | null>(null);
+  const [gemmerRedigering, setGemmerRedigering] = useState(false);
 
 
   useEffect(() => {
