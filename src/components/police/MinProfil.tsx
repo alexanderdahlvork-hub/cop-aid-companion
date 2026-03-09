@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Shield, Camera, Lock, FileText, Award, BadgeCheck, Briefcase,
-  Star, ChevronDown, ChevronRight, CheckCircle2, X
+  Star, ChevronDown, ChevronRight, CheckCircle2, X, Pencil
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
