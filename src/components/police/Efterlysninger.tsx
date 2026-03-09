@@ -26,19 +26,22 @@ const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [personData, koeretoejData, sigtelseData] = await Promise.all([
+        const [personData, koeretoejData] = await Promise.all([
           personerApi.getAll(),
           koeretoejerApi.getAll(),
-          sigtelserApi.getAll(),
         ]);
         setPersoner(personData.filter((p) => p.status === "eftersøgt"));
         setKoeretoejer(koeretoejData.filter((k) => k.status === "eftersøgt"));
+      } catch (err) {
+        console.error("Fejl ved indlæsning af personer/køretøjer:", err);
+      }
+      try {
+        const sigtelseData = await sigtelserApi.getAll();
         setSigtelser(sigtelseData);
       } catch (err) {
-        console.error("Fejl ved indlæsning:", err);
-      } finally {
-        setLoading(false);
+        console.error("Fejl ved indlæsning af sigtelser:", err);
       }
+      setLoading(false);
     };
     load();
   }, []);
