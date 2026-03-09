@@ -37,6 +37,8 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const [saving, setSaving] = useState(false);
   const [nyPerson, setNyPerson] = useState<Partial<Person>>({ status: "aktiv" });
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<Person>>({});
   const [sigtelseDialogOpen, setSigtelseDialogOpen] = useState(false);
   const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
   const [ejendomme, setEjendomme] = useState<Ejendom[]>([]);
@@ -97,6 +99,45 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const totalKlip = personSigtelser.reduce((sum, s) => {
     return sum + s.sigtelseBoeder.reduce((k, b) => k, 0);
   }, 0);
+
+  const startEdit = () => {
+    if (!valgtPerson) return;
+    setEditForm({ ...valgtPerson });
+    setEditMode(true);
+  };
+
+  const cancelEdit = () => {
+    setEditMode(false);
+    setEditForm({});
+  };
+
+  const saveEdit = async () => {
+    if (!valgtPerson || !editForm) return;
+    setSaving(true);
+    try {
+      const updates = {
+        fornavn: editForm.fornavn,
+        efternavn: editForm.efternavn,
+        cpr: editForm.cpr,
+        adresse: editForm.adresse,
+        postnr: editForm.postnr,
+        by: editForm.by,
+        telefon: editForm.telefon,
+        noter: editForm.noter,
+      };
+      await personerApi.update(valgtPerson.id, updates);
+      const updated = { ...valgtPerson, ...updates } as Person;
+      setValgtPerson(updated);
+      setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+      setEditMode(false);
+      toast("Personoplysninger opdateret");
+    } catch (err) {
+      console.error(err);
+      toast("Fejl ved opdatering");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const opretPerson = async () => {
     setSaving(true);
@@ -267,10 +308,21 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                   {valgtPerson.fornavn[0]}{valgtPerson.efternavn[0]}
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground tracking-tight">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
+                  {editMode ? (
+                    <div className="flex items-center gap-2">
+                      <Input className="h-7 text-sm w-28" value={editForm.fornavn || ""} onChange={(e) => setEditForm({ ...editForm, fornavn: e.target.value })} placeholder="Fornavn" />
+                      <Input className="h-7 text-sm w-28" value={editForm.efternavn || ""} onChange={(e) => setEditForm({ ...editForm, efternavn: e.target.value })} placeholder="Efternavn" />
+                    </div>
+                  ) : (
+                    <h2 className="text-lg font-semibold text-foreground tracking-tight">{valgtPerson.fornavn} {valgtPerson.efternavn}</h2>
+                  )}
                   <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-xs text-muted-foreground font-mono">{valgtPerson.cpr}</span>
-                    {valgtPerson.telefon && (
+                    {editMode ? (
+                      <Input className="h-6 text-xs font-mono w-32" value={editForm.cpr || ""} onChange={(e) => setEditForm({ ...editForm, cpr: e.target.value })} placeholder="CPR" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground font-mono">{valgtPerson.cpr}</span>
+                    )}
+                    {!editMode && valgtPerson.telefon && (
                       <>
                         <span className="text-muted-foreground/30">·</span>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -281,10 +333,27 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                   </div>
                 </div>
               </div>
-              <Badge className={cn("text-[10px] border", statusConfig[valgtPerson.status].bg)}>
-                <span className={cn("w-1.5 h-1.5 rounded-full mr-1.5", statusConfig[valgtPerson.status].dot)} />
-                {statusConfig[valgtPerson.status].label}
-              </Badge>
+              <div className="flex items-center gap-2">
+                {editMode ? (
+                  <>
+                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={cancelEdit}>
+                      <X className="w-3.5 h-3.5 mr-1" /> Annuller
+                    </Button>
+                    <Button size="sm" className="h-8 text-xs" onClick={saveEdit} disabled={saving}>
+                      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                      Gem
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" variant="outline" className="h-8 text-xs" onClick={startEdit}>
+                    <Pencil className="w-3.5 h-3.5 mr-1" /> Rediger
+                  </Button>
+                )}
+                <Badge className={cn("text-[10px] border", statusConfig[valgtPerson.status].bg)}>
+                  <span className={cn("w-1.5 h-1.5 rounded-full mr-1.5", statusConfig[valgtPerson.status].dot)} />
+                  {statusConfig[valgtPerson.status].label}
+                </Badge>
+              </div>
             </div>
 
             {valgtPerson.status === "eftersøgt" && (
@@ -298,12 +367,28 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
             <div className="grid grid-cols-3 gap-4">
               <div className="rounded-lg bg-muted/20 p-3">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Adresse</p>
-                <p className="text-sm text-foreground">{valgtPerson.adresse || "—"}</p>
-                <p className="text-xs text-muted-foreground">{valgtPerson.postnr} {valgtPerson.by}</p>
+                {editMode ? (
+                  <div className="space-y-1">
+                    <Input className="h-6 text-xs" value={editForm.adresse || ""} onChange={(e) => setEditForm({ ...editForm, adresse: e.target.value })} placeholder="Adresse" />
+                    <div className="flex gap-1">
+                      <Input className="h-6 text-xs w-16" value={editForm.postnr || ""} onChange={(e) => setEditForm({ ...editForm, postnr: e.target.value })} placeholder="Postnr" />
+                      <Input className="h-6 text-xs flex-1" value={editForm.by || ""} onChange={(e) => setEditForm({ ...editForm, by: e.target.value })} placeholder="By" />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-foreground">{valgtPerson.adresse || "—"}</p>
+                    <p className="text-xs text-muted-foreground">{valgtPerson.postnr} {valgtPerson.by}</p>
+                  </>
+                )}
               </div>
               <div className="rounded-lg bg-muted/20 p-3">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Oprettet</p>
-                <p className="text-sm text-foreground">{valgtPerson.oprettet}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Telefon</p>
+                {editMode ? (
+                  <Input className="h-6 text-xs" value={editForm.telefon || ""} onChange={(e) => setEditForm({ ...editForm, telefon: e.target.value })} placeholder="Telefon" />
+                ) : (
+                  <p className="text-sm text-foreground">{valgtPerson.telefon || "—"}</p>
+                )}
               </div>
               <div className="rounded-lg bg-muted/20 p-3">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Sigtelser</p>
@@ -374,12 +459,14 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
             </div>
 
             {/* Noter */}
-            {valgtPerson.noter && (
-              <div className="rounded-lg bg-muted/15 border border-border p-4">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Noter</p>
-                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{valgtPerson.noter}</p>
-              </div>
-            )}
+            <div className="rounded-lg bg-muted/15 border border-border p-4">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Noter</p>
+              {editMode ? (
+                <Textarea className="text-sm" rows={3} value={editForm.noter || ""} onChange={(e) => setEditForm({ ...editForm, noter: e.target.value })} placeholder="Tilføj noter..." />
+              ) : (
+                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{valgtPerson.noter || <span className="text-muted-foreground/50 italic">Ingen noter</span>}</p>
+              )}
+            </div>
 
             {/* Ejendomme & Køretøjer side by side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
