@@ -375,19 +375,52 @@ const AnsatteListe = ({ currentUser, isAdmin }: AnsatteListeProps) => {
             <p className="text-xs text-muted-foreground italic">Standardkodeord: 1234 — betjenten skal ændre det ved første login.</p>
 
             <div>
-              <Label className="text-xs text-muted-foreground mb-2 block">Uddannelser</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {uddannelserOptions.map(udd => (
-                  <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                    <Checkbox
-                      checked={newUddannelser.includes(udd)}
-                      onCheckedChange={(checked) => {
-                        setNewUddannelser(checked ? [...newUddannelser, udd] : newUddannelser.filter(u => u !== udd));
-                      }}
-                    />
-                    {udd}
-                  </label>
-                ))}
+              <Label className="text-xs text-muted-foreground mb-2 block">Uddannelser ({newUddannelser.length} valgt)</Label>
+              <Input
+                placeholder="Søg uddannelse..."
+                value={uddSearch}
+                onChange={(e) => setUddSearch(e.target.value)}
+                className="mb-2 bg-secondary border-border text-sm"
+              />
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleUddannelser
+                  .filter(u => u.toLowerCase().includes(uddSearch.toLowerCase()))
+                  .map(udd => (
+                    <label key={udd} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={newUddannelser.includes(udd)}
+                        onCheckedChange={(checked) => {
+                          setNewUddannelser(checked ? [...newUddannelser, udd] : newUddannelser.filter(u => u !== udd));
+                        }}
+                      />
+                      {udd}
+                    </label>
+                  ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground mb-2 block">Certifikater ({newCertifikater.length} valgt)</Label>
+              <Input
+                placeholder="Søg certifikat..."
+                value={certSearch}
+                onChange={(e) => setCertSearch(e.target.value)}
+                className="mb-2 bg-secondary border-border text-sm"
+              />
+              <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-md p-2">
+                {alleCertifikater
+                  .filter(c => c.toLowerCase().includes(certSearch.toLowerCase()))
+                  .map(cert => (
+                    <label key={cert} className="flex items-center gap-2 text-sm text-foreground cursor-pointer py-0.5">
+                      <Checkbox
+                        checked={newCertifikater.includes(cert)}
+                        onCheckedChange={(checked) => {
+                          setNewCertifikater(checked ? [...newCertifikater, cert] : newCertifikater.filter(c => c !== cert));
+                        }}
+                      />
+                      {cert}
+                    </label>
+                  ))}
               </div>
             </div>
 
