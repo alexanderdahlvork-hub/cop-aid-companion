@@ -195,12 +195,14 @@ const FleetManagement = ({ currentUser, isAdmin }: FleetManagementProps) => {
     return `${prefix} ${next}`;
   };
 
-  // ── Available patrol types based on user's uddannelser ──
+  // ── Available patrol types based on user's uddannelser (admin = all) ──
   const availableTypes = currentUser
-    ? PATROL_TYPES.filter(t =>
-        t.requiredUddannelser.length === 0 ||
-        t.requiredUddannelser.some(u => currentUser.uddannelser.includes(u))
-      )
+    ? isAdmin
+      ? PATROL_TYPES
+      : PATROL_TYPES.filter(t =>
+          t.requiredUddannelser.length === 0 ||
+          t.requiredUddannelser.some(u => currentUser.uddannelser.includes(u))
+        )
     : [];
 
   // ── Add betjent to patrol ──
