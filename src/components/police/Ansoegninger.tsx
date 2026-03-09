@@ -727,39 +727,6 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
         </div>
       )}
 
-      {/* Mine ansøgninger */}
-      {activeTab === "mine" && (
-        <div className="space-y-2">
-          {mineIndsendelser.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Du har ikke indsendt nogen ansøgninger endnu</p>
-          ) : (
-            mineIndsendelser.map((ind) => (
-              <div
-                key={ind.id}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-colors text-left"
-              >
-                <button onClick={() => openIndsendelse(ind)} className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium text-foreground">{ind.skabelonTitel}</p>
-                  <p className="text-xs text-muted-foreground">Indsendt: {ind.dato}</p>
-                </button>
-                <div className="flex items-center gap-2 shrink-0">
-                  {ind.status === "afventer" && (
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 px-2"
-                      onClick={(e) => { e.stopPropagation(); handleEditIndsendelse(ind); }}>
-                      <Pencil className="w-3 h-3" /> Rediger
-                    </Button>
-                  )}
-                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1", statusColor(ind.status))}>
-                    {statusIcon(ind.status)}
-                    {ind.status === "afventer" ? "Afventer" : ind.status === "godkendt" ? "Godkendt" : "Afvist"}
-                  </span>
-                  {ind.kommentar && <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
     </div>
   );
 };
