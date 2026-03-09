@@ -98,9 +98,9 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-[hsl(220,15%,8%)] p-4">
-      <div className="relative w-full h-full rounded-[20px] bg-background overflow-hidden shadow-[0_0_0_3px_hsl(220,12%,18%),0_0_0_5px_hsl(220,10%,12%),0_8px_40px_rgba(0,0,0,0.5)]">
-        <div className="flex h-full overflow-hidden rounded-[16px]">
+    <div className="h-screen w-screen bg-[hsl(220,16%,7%)] p-2">
+      <div className="relative w-full h-full rounded-xl bg-background overflow-hidden">
+        <div className="flex h-full overflow-hidden">
           <Sidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
