@@ -144,7 +144,7 @@ const defaultIndsendelser: IndsendelseData[] = [
   },
 ];
 
-type View = "liste" | "opret" | "rediger" | "vis_indsendelse" | "ansog";
+type View = "liste" | "opret" | "rediger" | "vis_indsendelse" | "ansog" | "rediger_indsendelse";
 
 const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerProps) => {
   const [skabeloner, setSkabeloner] = useState<AnsoeningSkabelon[]>(defaultSkabeloner);
