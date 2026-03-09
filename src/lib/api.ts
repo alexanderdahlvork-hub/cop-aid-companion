@@ -197,6 +197,7 @@ interface SigtelseRow {
   involveretBetjente: string; // JSON
   rapport: string; // JSON
   skabelonType?: string;
+  sagsStatus?: string;
 }
 
 import type { Sigtelse } from "@/types/police";
