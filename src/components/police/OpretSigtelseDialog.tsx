@@ -89,9 +89,10 @@ interface OpretSigtelseDialogProps {
   person: Person;
   onSigtelseOprettet: (sigtelse: Sigtelse) => void;
   tidligereKlip?: number;
+  currentUser?: { badgeNr: string; fornavn: string; efternavn: string };
 }
 
-const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0 }: OpretSigtelseDialogProps) => {
+const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, tidligereKlip = 0, currentUser }: OpretSigtelseDialogProps) => {
   const [betjente, setBetjente] = useState<Betjent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
