@@ -94,6 +94,7 @@ const Index = () => {
           currentUser={currentUser}
           isAdmin={isAdmin}
           onUserUpdate={(updated) => setCurrentUser(updated)}
+          onTabChange={setActiveTab}
         />
       );
       default: return placeholderTab(Settings, "Side", "Kommer snart");

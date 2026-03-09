@@ -375,21 +375,30 @@ const MinProfil = ({ currentUser, isAdmin, onUserUpdate, onTabChange }: MinProfi
                     {a.status === "godkendt" ? "Godkendt" : a.status === "afvist" ? "Afvist" : "Afventer"}
                   </span>
                   {a.status === "afventer" && (
-                    <button
-                      onClick={() => {
-                        const stored = localStorage.getItem("ansoegninger_indsendelser");
-                        if (stored) {
-                          const all = JSON.parse(stored).filter((i: any) => i.id !== a.id);
-                          localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(all));
-                          setAnsoegninger(ansoegninger.filter(x => x.id !== a.id));
-                          toast("Ansøgning trukket tilbage");
-                        }
-                      }}
-                      className="p-1 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
-                      title="Træk tilbage"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => onTabChange?.("ansoegninger")}
+                        className="p-1 rounded hover:bg-primary/15 text-muted-foreground hover:text-primary transition-colors"
+                        title="Rediger"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const stored = localStorage.getItem("ansoegninger_indsendelser");
+                          if (stored) {
+                            const all = JSON.parse(stored).filter((i: any) => i.id !== a.id);
+                            localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(all));
+                            setAnsoegninger(ansoegninger.filter(x => x.id !== a.id));
+                            toast("Ansøgning trukket tilbage");
+                          }
+                        }}
+                        className="p-1 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
+                        title="Træk tilbage"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
