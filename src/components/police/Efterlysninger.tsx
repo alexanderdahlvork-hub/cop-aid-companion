@@ -275,8 +275,8 @@ const PersonDetalje = ({ person, sigtelser, onSigtPerson, allSigtelser }: { pers
             <span className="text-sm text-warning font-semibold">AKTIV EFTERLYSNING — PERSON</span>
           </div>
           {onSigtPerson && (
-            <button
-              onClick={() => onSigtPerson(person.id)}
+             <button
+              onClick={() => onSigtPerson(person.id, sigtelser)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
             >
               <Gavel className="w-3.5 h-3.5" />
