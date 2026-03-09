@@ -18,7 +18,7 @@ interface MinProfilProps {
   onTabChange?: (tab: string) => void;
 }
 
-const MinProfil = ({ currentUser, isAdmin, onUserUpdate }: MinProfilProps) => {
+const MinProfil = ({ currentUser, isAdmin, onUserUpdate, onTabChange }: MinProfilProps) => {
   const [imageUrl, setImageUrl] = useState(currentUser.profilBillede || "");
   const [savingImage, setSavingImage] = useState(false);
   const [oldPass, setOldPass] = useState("");
