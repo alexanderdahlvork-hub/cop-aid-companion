@@ -169,6 +169,7 @@ const OpretSag = ({ currentUser, initialPersonId, initialSigtelser }: OpretSagPr
           person={selectedPerson}
           onSigtelseOprettet={handleSigtelseOprettet}
           currentUser={currentUser}
+          initialSigtelser={initialPersonId === selectedPerson?.id ? initialSigtelser : undefined}
         />
       )}
     </div>
