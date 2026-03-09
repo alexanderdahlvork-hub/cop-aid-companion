@@ -48,6 +48,7 @@ const sections: SidebarSection[] = [
     items: [
       { id: "opret_sag", label: "Opret Sag", icon: FileText },
       { id: "boeder", label: "Bødetakster", icon: FolderOpen },
+      { id: "sagsarkiv", label: "Sagsarkiv", icon: FolderOpen },
     ],
   },
   {
