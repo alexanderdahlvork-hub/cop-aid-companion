@@ -194,7 +194,7 @@ const Efterlysninger = ({ onSigtPerson }: EfterlysningerProps) => {
         {/* Detail panel */}
         <div className="hidden lg:block flex-1">
           {tab === "personer" && valgtPerson ? (
-            <PersonDetalje person={valgtPerson} sigtelser={getPersonSigtelser(valgtPerson.id)} />
+            <PersonDetalje person={valgtPerson} sigtelser={getPersonSigtelser(valgtPerson.id)} onSigtPerson={onSigtPerson} />
           ) : tab === "koeretoejer" && valgtKoeretoj ? (
             <Card className="h-full">
               <CardHeader className="pb-4">
