@@ -16,7 +16,7 @@ const tabs = [
 
 const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
   return (
-    <div className="h-9 bg-card/50 border-b border-border flex items-center px-3 gap-0.5 shrink-0 overflow-x-auto">
+    <div className="h-8 bg-card/30 border-b border-border flex items-center px-3 gap-1 shrink-0 overflow-x-auto">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -24,10 +24,10 @@ const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) => {
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded text-[12px] font-medium transition-colors whitespace-nowrap",
+              "flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap font-mono",
               isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-primary/15 text-primary border border-primary/20"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent"
             )}
           >
             <tab.icon className="w-3 h-3" />
