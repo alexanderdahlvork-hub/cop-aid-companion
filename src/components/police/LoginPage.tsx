@@ -138,7 +138,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           value={kodeord}
           onChange={(e) => { setKodeord(e.target.value); setError(""); }}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-           className="bg-white/8 backdrop-blur-sm border-white/15 !text-white placeholder:text-white/30 text-center h-9 text-[13px]"
+           className="bg-transparent backdrop-blur-sm border-white/15 !text-white placeholder:text-white/30 text-center h-9 text-[13px]"
           disabled={loading}
         />
 
