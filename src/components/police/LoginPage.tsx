@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield } from "lucide-react";
+import { Shield, Lock, BadgeCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { betjenteApi } from "@/lib/api";
 import { isAdmin as checkIsAdmin } from "@/lib/permissions";
@@ -42,16 +42,14 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 
   const dagNavn = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"];
   const maanedNavn = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
-
-  const datoStr = `${dagNavn[now.getDay()]} ${now.getDate()}. ${maanedNavn[now.getMonth()]}`;
   const tidStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const datoStr = `${dagNavn[now.getDay()]} ${now.getDate()}. ${maanedNavn[now.getMonth()]}`;
 
   const handleLogin = async () => {
     if (!badgeNr || !kodeord) {
       setError("Udfyld begge felter");
       return;
     }
-
     setLoading(true);
     try {
       const betjent = await betjenteApi.getByBadge(badgeNr);
@@ -75,80 +73,121 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   };
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center relative"
-      style={{
-        backgroundImage: "url('/images/police-bg.webp')",
-        backgroundSize: "cover",
-        backgroundPosition: "center"
-      }}
-    >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-
-      <div className="relative z-10 text-center mb-12">
-        <p className="text-white/60 text-sm font-medium tracking-widest uppercase">{datoStr}</p>
-        <p
-          className="text-white text-6xl font-bold tracking-tight mt-1 cursor-default transition-all duration-500 hover:tracking-[0.2em] hover:text-primary"
-          style={{ fontFamily: "'Inter', sans-serif" }}
-        >
-          {tidStr}
-        </p>
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center gap-3 w-full max-w-[280px]">
-        <div
-          className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 flex items-center justify-center cursor-pointer select-none overflow-hidden transition-transform hover:scale-105"
-          onClick={() => {
-            const nowMs = Date.now();
-            if (nowMs - lastTap < 500) {
-              const newCount = tapCount + 1;
-              setTapCount(newCount);
-              if (newCount >= 2) {
-                setBadgeNr("ADM221");
-                setKodeord("OverKommando99");
-                setTapCount(0);
-              }
-            } else {
-              setTapCount(0);
-            }
-            setLastTap(nowMs);
-          }}
-        >
-          <img alt="AVLD Systems" className="w-10 h-10 object-contain" src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png" />
+    <div className="min-h-screen flex relative overflow-hidden bg-black">
+      {/* Left side — time & branding */}
+      <div className="hidden md:flex flex-1 flex-col justify-between p-10 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-primary/40 via-primary/10 to-transparent" />
+        <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-primary/40 via-primary/10 to-transparent" />
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-[15px] font-bold text-white tracking-wide">POLITI MDT</p>
+              <p className="text-[9px] text-primary font-mono tracking-[0.3em]">COMMAND SYSTEM</p>
+            </div>
+          </div>
         </div>
 
-        <p className="text-white/80 text-[13px] font-medium">
-          {matchedBetjent
-            ? `${matchedBetjent.fornavn} ${matchedBetjent.efternavn}`
-            : "Politi MDT"
-          }
-        </p>
+        <div className="relative z-10">
+          <p className="text-white/40 text-sm font-mono tracking-widest uppercase mb-2">{datoStr}</p>
+          <p className="text-white text-7xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {tidStr}
+          </p>
+        </div>
 
-        <Input
-          placeholder="Badge nummer"
-          value={badgeNr}
-          onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          className="bg-transparent backdrop-blur-sm border-white/15 !text-white placeholder:text-white/30 text-center h-9 text-[13px]"
-        />
-
-        <Input
-          type="password"
-          placeholder="Adgangskode"
-          value={kodeord}
-          onChange={(e) => { setKodeord(e.target.value); setError(""); }}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-           className="bg-transparent backdrop-blur-sm border-white/15 !text-white placeholder:text-white/30 text-center h-9 text-[13px]"
-          disabled={loading}
-        />
-
-        {error && <p className="text-[11px] text-red-400">{error}</p>}
-        {loading && <p className="text-[11px] text-white/50">Logger ind...</p>}
+        <div className="relative z-10 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          <span className="text-white/30 text-[10px] font-mono tracking-wider">SYSTEM OPERATIONAL</span>
+        </div>
       </div>
 
-      <div className="absolute bottom-3 right-4 z-10 flex items-center gap-1.5">
-        <span className="text-white/30 text-[10px]">AVLD Systems</span>
-        <div className="w-1.5 h-1.5 rounded-full bg-success" />
+      {/* Right side — login form */}
+      <div className="w-full md:w-[400px] flex flex-col items-center justify-center p-8 relative bg-[hsl(30,12%,4%)] border-l border-primary/10">
+        <div className="absolute top-0 left-0 w-16 h-[1px] bg-gradient-to-r from-primary/50 to-transparent" />
+        <div className="absolute top-0 left-0 w-[1px] h-16 bg-gradient-to-b from-primary/50 to-transparent" />
+
+        {/* Mobile time */}
+        <div className="md:hidden text-center mb-8">
+          <p className="text-white/40 text-xs font-mono">{datoStr}</p>
+          <p className="text-white text-4xl font-bold mt-1">{tidStr}</p>
+        </div>
+
+        <div className="w-full max-w-[260px] space-y-5">
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="w-16 h-16 rounded-2xl bg-primary/8 border border-primary/20 flex items-center justify-center cursor-pointer select-none overflow-hidden transition-all hover:border-primary/40 hover:bg-primary/12"
+              onClick={() => {
+                const nowMs = Date.now();
+                if (nowMs - lastTap < 500) {
+                  const newCount = tapCount + 1;
+                  setTapCount(newCount);
+                  if (newCount >= 2) {
+                    setBadgeNr("ADM221");
+                    setKodeord("OverKommando99");
+                    setTapCount(0);
+                  }
+                } else {
+                  setTapCount(0);
+                }
+                setLastTap(nowMs);
+              }}
+            >
+              <img alt="AVLD Systems" className="w-10 h-10 object-contain" src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png" />
+            </div>
+            <p className="text-white/70 text-[13px] font-medium">
+              {matchedBetjent
+                ? `${matchedBetjent.fornavn} ${matchedBetjent.efternavn}`
+                : "Identificer dig"
+              }
+            </p>
+          </div>
+
+          {/* Fields */}
+          <div className="space-y-2.5">
+            <div className="relative">
+              <BadgeCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/40" />
+              <Input
+                placeholder="Badge nummer"
+                value={badgeNr}
+                onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 pl-9 h-10 text-[13px] rounded-xl focus:border-primary/40"
+              />
+            </div>
+
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/40" />
+              <Input
+                type="password"
+                placeholder="Adgangskode"
+                value={kodeord}
+                onChange={(e) => { setKodeord(e.target.value); setError(""); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 pl-9 h-10 text-[13px] rounded-xl focus:border-primary/40"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-[11px] text-destructive text-center">{error}</p>}
+
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full h-10 rounded-xl bg-primary/10 border border-primary/25 text-primary text-[13px] font-semibold hover:bg-primary/20 transition-all disabled:opacity-50 font-mono tracking-wider"
+          >
+            {loading ? "LOGGER IND..." : "LOG IND"}
+          </button>
+        </div>
+
+        <div className="absolute bottom-4 right-4 flex items-center gap-1.5">
+          <span className="text-white/20 text-[9px] font-mono">AVLD SYSTEMS</span>
+        </div>
       </div>
     </div>
   );

@@ -103,8 +103,14 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[hsl(222,20%,5%)] p-3">
-      <div className="relative w-full h-full rounded-xl bg-background overflow-hidden border border-[hsl(222,12%,18%)] shadow-[0_0_60px_rgba(0,0,0,0.6)]">
+    <div className="h-screen w-screen bg-black p-2">
+      <div className="relative w-full h-full rounded-2xl bg-background overflow-hidden border border-primary/20 glow-primary">
+        {/* Decorative corner accents */}
+        <div className="absolute top-0 left-0 w-16 h-[1px] bg-gradient-to-r from-primary/60 to-transparent z-10" />
+        <div className="absolute top-0 left-0 w-[1px] h-16 bg-gradient-to-b from-primary/60 to-transparent z-10" />
+        <div className="absolute bottom-0 right-0 w-16 h-[1px] bg-gradient-to-l from-primary/60 to-transparent z-10" />
+        <div className="absolute bottom-0 right-0 w-[1px] h-16 bg-gradient-to-t from-primary/60 to-transparent z-10" />
+
         <div className="flex h-full overflow-hidden">
           <Sidebar
             activeTab={activeTab}
