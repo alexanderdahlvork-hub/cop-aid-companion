@@ -73,21 +73,21 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-black">
+    <div className="min-h-screen flex relative overflow-hidden bg-black" style={{"--lp-primary": "36 90% 50%", "--lp-success": "152 50% 42%"} as React.CSSProperties}>
       {/* Left side — time & branding */}
       <div className="hidden md:flex flex-1 flex-col justify-between p-10 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-primary/40 via-primary/10 to-transparent" />
-        <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-primary/40 via-primary/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(36,90%,50%,0.05)] via-transparent to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-[hsl(36,90%,50%,0.4)] via-[hsl(36,90%,50%,0.1)] to-transparent" />
+        <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-[hsl(36,90%,50%,0.4)] via-[hsl(36,90%,50%,0.1)] to-transparent" />
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-[hsl(36,90%,50%,0.1)] border border-[hsl(36,90%,50%,0.2)] flex items-center justify-center">
+              <Shield className="w-5 h-5 text-[hsl(36,90%,50%)]" />
             </div>
             <div>
               <p className="text-[15px] font-bold text-white tracking-wide">POLITI MDT</p>
-              <p className="text-[9px] text-primary font-mono tracking-[0.3em]">COMMAND SYSTEM</p>
+              <p className="text-[9px] text-[hsl(36,90%,50%)] font-mono tracking-[0.3em]">COMMAND SYSTEM</p>
             </div>
           </div>
         </div>
@@ -100,15 +100,15 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
         </div>
 
         <div className="relative z-10 flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-[hsl(152,50%,42%)] animate-pulse" />
           <span className="text-white/30 text-[10px] font-mono tracking-wider">SYSTEM OPERATIONAL</span>
         </div>
       </div>
 
       {/* Right side — login form */}
-      <div className="w-full md:w-[400px] flex flex-col items-center justify-center p-8 relative bg-[hsl(30,12%,4%)] border-l border-primary/10">
-        <div className="absolute top-0 left-0 w-16 h-[1px] bg-gradient-to-r from-primary/50 to-transparent" />
-        <div className="absolute top-0 left-0 w-[1px] h-16 bg-gradient-to-b from-primary/50 to-transparent" />
+      <div className="w-full md:w-[400px] flex flex-col items-center justify-center p-8 relative bg-[hsl(30,12%,4%)] border-l border-[hsl(36,90%,50%,0.1)]">
+        <div className="absolute top-0 left-0 w-16 h-[1px] bg-gradient-to-r from-[hsl(36,90%,50%,0.5)] to-transparent" />
+        <div className="absolute top-0 left-0 w-[1px] h-16 bg-gradient-to-b from-[hsl(36,90%,50%,0.5)] to-transparent" />
 
         {/* Mobile time */}
         <div className="md:hidden text-center mb-8">
@@ -120,7 +120,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           {/* Avatar */}
           <div className="flex flex-col items-center gap-3">
             <div
-              className="w-16 h-16 rounded-2xl bg-primary/8 border border-primary/20 flex items-center justify-center cursor-pointer select-none overflow-hidden transition-all hover:border-primary/40 hover:bg-primary/12"
+              className="w-16 h-16 rounded-2xl bg-[hsl(36,90%,50%,0.08)] border border-[hsl(36,90%,50%,0.2)] flex items-center justify-center cursor-pointer select-none overflow-hidden transition-all hover:border-[hsl(36,90%,50%,0.4)] hover:bg-[hsl(36,90%,50%,0.12)]"
               onClick={() => {
                 const nowMs = Date.now();
                 if (nowMs - lastTap < 500) {
@@ -150,25 +150,25 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           {/* Fields */}
           <div className="space-y-2.5">
             <div className="relative">
-              <BadgeCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/40" />
+              <BadgeCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(36,90%,50%,0.4)]" />
               <Input
                 placeholder="Badge nummer"
                 value={badgeNr}
                 onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 pl-9 h-10 text-[13px] rounded-xl focus:border-primary/40"
+                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 pl-9 h-10 text-[13px] rounded-xl focus:border-[hsl(36,90%,50%,0.4)]"
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/40" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(36,90%,50%,0.4)]" />
               <Input
                 type="password"
                 placeholder="Adgangskode"
                 value={kodeord}
                 onChange={(e) => { setKodeord(e.target.value); setError(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 pl-9 h-10 text-[13px] rounded-xl focus:border-primary/40"
+                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 pl-9 h-10 text-[13px] rounded-xl focus:border-[hsl(36,90%,50%,0.4)]"
                 disabled={loading}
               />
             </div>
@@ -179,7 +179,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full h-10 rounded-xl bg-primary/10 border border-primary/25 text-primary text-[13px] font-semibold hover:bg-primary/20 transition-all disabled:opacity-50 font-mono tracking-wider"
+            className="w-full h-10 rounded-xl bg-[hsl(36,90%,50%,0.1)] border border-[hsl(36,90%,50%,0.25)] text-[hsl(36,90%,50%)] text-[13px] font-semibold hover:bg-[hsl(36,90%,50%,0.2)] transition-all disabled:opacity-50 font-mono tracking-wider"
           >
             {loading ? "LOGGER IND..." : "LOG IND"}
           </button>
