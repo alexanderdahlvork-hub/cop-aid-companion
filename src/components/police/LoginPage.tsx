@@ -72,7 +72,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
 
       {/* Login card */}
       <div className="relative z-10 w-full max-w-sm mx-4">
-        <div className="bg-transparent backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+        <div className="p-8">
           {/* Logo & title */}
           <div className="flex flex-col items-center gap-3 mb-6">
             <div
