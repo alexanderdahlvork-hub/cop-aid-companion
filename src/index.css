@@ -132,9 +132,9 @@
 
 @layer utilities {
   .glow-primary {
-    box-shadow: 0 0 20px hsl(36 90% 50% / 0.15), 0 0 60px hsl(36 90% 50% / 0.05);
+    box-shadow: 0 0 20px hsl(217 91% 50% / 0.15), 0 0 60px hsl(217 91% 50% / 0.05);
   }
   .border-glow {
-    border-color: hsl(36 90% 50% / 0.3);
+    border-color: hsl(217 91% 50% / 0.3);
   }
 }
