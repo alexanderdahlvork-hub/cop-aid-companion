@@ -187,7 +187,7 @@ const Index = () => {
       case "ejendomme": return <Ejendomsregister />;
       case "efterlysninger": return (
         <Efterlysninger
-          onSigtPerson={(personId) => {
+          onSigtPerson={(personId, _sigtelser) => {
             openTab("sag", { initialPersonId: personId, label: "Ny Sag" });
           }}
         />
