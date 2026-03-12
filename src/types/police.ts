@@ -122,3 +122,84 @@ export interface RapportSkabelon {
   navn: string;
   spoergsmaal: string[];
 }
+
+// ── Enhanced Sag (Case) System ──
+
+export interface Sag {
+  id: string;
+  sagsnummer: string;
+  titel: string;
+  oprettet: string;
+  opdateret: string;
+  status: SagsStatus;
+  oprettetAf: string;
+  mistaenkte: SagMistaenkt[];
+  involveretBetjente: string[];
+  involveretBorgere: SagBorger[];
+  koeretoejer: SagKoeretoej[];
+  referencer: SagReference[];
+  tags: string[];
+  beviser: SagBevis[];
+  rapport: SagRapport;
+}
+
+export interface SagMistaenkt {
+  id: string;
+  personId: string;
+  personNavn: string;
+  personCpr: string;
+  sigtelser: SigtelseBoede[];
+  totalBoede: number;
+  totalFaengsel: number;
+  erkender: boolean | null;
+  behandlet: boolean;
+  tilkendegivelseAfgivet: boolean;
+  fratagKoerekort: boolean;
+}
+
+export interface SagBorger {
+  id: string;
+  personId: string;
+  navn: string;
+  cpr: string;
+  rolle: string;
+}
+
+export interface SagKoeretoej {
+  id: string;
+  nummerplade: string;
+  beskrivelse: string;
+}
+
+export interface SagReference {
+  id: string;
+  titel: string;
+  url?: string;
+  beskrivelse?: string;
+}
+
+export interface SagBevis {
+  id: string;
+  type: 'billede' | 'tekst';
+  billedUrl?: string;
+  beskrivelse: string;
+  timestamp?: string;
+  oprettetAf: string;
+  oprettetDato: string;
+}
+
+export interface SagRapport {
+  haendelsesforloeb: string;
+  konfiskeredeGenstande: string[];
+  magtanvendelse: string[];
+  skabelonType?: string;
+  skabelonSvar?: Record<string, string>;
+}
+
+export interface OpenTab {
+  id: string;
+  label: string;
+  icon?: string;
+  type: string;
+  data?: any;
+}
