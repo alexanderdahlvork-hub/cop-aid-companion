@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Sidebar from "@/components/police/Sidebar";
 import TopHeader from "@/components/police/TopHeader";
-import TabNavigation from "@/components/police/TabNavigation";
+import OpenTabsBar from "@/components/police/OpenTabsBar";
 import KRRegister from "@/components/police/KRRegister";
 import FleetManagement from "@/components/police/FleetManagement";
 import Ejendomsregister from "@/components/police/Ejendomsregister";
@@ -22,10 +22,36 @@ import RemeoAfdeling from "@/components/police/afdelinger/RemeoAfdeling";
 import KortOgGPS from "@/components/police/KortOgGPS";
 import Ansoegninger from "@/components/police/Ansoegninger";
 import Koeretoejsregister from "@/components/police/Koeretoejsregister";
-import OpretSag from "@/components/police/OpretSag";
+import SagEditor from "@/components/police/SagEditor";
+import SagsArkiv from "@/components/police/SagsArkiv";
 import { FileText, Radio, Settings, Building, BookOpen } from "lucide-react";
 import { betjenteApi } from "@/lib/api";
-import type { Betjent, Sigtelse } from "@/types/police";
+import type { Betjent, OpenTab } from "@/types/police";
+
+const TAB_LABELS: Record<string, string> = {
+  forside: "Forside",
+  opslagstavle: "Opslagstavle",
+  kort: "Aktiv Patrulje",
+  kr: "Personregister",
+  koeretoej: "Køretøjsregister",
+  ejendomme: "Ejendomsregister",
+  efterlysninger: "Efterlysninger",
+  opret_sag: "Opret Sag",
+  boeder: "Bødetakster",
+  sagsarkiv: "Sagsarkiv",
+  flaade: "Flådestyring",
+  patruljer: "Patruljeenheder",
+  ansatte: "Ansatte",
+  ansoegninger: "Ansøgninger",
+  profil: "Min Profil",
+  nsk: "NSK",
+  lima: "Lima",
+  faerdsel: "Færdsel",
+  efterforskning: "Efterforskning",
+  sig: "SIG",
+  remeo: "Remeo",
+  kontor: "Kontor",
+};
 
 const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
   <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-2 min-h-[300px]">
@@ -36,13 +62,13 @@ const placeholderTab = (icon: typeof FileText, title: string, desc: string) => (
 );
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("forside");
+  const [openTabs, setOpenTabs] = useState<OpenTab[]>([
+    { id: "forside", label: "Forside", type: "forside" },
+  ]);
+  const [activeTabId, setActiveTabId] = useState("forside");
   const [currentUser, setCurrentUser] = useState<Betjent | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [krInitialPersonId, setKrInitialPersonId] = useState<string | null>(null);
-  const [sagInitialPersonId, setSagInitialPersonId] = useState<string | null>(null);
-  const [sagInitialSigtelser, setSagInitialSigtelser] = useState<Sigtelse[]>([]);
 
   const handleLogin = (betjent: Betjent, admin: boolean) => {
     setCurrentUser(betjent);
@@ -63,23 +89,109 @@ const Index = () => {
     setShowChangePassword(false);
   };
 
+  const openTab = useCallback((type: string, data?: any) => {
+    // For sag tabs, always open a new one
+    if (type === "sag") {
+      const id = `sag-${data?.sagId || Date.now()}`;
+      const existing = openTabs.find(t => t.id === id);
+      if (existing) {
+        setActiveTabId(id);
+        return;
+      }
+      const newTab: OpenTab = {
+        id,
+        label: data?.label || "Ny Sag",
+        type: "sag",
+        data,
+      };
+      setOpenTabs(prev => [...prev, newTab]);
+      setActiveTabId(id);
+      return;
+    }
+
+    // For regular tabs, reuse existing or create new
+    const existing = openTabs.find(t => t.type === type && !t.id.startsWith("sag-"));
+    if (existing) {
+      setActiveTabId(existing.id);
+      return;
+    }
+    const newTab: OpenTab = {
+      id: type,
+      label: TAB_LABELS[type] || type,
+      type,
+      data,
+    };
+    setOpenTabs(prev => [...prev, newTab]);
+    setActiveTabId(type);
+  }, [openTabs]);
+
+  const closeTab = useCallback((id: string) => {
+    if (id === "forside") return; // Can't close home
+    setOpenTabs(prev => {
+      const filtered = prev.filter(t => t.id !== id);
+      if (activeTabId === id) {
+        // Switch to previous tab or forside
+        const idx = prev.findIndex(t => t.id === id);
+        const newActive = filtered[Math.min(idx, filtered.length - 1)]?.id || "forside";
+        setActiveTabId(newActive);
+      }
+      return filtered;
+    });
+  }, [activeTabId]);
+
+  // Sidebar compatibility: when sidebar changes tab, use openTab
+  const handleTabChange = useCallback((tab: string) => {
+    if (tab === "opret_sag") {
+      openTab("sag", { label: "Ny Sag" });
+    } else {
+      openTab(tab);
+    }
+  }, [openTab]);
+
   if (!currentUser) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  const activeTab = openTabs.find(t => t.id === activeTabId);
+  const activeType = activeTab?.type || "forside";
+
   const renderContent = () => {
-    switch (activeTab) {
-      case "forside": return <Dashboard currentUser={currentUser} onTabChange={setActiveTab} />;
+    switch (activeType) {
+      case "forside": return <Dashboard currentUser={currentUser} onTabChange={handleTabChange} />;
       case "opslagstavle": return <Opslagstavle currentUser={currentUser} isAdmin={isAdmin} />;
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
       case "boeder": return <Bodetakster />;
-      case "sagsarkiv": return placeholderTab(FileText, "Sagsarkiv", "Her vil gamle og afsluttede sager blive vist");
-      case "opret_sag": return <OpretSag currentUser={currentUser} initialPersonId={sagInitialPersonId} initialSigtelser={sagInitialSigtelser} />;
-      case "kr": return <KRRegister initialPersonId={krInitialPersonId} />;
+      case "sagsarkiv": return (
+        <SagsArkiv
+          onOpenSag={(sagId, label) => openTab("sag", { sagId, label })}
+          onNewSag={() => openTab("sag", { label: "Ny Sag" })}
+        />
+      );
+      case "sag": return (
+        <SagEditor
+          key={activeTabId}
+          sagId={activeTab?.data?.sagId}
+          currentUser={currentUser}
+          initialPersonId={activeTab?.data?.initialPersonId}
+          onSagSaved={(sag) => {
+            // Update tab label
+            setOpenTabs(prev => prev.map(t =>
+              t.id === activeTabId ? { ...t, label: sag.titel || sag.sagsnummer } : t
+            ));
+          }}
+        />
+      );
+      case "kr": return <KRRegister />;
       case "koeretoej": return <Koeretoejsregister />;
       case "flaade": return <FleetManagement currentUser={currentUser} isAdmin={isAdmin} />;
       case "ejendomme": return <Ejendomsregister />;
-      case "efterlysninger": return <Efterlysninger onSigtPerson={(personId, sigtelser) => { setSagInitialPersonId(personId); setSagInitialSigtelser(sigtelser); setActiveTab("opret_sag"); }} />;
+      case "efterlysninger": return (
+        <Efterlysninger
+          onSigtPerson={(personId) => {
+            openTab("sag", { initialPersonId: personId, label: "Ny Sag" });
+          }}
+        />
+      );
       case "nsk": return <NSKAfdeling />;
       case "lima": return <LimaAfdeling />;
       case "faerdsel": return <FaerdselAfdeling />;
@@ -95,7 +207,7 @@ const Index = () => {
           currentUser={currentUser}
           isAdmin={isAdmin}
           onUserUpdate={(updated) => setCurrentUser(updated)}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
       );
       default: return placeholderTab(Settings, "Side", "Kommer snart");
@@ -113,15 +225,20 @@ const Index = () => {
 
         <div className="flex h-full overflow-hidden">
           <Sidebar
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onLogout={() => { setCurrentUser(null); setIsAdmin(false); }}
+            activeTab={activeType}
+            onTabChange={handleTabChange}
+            onLogout={() => { setCurrentUser(null); setIsAdmin(false); setOpenTabs([{ id: "forside", label: "Forside", type: "forside" }]); setActiveTabId("forside"); }}
             currentUser={currentUser}
             isAdmin={isAdmin}
           />
           <div className="flex-1 flex flex-col min-w-0">
             <TopHeader currentUser={currentUser} isAdmin={isAdmin} />
-            {activeTab === "forside" && <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />}
+            <OpenTabsBar
+              tabs={openTabs}
+              activeTabId={activeTabId}
+              onSelectTab={setActiveTabId}
+              onCloseTab={closeTab}
+            />
             <main className="flex-1 p-4 overflow-y-auto">
               {renderContent()}
             </main>
