@@ -76,7 +76,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
           {/* Logo & title */}
           <div className="flex flex-col items-center gap-3 mb-6">
             <div
-              className="w-20 h-20 rounded-2xl border border-[hsl(217,91%,50%,0.2)] flex items-center justify-center cursor-pointer select-none overflow-hidden transition-all hover:border-[hsl(217,91%,50%,0.4)] bg-[#174ecf]/0"
+              className="w-20 h-20 border border-[hsl(217,91%,50%,0.2)] flex items-center justify-center cursor-pointer select-none overflow-hidden transition-all hover:border-[hsl(217,91%,50%,0.4)] bg-[#174ecf]/0 text-slate-100/0 rounded-none"
               onClick={() => {
                 const nowMs = Date.now();
                 if (nowMs - lastTap < 500) {
