@@ -35,6 +35,8 @@ interface SagRow {
   tags: string;
   beviser: string;
   rapport: string;
+  noter: string;
+  aktivitetslog: string;
 }
 
 function rowToSag(row: SagRow): Sag {
