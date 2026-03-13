@@ -56,6 +56,8 @@ function rowToSag(row: SagRow): Sag {
     tags: JSON.parse(row.tags || '[]'),
     beviser: JSON.parse(row.beviser || '[]'),
     rapport: JSON.parse(row.rapport || '{"haendelsesforloeb":"","konfiskeredeGenstande":[],"magtanvendelse":[]}'),
+    noter: JSON.parse(row.noter || '[]'),
+    aktivitetslog: JSON.parse(row.aktivitetslog || '[]'),
   };
 }
 
