@@ -78,6 +78,8 @@ function sagToRow(s: Sag): Record<string, any> {
     tags: JSON.stringify(s.tags),
     beviser: JSON.stringify(s.beviser),
     rapport: JSON.stringify(s.rapport),
+    noter: JSON.stringify(s.noter),
+    aktivitetslog: JSON.stringify(s.aktivitetslog),
   };
 }
 
