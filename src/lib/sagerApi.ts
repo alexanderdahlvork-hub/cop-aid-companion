@@ -35,6 +35,8 @@ interface SagRow {
   tags: string;
   beviser: string;
   rapport: string;
+  noter: string;
+  aktivitetslog: string;
 }
 
 function rowToSag(row: SagRow): Sag {
@@ -54,6 +56,8 @@ function rowToSag(row: SagRow): Sag {
     tags: JSON.parse(row.tags || '[]'),
     beviser: JSON.parse(row.beviser || '[]'),
     rapport: JSON.parse(row.rapport || '{"haendelsesforloeb":"","konfiskeredeGenstande":[],"magtanvendelse":[]}'),
+    noter: JSON.parse(row.noter || '[]'),
+    aktivitetslog: JSON.parse(row.aktivitetslog || '[]'),
   };
 }
 
@@ -74,6 +78,8 @@ function sagToRow(s: Sag): Record<string, any> {
     tags: JSON.stringify(s.tags),
     beviser: JSON.stringify(s.beviser),
     rapport: JSON.stringify(s.rapport),
+    noter: JSON.stringify(s.noter),
+    aktivitetslog: JSON.stringify(s.aktivitetslog),
   };
 }
 

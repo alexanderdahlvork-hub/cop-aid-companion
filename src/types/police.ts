@@ -125,6 +125,21 @@ export interface RapportSkabelon {
 
 // ── Enhanced Sag (Case) System ──
 
+export interface SagNote {
+  id: string;
+  tekst: string;
+  oprettetAf: string;
+  oprettetDato: string;
+}
+
+export interface SagAktivitet {
+  id: string;
+  type: 'oprettet' | 'opdateret' | 'mistaenkt_tilfojet' | 'mistaenkt_fjernet' | 'betjent_tilfojet' | 'bevis_tilfojet' | 'sigtelse_tilfojet' | 'status_aendret' | 'note_tilfojet' | 'andet';
+  beskrivelse: string;
+  bruger: string;
+  tidspunkt: string;
+}
+
 export interface Sag {
   id: string;
   sagsnummer: string;
@@ -141,6 +156,8 @@ export interface Sag {
   tags: string[];
   beviser: SagBevis[];
   rapport: SagRapport;
+  noter: SagNote[];
+  aktivitetslog: SagAktivitet[];
 }
 
 export interface SagMistaenkt {
