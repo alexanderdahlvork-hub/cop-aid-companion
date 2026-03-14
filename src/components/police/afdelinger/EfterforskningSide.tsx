@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Search, FileText, FolderOpen, MessageSquare, Plus, Megaphone } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AfdelingsIndhold from "./AfdelingsIndhold";
 import type { Betjent } from "@/types/police";
@@ -48,38 +46,14 @@ const EfterforskningSide = ({ currentUser, isAdmin }: EfterforskningSideProps) =
       {tab === "tavle" && (
         <AfdelingsIndhold afdelingId="efterforskning" currentUserNavn={userName} isLeder={isLeder} />
       )}
-
       {tab === "sager" && (
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <Input placeholder="Søg sagsnummer..." className="pl-8 h-8 text-xs" />
-            </div>
-            <Button size="sm" className="h-8 gap-1 text-xs"><Plus className="w-3.5 h-3.5" /> Ny sag</Button>
-          </div>
-          <div className="text-center py-12 text-muted-foreground">
-            <FolderOpen className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-xs">Ingen aktive sager</p>
-            <p className="text-[10px] mt-1">Opret en ny sag for at starte efterforskning</p>
-          </div>
-        </div>
+        <AfdelingsIndhold afdelingId="efterforskning_sager" currentUserNavn={userName} isLeder={isLeder} />
       )}
-
       {tab === "bevis" && (
-        <div className="text-center py-12 text-muted-foreground">
-          <FileText className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-xs">Bevismateriale</p>
-          <p className="text-[10px] mt-1">Upload og administrer beviser knyttet til sager</p>
-        </div>
+        <AfdelingsIndhold afdelingId="efterforskning_bevis" currentUserNavn={userName} isLeder={isLeder} />
       )}
-
       {tab === "afhoering" && (
-        <div className="text-center py-12 text-muted-foreground">
-          <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-xs">Afhøringsprotokoller</p>
-          <p className="text-[10px] mt-1">Registrer og gennemse afhøringer</p>
-        </div>
+        <AfdelingsIndhold afdelingId="efterforskning_afhoering" currentUserNavn={userName} isLeder={isLeder} />
       )}
     </div>
   );

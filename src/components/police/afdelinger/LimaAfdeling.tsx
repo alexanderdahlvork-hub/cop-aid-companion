@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Shield, FileText, Target, Plus, Megaphone } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import AfdelingsIndhold from "./AfdelingsIndhold";
 import type { Betjent } from "@/types/police";
@@ -9,13 +8,6 @@ interface LimaAfdelingProps {
   currentUser?: Betjent;
   isAdmin?: boolean;
 }
-
-const planTypeConfig = {
-  bankrøveri: { label: "Bankrøveri", color: "bg-destructive/10 text-destructive" },
-  gidsel: { label: "Gidseltagning", color: "bg-warning/10 text-warning" },
-  razzia: { label: "Razzia", color: "bg-primary/10 text-primary" },
-  eskorte: { label: "Eskorte", color: "bg-success/10 text-success" },
-};
 
 const LimaAfdeling = ({ currentUser, isAdmin }: LimaAfdelingProps) => {
   const [tab, setTab] = useState<"tavle" | "planer" | "udstyr" | "traening">("tavle");
@@ -54,39 +46,14 @@ const LimaAfdeling = ({ currentUser, isAdmin }: LimaAfdelingProps) => {
       {tab === "tavle" && (
         <AfdelingsIndhold afdelingId="lima" currentUserNavn={userName} isLeder={isLeder} />
       )}
-
       {tab === "planer" && (
-        <div className="space-y-3">
-          <Button size="sm" className="h-8 gap-1 text-xs"><Plus className="w-3.5 h-3.5" /> Ny plan</Button>
-          <div className="grid grid-cols-2 gap-3">
-            {(["bankrøveri", "gidsel", "razzia", "eskorte"] as const).map((type) => (
-              <div key={type} className="rounded-md border border-border bg-card/50 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={cn("px-2 py-0.5 rounded text-[10px] font-medium", planTypeConfig[type].color)}>
-                    {planTypeConfig[type].label}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">Ingen aktive planer</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AfdelingsIndhold afdelingId="lima_planer" currentUserNavn={userName} isLeder={isLeder} />
       )}
-
       {tab === "udstyr" && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Shield className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-xs">Udstyrsadministration</p>
-          <p className="text-[10px] mt-1">Våben, beskyttelsesudstyr & køretøjer</p>
-        </div>
+        <AfdelingsIndhold afdelingId="lima_udstyr" currentUserNavn={userName} isLeder={isLeder} />
       )}
-
       {tab === "traening" && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-xs">Træningsprotokoller</p>
-          <p className="text-[10px] mt-1">Skydetræning, taktik & fysisk træning</p>
-        </div>
+        <AfdelingsIndhold afdelingId="lima_traening" currentUserNavn={userName} isLeder={isLeder} />
       )}
     </div>
   );
