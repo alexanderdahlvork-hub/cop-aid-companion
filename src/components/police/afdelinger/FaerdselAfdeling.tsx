@@ -64,21 +64,11 @@ const FaerdselAfdeling = ({ currentUser, isAdmin }: FaerdselAfdelingProps) => {
       )}
 
       {tab === "uheld" && (
-        <div className="space-y-3">
-          <Button size="sm" className="h-8 gap-1 text-xs"><Plus className="w-3.5 h-3.5" /> Registrer uheld</Button>
-          <div className="text-center py-12 text-muted-foreground">
-            <Car className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-xs">Ingen uheld registreret</p>
-          </div>
-        </div>
+        <AfdelingsIndhold afdelingId="faerdsel_uheld" currentUserNavn={userName} isLeder={isLeder} />
       )}
 
       {tab === "klip" && (
-        <div className="text-center py-12 text-muted-foreground">
-          <ClipboardList className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-xs">Klip-oversigt</p>
-          <p className="text-[10px] mt-1">Oversigt over tildelte klip på tværs af personer</p>
-        </div>
+        <AfdelingsIndhold afdelingId="faerdsel_klip" currentUserNavn={userName} isLeder={isLeder} />
       )}
     </div>
   );
