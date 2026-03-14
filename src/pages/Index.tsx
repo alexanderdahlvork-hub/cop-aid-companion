@@ -192,12 +192,12 @@ const Index = () => {
           }}
         />
       );
-      case "nsk": return <NSKAfdeling />;
-      case "lima": return <LimaAfdeling />;
-      case "faerdsel": return <FaerdselAfdeling />;
-      case "efterforskning": return <EfterforskningSide />;
-      case "sig": return <SIGAfdeling />;
-      case "remeo": return <RemeoAfdeling />;
+      case "nsk": return <NSKAfdeling currentUser={currentUser} isAdmin={isAdmin} />;
+      case "lima": return <LimaAfdeling currentUser={currentUser} isAdmin={isAdmin} />;
+      case "faerdsel": return <FaerdselAfdeling currentUser={currentUser} isAdmin={isAdmin} />;
+      case "efterforskning": return <EfterforskningSide currentUser={currentUser} isAdmin={isAdmin} />;
+      case "sig": return <SIGAfdeling currentUser={currentUser} isAdmin={isAdmin} />;
+      case "remeo": return <RemeoAfdeling currentUser={currentUser} isAdmin={isAdmin} />;
       case "patruljer": return placeholderTab(Radio, "Patruljeenheder", "Kommer snart");
       case "kort": return <KortOgGPS />;
       case "kontor": return placeholderTab(Building, "Kontor", "Kommer snart");

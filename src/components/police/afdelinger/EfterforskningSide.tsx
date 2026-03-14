@@ -1,21 +1,32 @@
 import { useState } from "react";
-import { Search, FileText, Users, Clock, Plus, FolderOpen, MessageSquare } from "lucide-react";
+import { Search, FileText, FolderOpen, MessageSquare, Plus, Megaphone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import AfdelingsIndhold from "./AfdelingsIndhold";
+import type { Betjent } from "@/types/police";
 
-const EfterforskningSide = () => {
-  const [tab, setTab] = useState<"sager" | "bevis" | "afhoering">("sager");
+interface EfterforskningSideProps {
+  currentUser?: Betjent;
+  isAdmin?: boolean;
+}
+
+const EfterforskningSide = ({ currentUser, isAdmin }: EfterforskningSideProps) => {
+  const [tab, setTab] = useState<"tavle" | "sager" | "bevis" | "afhoering">("tavle");
+
+  const userName = currentUser ? `${currentUser.fornavn} ${currentUser.efternavn}` : "Ukendt";
+  const isLeder = isAdmin || (currentUser?.rang?.toLowerCase().includes("leder") ?? false);
 
   return (
     <div className="h-full flex flex-col">
       <div className="mb-4">
         <h1 className="text-lg font-bold text-foreground">Efterforskning</h1>
-        <p className="text-xs text-muted-foreground">Sagsstyring, bevismateriale & afhøringer</p>
+        <p className="text-xs text-muted-foreground">Opslagstavle, sagsstyring, bevismateriale & afhøringer</p>
       </div>
 
       <div className="flex gap-1 mb-4 border-b border-border">
         {[
+          { id: "tavle" as const, label: "Opslagstavle", icon: Megaphone },
           { id: "sager" as const, label: "Sager", icon: FolderOpen },
           { id: "bevis" as const, label: "Bevismateriale", icon: FileText },
           { id: "afhoering" as const, label: "Afhøringer", icon: MessageSquare },
@@ -33,6 +44,10 @@ const EfterforskningSide = () => {
           </button>
         ))}
       </div>
+
+      {tab === "tavle" && (
+        <AfdelingsIndhold afdelingId="efterforskning" currentUserNavn={userName} isLeder={isLeder} />
+      )}
 
       {tab === "sager" && (
         <div className="space-y-3">
