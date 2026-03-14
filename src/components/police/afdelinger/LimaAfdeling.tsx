@@ -1,17 +1,13 @@
 import { useState } from "react";
-import { Shield, FileText, MapPin, Users, Clock, Plus, Target, AlertTriangle } from "lucide-react";
+import { Shield, FileText, Target, Plus, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import AfdelingsIndhold from "./AfdelingsIndhold";
+import type { Betjent } from "@/types/police";
 
-interface TaktiskPlan {
-  id: string;
-  navn: string;
-  type: "bankrøveri" | "gidsel" | "razzia" | "eskorte" | "anden";
-  status: "klar" | "igangværende" | "afsluttet";
-  prioritet: "normal" | "høj" | "kritisk";
-  beskrivelse: string;
-  dato: string;
+interface LimaAfdelingProps {
+  currentUser?: Betjent;
+  isAdmin?: boolean;
 }
 
 const planTypeConfig = {
@@ -19,22 +15,24 @@ const planTypeConfig = {
   gidsel: { label: "Gidseltagning", color: "bg-warning/10 text-warning" },
   razzia: { label: "Razzia", color: "bg-primary/10 text-primary" },
   eskorte: { label: "Eskorte", color: "bg-success/10 text-success" },
-  anden: { label: "Anden", color: "bg-muted text-muted-foreground" },
 };
 
-const LimaAfdeling = () => {
-  const [tab, setTab] = useState<"planer" | "udstyr" | "traening">("planer");
-  const [planer] = useState<TaktiskPlan[]>([]);
+const LimaAfdeling = ({ currentUser, isAdmin }: LimaAfdelingProps) => {
+  const [tab, setTab] = useState<"tavle" | "planer" | "udstyr" | "traening">("tavle");
+
+  const userName = currentUser ? `${currentUser.fornavn} ${currentUser.efternavn}` : "Ukendt";
+  const isLeder = isAdmin || (currentUser?.rang?.toLowerCase().includes("leder") ?? false);
 
   return (
     <div className="h-full flex flex-col">
       <div className="mb-4">
         <h1 className="text-lg font-bold text-foreground">Lima — Aktionsstyrken</h1>
-        <p className="text-xs text-muted-foreground">Taktiske planer, indsatser & træning</p>
+        <p className="text-xs text-muted-foreground">Opslagstavle, taktiske planer, indsatser & træning</p>
       </div>
 
       <div className="flex gap-1 mb-4 border-b border-border">
         {[
+          { id: "tavle" as const, label: "Opslagstavle", icon: Megaphone },
           { id: "planer" as const, label: "Taktiske planer", icon: FileText },
           { id: "udstyr" as const, label: "Udstyr", icon: Shield },
           { id: "traening" as const, label: "Træning", icon: Target },
@@ -53,11 +51,13 @@ const LimaAfdeling = () => {
         ))}
       </div>
 
+      {tab === "tavle" && (
+        <AfdelingsIndhold afdelingId="lima" currentUserNavn={userName} isLeder={isLeder} />
+      )}
+
       {tab === "planer" && (
         <div className="space-y-3">
           <Button size="sm" className="h-8 gap-1 text-xs"><Plus className="w-3.5 h-3.5" /> Ny plan</Button>
-
-          {/* Placeholder plan types */}
           <div className="grid grid-cols-2 gap-3">
             {(["bankrøveri", "gidsel", "razzia", "eskorte"] as const).map((type) => (
               <div key={type} className="rounded-md border border-border bg-card/50 p-4">

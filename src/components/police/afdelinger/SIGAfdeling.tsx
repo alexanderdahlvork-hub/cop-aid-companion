@@ -1,20 +1,30 @@
 import { useState } from "react";
-import { Shield, Crosshair, Eye, Radio, MapPin, FileText, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Crosshair, Eye, FileText, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AfdelingsIndhold from "./AfdelingsIndhold";
+import type { Betjent } from "@/types/police";
 
-const SIGAfdeling = () => {
-  const [tab, setTab] = useState<"operationer" | "overvågning" | "rapporter">("operationer");
+interface SIGAfdelingProps {
+  currentUser?: Betjent;
+  isAdmin?: boolean;
+}
+
+const SIGAfdeling = ({ currentUser, isAdmin }: SIGAfdelingProps) => {
+  const [tab, setTab] = useState<"tavle" | "operationer" | "overvågning" | "rapporter">("tavle");
+
+  const userName = currentUser ? `${currentUser.fornavn} ${currentUser.efternavn}` : "Ukendt";
+  const isLeder = isAdmin || (currentUser?.rang?.toLowerCase().includes("leder") ?? false);
 
   return (
     <div className="h-full flex flex-col">
       <div className="mb-4">
         <h1 className="text-lg font-bold text-foreground">SIG — Særlig Indsatsgruppe</h1>
-        <p className="text-xs text-muted-foreground">Operationer, overvågning & taktiske rapporter</p>
+        <p className="text-xs text-muted-foreground">Opslagstavle, operationer, overvågning & taktiske rapporter</p>
       </div>
 
       <div className="flex gap-1 mb-4 border-b border-border">
         {[
+          { id: "tavle" as const, label: "Opslagstavle", icon: Megaphone },
           { id: "operationer" as const, label: "Operationer", icon: Crosshair },
           { id: "overvågning" as const, label: "Overvågning", icon: Eye },
           { id: "rapporter" as const, label: "Rapporter", icon: FileText },
@@ -32,6 +42,10 @@ const SIGAfdeling = () => {
           </button>
         ))}
       </div>
+
+      {tab === "tavle" && (
+        <AfdelingsIndhold afdelingId="sig" currentUserNavn={userName} isLeder={isLeder} />
+      )}
 
       {tab === "operationer" && (
         <div className="space-y-3">

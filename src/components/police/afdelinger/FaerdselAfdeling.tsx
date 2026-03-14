@@ -1,22 +1,33 @@
 import { useState } from "react";
-import { Car, Gauge, AlertTriangle, ClipboardList, FileText, Plus } from "lucide-react";
+import { Car, Gauge, AlertTriangle, ClipboardList, Plus, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import FartBeregner from "../FartBeregner";
+import AfdelingsIndhold from "./AfdelingsIndhold";
+import type { Betjent } from "@/types/police";
 
-const FaerdselAfdeling = () => {
-  const [tab, setTab] = useState<"fart" | "uheld" | "klip">("fart");
+interface FaerdselAfdelingProps {
+  currentUser?: Betjent;
+  isAdmin?: boolean;
+}
+
+const FaerdselAfdeling = ({ currentUser, isAdmin }: FaerdselAfdelingProps) => {
+  const [tab, setTab] = useState<"tavle" | "fart" | "uheld" | "klip">("tavle");
   const [fartOpen, setFartOpen] = useState(false);
+
+  const userName = currentUser ? `${currentUser.fornavn} ${currentUser.efternavn}` : "Ukendt";
+  const isLeder = isAdmin || (currentUser?.rang?.toLowerCase().includes("leder") ?? false);
 
   return (
     <div className="h-full flex flex-col">
       <div className="mb-4">
         <h1 className="text-lg font-bold text-foreground">Færdsel</h1>
-        <p className="text-xs text-muted-foreground">Fartbøder, færdselsuheld & klip-oversigt</p>
+        <p className="text-xs text-muted-foreground">Opslagstavle, fartbøder, færdselsuheld & klip-oversigt</p>
       </div>
 
       <div className="flex gap-1 mb-4 border-b border-border">
         {[
+          { id: "tavle" as const, label: "Opslagstavle", icon: Megaphone },
           { id: "fart" as const, label: "Fartberegner", icon: Gauge },
           { id: "uheld" as const, label: "Færdselsuheld", icon: AlertTriangle },
           { id: "klip" as const, label: "Klip-oversigt", icon: ClipboardList },
@@ -34,6 +45,10 @@ const FaerdselAfdeling = () => {
           </button>
         ))}
       </div>
+
+      {tab === "tavle" && (
+        <AfdelingsIndhold afdelingId="faerdsel" currentUserNavn={userName} isLeder={isLeder} />
+      )}
 
       {tab === "fart" && (
         <div className="space-y-3">
