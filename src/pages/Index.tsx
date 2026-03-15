@@ -243,6 +243,7 @@ const Index = () => {
                   {renderTabContent(tab)}
                 </div>
               ))}
+            </main>
           </div>
         </div>
 
