@@ -152,11 +152,8 @@ const Index = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  const activeTab = openTabs.find(t => t.id === activeTabId);
-  const activeType = activeTab?.type || "forside";
-
-  const renderContent = () => {
-    switch (activeType) {
+  const renderTabContent = (tab: OpenTab) => {
+    switch (tab.type) {
       case "forside": return <Dashboard currentUser={currentUser} onTabChange={handleTabChange} />;
       case "opslagstavle": return <Opslagstavle currentUser={currentUser} isAdmin={isAdmin} />;
       case "ansatte": return <AnsatteListe currentUser={currentUser} isAdmin={isAdmin} />;
@@ -169,14 +166,12 @@ const Index = () => {
       );
       case "sag": return (
         <SagEditor
-          key={activeTabId}
-          sagId={activeTab?.data?.sagId}
+          sagId={tab.data?.sagId}
           currentUser={currentUser}
-          initialPersonId={activeTab?.data?.initialPersonId}
+          initialPersonId={tab.data?.initialPersonId}
           onSagSaved={(sag) => {
-            // Update tab label
             setOpenTabs(prev => prev.map(t =>
-              t.id === activeTabId ? { ...t, label: sag.titel || sag.sagsnummer } : t
+              t.id === tab.id ? { ...t, label: sag.titel || sag.sagsnummer } : t
             ));
           }}
         />
@@ -225,7 +220,7 @@ const Index = () => {
 
         <div className="flex h-full overflow-hidden">
           <Sidebar
-            activeTab={activeType}
+            activeTab={openTabs.find(t => t.id === activeTabId)?.type || "forside"}
             onTabChange={handleTabChange}
             onLogout={() => { setCurrentUser(null); setIsAdmin(false); setOpenTabs([{ id: "forside", label: "Forside", type: "forside" }]); setActiveTabId("forside"); }}
             currentUser={currentUser}
@@ -239,8 +234,15 @@ const Index = () => {
               onSelectTab={setActiveTabId}
               onCloseTab={closeTab}
             />
-            <main className="flex-1 p-4 overflow-y-auto">
-              {renderContent()}
+            <main className="flex-1 overflow-y-auto relative">
+              {openTabs.map(tab => (
+                <div
+                  key={tab.id}
+                  className={tab.id === activeTabId ? "p-4" : "hidden"}
+                >
+                  {renderTabContent(tab)}
+                </div>
+              ))}
             </main>
           </div>
         </div>
