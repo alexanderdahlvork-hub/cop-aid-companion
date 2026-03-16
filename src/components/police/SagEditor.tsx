@@ -517,10 +517,38 @@ const SagEditor = ({ sagId, currentUser, initialPersonId, onSagSaved }: SagEdito
                 <button onClick={() => updateSag({ koeretoejer: sag.koeretoejer.filter(x => x.id !== k.id) })} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
               </div>
             ))}
-            <div className="flex gap-1.5">
-              <Input value={koeretoejForm.nummerplade} onChange={(e) => setKoeretoejForm({ ...koeretoejForm, nummerplade: e.target.value })} placeholder="Nummerplade" className="h-8 text-xs bg-secondary flex-1" />
-              <Input value={koeretoejForm.beskrivelse} onChange={(e) => setKoeretoejForm({ ...koeretoejForm, beskrivelse: e.target.value })} placeholder="Beskrivelse" className="h-8 text-xs bg-secondary flex-1" />
-              <Button size="sm" className="h-8 w-8 p-0 shrink-0" onClick={addKoeretoej} disabled={!koeretoejForm.nummerplade.trim()}><Plus className="w-3 h-3" /></Button>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                value={koeretoejSoegning}
+                onChange={(e) => { setKoeretoejSoegning(e.target.value); setShowKoeretoejDropdown(true); }}
+                onFocus={() => setShowKoeretoejDropdown(true)}
+                placeholder="Søg køretøj fra registeret..."
+                className="h-8 text-xs bg-secondary pl-8"
+              />
+              {showKoeretoejDropdown && koeretoejSoegning && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {(() => {
+                    const q = koeretoejSoegning.toLowerCase();
+                    const filtered = alleKoeretoejer.filter(k =>
+                      `${k.nummerplade} ${k.maerke} ${k.model} ${k.farve}`.toLowerCase().includes(q) &&
+                      !sag.koeretoejer.some(sk => sk.nummerplade === k.nummerplade)
+                    ).slice(0, 10);
+                    if (filtered.length === 0) return <div className="p-2 text-xs text-muted-foreground">Ingen køretøjer fundet</div>;
+                    return filtered.map(k => (
+                      <button key={k.id} onClick={() => {
+                        updateSag({ koeretoejer: [...sag.koeretoejer, { id: Date.now().toString(), nummerplade: k.nummerplade, beskrivelse: `${k.maerke} ${k.model} — ${k.farve}` }] });
+                        setKoeretoejSoegning("");
+                        setShowKoeretoejDropdown(false);
+                      }}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/50 text-left">
+                        <span className="font-mono font-medium">{k.nummerplade}</span>
+                        <span className="text-muted-foreground">{k.maerke} {k.model} — {k.farve}</span>
+                      </button>
+                    ));
+                  })()}
+                </div>
+              )}
             </div>
           </SectionCard>
 
