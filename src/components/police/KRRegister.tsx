@@ -232,21 +232,6 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Telefon</Label>
-                  <Input className="h-8 text-sm mt-0.5" value={nyPerson.telefon || ""} onChange={(e) => setNyPerson({ ...nyPerson, telefon: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</Label>
-                  <Select value={nyPerson.status || "aktiv"} onValueChange={(v) => setNyPerson({ ...nyPerson, status: v as Person["status"] })}>
-                    <SelectTrigger className="h-8 text-sm mt-0.5"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as const).map((s) => (
-                        <SelectItem key={s} value={s}>{statusConfig[s].label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
                   <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Noter</Label>
                   <Textarea className="text-sm mt-0.5" rows={2} value={nyPerson.noter || ""} onChange={(e) => setNyPerson({ ...nyPerson, noter: e.target.value })} />
                 </div>
