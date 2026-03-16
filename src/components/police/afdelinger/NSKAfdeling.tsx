@@ -39,6 +39,7 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
   const [tilhoer, setTilhoer] = useState<BandeTilhoer[]>([]);
   const [soegning, setSoegning] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [formPersonId, setFormPersonId] = useState("");
   const [formNavn, setFormNavn] = useState("");
   const [formCpr, setFormCpr] = useState("");
   const [formBande, setFormBande] = useState("");
@@ -46,11 +47,33 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
   const [formStatus, setFormStatus] = useState<BandeTilhoer["status"]>("aktiv");
   const [formNoter, setFormNoter] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
+  const [personer, setPersoner] = useState<Person[]>([]);
+  const [loadingPersoner, setLoadingPersoner] = useState(true);
+  const [personSoegning, setPersonSoegning] = useState("");
+  const [showPersonDropdown, setShowPersonDropdown] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setTilhoer(JSON.parse(saved));
+    personerApi.getAll()
+      .then(setPersoner)
+      .catch(console.error)
+      .finally(() => setLoadingPersoner(false));
   }, []);
+
+  const filteredPersoner = personer.filter(p => {
+    if (!personSoegning) return true;
+    const q = personSoegning.toLowerCase();
+    return `${p.fornavn} ${p.efternavn}`.toLowerCase().includes(q) || p.cpr.includes(q);
+  }).slice(0, 10);
+
+  const selectPerson = (p: Person) => {
+    setFormPersonId(p.id);
+    setFormNavn(`${p.fornavn} ${p.efternavn}`);
+    setFormCpr(p.cpr);
+    setPersonSoegning("");
+    setShowPersonDropdown(false);
+  };
 
   const save = (items: BandeTilhoer[]) => {
     setTilhoer(items);
