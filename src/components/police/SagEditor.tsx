@@ -86,9 +86,10 @@ const SagEditor = ({ sagId, currentUser, initialPersonId, onSagSaved }: SagEdito
     const loadData = async () => {
       setLoading(true);
       try {
-        const [p, b] = await Promise.all([personerApi.getAll(), betjenteApi.getAll()]);
+        const [p, b, k] = await Promise.all([personerApi.getAll(), betjenteApi.getAll(), koeretoejerApi.getAll()]);
         setPersoner(p);
         setBetjente(b);
+        setAlleKoeretoejer(k);
         const currentMatch = b.find(bt => bt.badgeNr === currentUser.badgeNr);
 
         if (sagId) {
