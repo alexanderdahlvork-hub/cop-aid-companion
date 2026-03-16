@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Search, Users, Network, Eye, Plus, X, Trash2, Edit2, Check } from "lucide-react";
+import { Search, Users, Network, Eye, Plus, X, Trash2, Edit2, Check, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AfdelingLayout from "./AfdelingLayout";
-import type { Betjent } from "@/types/police";
+import type { Betjent, Person } from "@/types/police";
+import { personerApi } from "@/lib/api";
 
 interface BandeTilhoer {
   id: string;
