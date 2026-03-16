@@ -133,10 +133,44 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
       {showForm && (
         <div className="rounded-lg border border-primary/20 bg-card p-4 space-y-3">
           <p className="text-xs font-semibold text-foreground">{editId ? "Rediger" : "Nyt"} bandetilhørsforhold</p>
+          {/* Person search from register */}
+          {!editId && (
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Søg person fra registeret..."
+                value={formPersonId ? formNavn : personSoegning}
+                onChange={e => { setPersonSoegning(e.target.value); setShowPersonDropdown(true); setFormPersonId(""); setFormNavn(""); setFormCpr(""); }}
+                onFocus={() => setShowPersonDropdown(true)}
+                className="pl-8 h-8 text-xs"
+              />
+              {showPersonDropdown && personSoegning && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {loadingPersoner ? (
+                    <div className="p-2 text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Indlæser...</div>
+                  ) : filteredPersoner.length === 0 ? (
+                    <div className="p-2 text-xs text-muted-foreground">Ingen personer fundet</div>
+                  ) : (
+                    filteredPersoner.map(p => (
+                      <button key={p.id} onClick={() => selectPerson(p)}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/50 text-left">
+                        <span className="font-medium">{p.fornavn} {p.efternavn}</span>
+                        <span className="text-muted-foreground font-mono text-[10px]">{p.cpr}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {editId && (
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="Personens fulde navn" value={formNavn} onChange={e => setFormNavn(e.target.value)} className="h-8 text-xs" />
+              <Input placeholder="CPR-nummer" value={formCpr} onChange={e => setFormCpr(e.target.value)} className="h-8 text-xs" />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
-            <Input placeholder="Personens fulde navn" value={formNavn} onChange={e => setFormNavn(e.target.value)} className="h-8 text-xs" />
-            <Input placeholder="CPR-nummer" value={formCpr} onChange={e => setFormCpr(e.target.value)} className="h-8 text-xs" />
-            <Input placeholder="Bandenavn" value={formBande} onChange={e => setFormBande(e.target.value)} className="h-8 text-xs" />
+            <Input placeholder="Bandenavn / Gruppe" value={formBande} onChange={e => setFormBande(e.target.value)} className="h-8 text-xs" />
             <Input placeholder="Rolle (leder, medlem, associeret...)" value={formRolle} onChange={e => setFormRolle(e.target.value)} className="h-8 text-xs" />
           </div>
           <select value={formStatus} onChange={e => setFormStatus(e.target.value as BandeTilhoer["status"])} className="h-8 px-2 text-xs rounded-md border border-input bg-background text-foreground">
