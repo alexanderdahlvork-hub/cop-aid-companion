@@ -20,7 +20,7 @@ import { sagerApi } from "@/lib/sagerApi";
 import { standardBoeder } from "@/data/bodetakster";
 import type {
   Sag, SagMistaenkt, SagBorger, SagKoeretoej, SagReference, SagBevis,
-  SagNote, SagAktivitet, Person, Betjent, Boede, SigtelseBoede, SagsStatus
+  SagNote, SagAktivitet, Person, Betjent, Koeretoej, Boede, SigtelseBoede, SagsStatus
 } from "@/types/police";
 import MistaenktSigtelser from "./MistaenktSigtelser";
 
