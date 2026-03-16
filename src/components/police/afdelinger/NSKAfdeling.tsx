@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Search, Users, Network, Eye, Plus, X, Trash2, Edit2, Check } from "lucide-react";
+import { Search, Users, Network, Eye, Plus, X, Trash2, Edit2, Check, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AfdelingLayout from "./AfdelingLayout";
-import type { Betjent } from "@/types/police";
+import type { Betjent, Person } from "@/types/police";
+import { personerApi } from "@/lib/api";
 
 interface BandeTilhoer {
   id: string;
@@ -38,6 +39,7 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
   const [tilhoer, setTilhoer] = useState<BandeTilhoer[]>([]);
   const [soegning, setSoegning] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [formPersonId, setFormPersonId] = useState("");
   const [formNavn, setFormNavn] = useState("");
   const [formCpr, setFormCpr] = useState("");
   const [formBande, setFormBande] = useState("");
@@ -45,11 +47,33 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
   const [formStatus, setFormStatus] = useState<BandeTilhoer["status"]>("aktiv");
   const [formNoter, setFormNoter] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
+  const [personer, setPersoner] = useState<Person[]>([]);
+  const [loadingPersoner, setLoadingPersoner] = useState(true);
+  const [personSoegning, setPersonSoegning] = useState("");
+  const [showPersonDropdown, setShowPersonDropdown] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setTilhoer(JSON.parse(saved));
+    personerApi.getAll()
+      .then(setPersoner)
+      .catch(console.error)
+      .finally(() => setLoadingPersoner(false));
   }, []);
+
+  const filteredPersoner = personer.filter(p => {
+    if (!personSoegning) return true;
+    const q = personSoegning.toLowerCase();
+    return `${p.fornavn} ${p.efternavn}`.toLowerCase().includes(q) || p.cpr.includes(q);
+  }).slice(0, 10);
+
+  const selectPerson = (p: Person) => {
+    setFormPersonId(p.id);
+    setFormNavn(`${p.fornavn} ${p.efternavn}`);
+    setFormCpr(p.cpr);
+    setPersonSoegning("");
+    setShowPersonDropdown(false);
+  };
 
   const save = (items: BandeTilhoer[]) => {
     setTilhoer(items);
@@ -58,7 +82,8 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
 
   const resetForm = () => {
     setShowForm(false); setEditId(null);
-    setFormNavn(""); setFormCpr(""); setFormBande(""); setFormRolle(""); setFormStatus("aktiv"); setFormNoter("");
+    setFormPersonId(""); setFormNavn(""); setFormCpr(""); setFormBande(""); setFormRolle(""); setFormStatus("aktiv"); setFormNoter("");
+    setPersonSoegning(""); setShowPersonDropdown(false);
   };
 
   const handleSubmit = () => {
@@ -108,10 +133,44 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
       {showForm && (
         <div className="rounded-lg border border-primary/20 bg-card p-4 space-y-3">
           <p className="text-xs font-semibold text-foreground">{editId ? "Rediger" : "Nyt"} bandetilhørsforhold</p>
+          {/* Person search from register */}
+          {!editId && (
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Søg person fra registeret..."
+                value={formPersonId ? formNavn : personSoegning}
+                onChange={e => { setPersonSoegning(e.target.value); setShowPersonDropdown(true); setFormPersonId(""); setFormNavn(""); setFormCpr(""); }}
+                onFocus={() => setShowPersonDropdown(true)}
+                className="pl-8 h-8 text-xs"
+              />
+              {showPersonDropdown && personSoegning && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {loadingPersoner ? (
+                    <div className="p-2 text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Indlæser...</div>
+                  ) : filteredPersoner.length === 0 ? (
+                    <div className="p-2 text-xs text-muted-foreground">Ingen personer fundet</div>
+                  ) : (
+                    filteredPersoner.map(p => (
+                      <button key={p.id} onClick={() => selectPerson(p)}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted/50 text-left">
+                        <span className="font-medium">{p.fornavn} {p.efternavn}</span>
+                        <span className="text-muted-foreground font-mono text-[10px]">{p.cpr}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {editId && (
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="Personens fulde navn" value={formNavn} onChange={e => setFormNavn(e.target.value)} className="h-8 text-xs" />
+              <Input placeholder="CPR-nummer" value={formCpr} onChange={e => setFormCpr(e.target.value)} className="h-8 text-xs" />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
-            <Input placeholder="Personens fulde navn" value={formNavn} onChange={e => setFormNavn(e.target.value)} className="h-8 text-xs" />
-            <Input placeholder="CPR-nummer" value={formCpr} onChange={e => setFormCpr(e.target.value)} className="h-8 text-xs" />
-            <Input placeholder="Bandenavn" value={formBande} onChange={e => setFormBande(e.target.value)} className="h-8 text-xs" />
+            <Input placeholder="Bandenavn / Gruppe" value={formBande} onChange={e => setFormBande(e.target.value)} className="h-8 text-xs" />
             <Input placeholder="Rolle (leder, medlem, associeret...)" value={formRolle} onChange={e => setFormRolle(e.target.value)} className="h-8 text-xs" />
           </div>
           <select value={formStatus} onChange={e => setFormStatus(e.target.value as BandeTilhoer["status"])} className="h-8 px-2 text-xs rounded-md border border-input bg-background text-foreground">
@@ -179,7 +238,7 @@ const NSKAfdeling = ({ currentUser, isAdmin }: NSKAfdelingProps) => {
       beskrivelse="Netværkskort, bandesporing & efterforskning"
       defaultTabs={[
         { id: "tavle", label: "Opslagstavle", removable: false },
-        { id: "netvaerk", label: "Netværkskort", removable: false },
+        { id: "netvaerk", label: "Tilhørsforhold", removable: false },
         { id: "observationer", label: "Observationer", removable: false },
       ]}
       currentUserNavn={userName}
