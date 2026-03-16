@@ -15,7 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
-import { personerApi, betjenteApi } from "@/lib/api";
+import { personerApi, betjenteApi, koeretoejerApi } from "@/lib/api";
 import { sagerApi } from "@/lib/sagerApi";
 import { standardBoeder } from "@/data/bodetakster";
 import type {
