@@ -397,43 +397,13 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
               </div>
             </div>
 
-            {/* Status & actions row */}
+            {/* Actions row */}
             <div className="flex items-center gap-3">
-              <Select
-                value={valgtPerson.status}
-                onValueChange={async (v) => {
-                  const s = v as Person["status"];
-                  setUpdatingStatus(true);
-                  try {
-                    await personerApi.update(valgtPerson.id, { status: s });
-                    const updated = { ...valgtPerson, status: s };
-                    setValgtPerson(updated);
-                    setPersoner((prev) => prev.map((p) => p.id === updated.id ? updated : p));
-                  } catch (err) {
-                    console.error(err);
-                  }
-                  setUpdatingStatus(false);
-                }}
-              >
-                <SelectTrigger className="h-9 text-xs bg-muted/20 border-border w-44">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(["aktiv", "eftersøgt", "anholdt", "sigtet"] as const).map((s) => (
-                    <SelectItem key={s} value={s}>
-                      <span className="flex items-center gap-2">
-                        <span className={cn("w-2 h-2 rounded-full", statusConfig[s].dot)} />
-                        {statusConfig[s].label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               {valgtPerson.status !== "eftersøgt" ? (
                 <Button size="sm" variant="outline"
                   className="h-9 border-warning/30 text-warning hover:bg-warning/10 hover:text-warning"
                   onClick={() => setEfterlysningDialogOpen(true)}>
-                  <AlertTriangle className="w-3.5 h-3.5 mr-1.5" /> Efterlys
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1.5" /> Opret efterlysning
                 </Button>
               ) : (
                 <Button size="sm" variant="outline"
@@ -457,6 +427,35 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                 </Button>
               )}
             </div>
+
+            {/* Tilhørsforhold */}
+            {(() => {
+              const STORAGE_KEY = "nsk_netvaerk";
+              const saved = localStorage.getItem(STORAGE_KEY);
+              const allTilhoer = saved ? JSON.parse(saved) : [];
+              const personTilhoer = allTilhoer.filter((t: any) =>
+                t.personCpr === valgtPerson.cpr ||
+                t.personNavn.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase()
+              );
+              if (personTilhoer.length === 0) return null;
+              return (
+                <div className="rounded-lg bg-primary/5 border border-primary/15 p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-3.5 h-3.5 text-primary" />
+                    <h3 className="text-xs font-semibold text-foreground">Tilhørsforhold</h3>
+                  </div>
+                  {personTilhoer.map((t: any) => (
+                    <div key={t.id} className="flex items-center justify-between px-3 py-2 rounded-md bg-muted/15 border border-border/50 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">{t.bande}</span>
+                        {t.rolle && <Badge variant="outline" className="text-[9px] px-1 py-0">{t.rolle}</Badge>}
+                      </div>
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0">{t.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* Noter */}
             <div className="rounded-lg bg-muted/15 border border-border p-4">
