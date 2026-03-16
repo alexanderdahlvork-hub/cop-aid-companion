@@ -179,7 +179,7 @@ const NSKAfdeling = ({ currentUser, isAdmin }: NSKAfdelingProps) => {
       beskrivelse="Netværkskort, bandesporing & efterforskning"
       defaultTabs={[
         { id: "tavle", label: "Opslagstavle", removable: false },
-        { id: "netvaerk", label: "Netværkskort", removable: false },
+        { id: "netvaerk", label: "Tilhørsforhold", removable: false },
         { id: "observationer", label: "Observationer", removable: false },
       ]}
       currentUserNavn={userName}
