@@ -82,7 +82,8 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
 
   const resetForm = () => {
     setShowForm(false); setEditId(null);
-    setFormNavn(""); setFormCpr(""); setFormBande(""); setFormRolle(""); setFormStatus("aktiv"); setFormNoter("");
+    setFormPersonId(""); setFormNavn(""); setFormCpr(""); setFormBande(""); setFormRolle(""); setFormStatus("aktiv"); setFormNoter("");
+    setPersonSoegning(""); setShowPersonDropdown(false);
   };
 
   const handleSubmit = () => {
