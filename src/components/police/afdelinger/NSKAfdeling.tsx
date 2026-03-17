@@ -28,7 +28,7 @@ const statusConfig = {
   eftersøgt: { label: "Eftersøgt", dot: "bg-destructive" },
 };
 
-const STORAGE_KEY = "nsk_netvaerk";
+const STORAGE_KEY = "nsk_netvaerk"; // kept as fallback key
 
 interface NSKAfdelingProps {
   currentUser?: Betjent;
