@@ -415,9 +415,8 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
 
             {/* Tilhørsforhold */}
             {(() => {
-              const STORAGE_KEY = "nsk_netvaerk";
-              const saved = localStorage.getItem(STORAGE_KEY);
-              const allTilhoer = saved ? JSON.parse(saved) : [];
+              const saved = localStorage.getItem("nsk_netvaerk");
+              const allTilhoer: any[] = saved ? JSON.parse(saved) : [];
               const personTilhoer = allTilhoer.filter((t: any) =>
                 t.personCpr === valgtPerson.cpr ||
                 t.personNavn.toLowerCase() === `${valgtPerson.fornavn} ${valgtPerson.efternavn}`.toLowerCase()

@@ -104,15 +104,16 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
     if (!formNavn.trim() || !formBande.trim()) return;
     const now = new Date().toISOString();
     if (editId) {
-      save(tilhoer.map(t => t.id === editId ? {
-        ...t, personNavn: formNavn, personCpr: formCpr, bande: formBande,
-        rolle: formRolle, status: formStatus, noter: formNoter,
-      } : t));
+      const updated = { personNavn: formNavn, personCpr: formCpr, bande: formBande, rolle: formRolle, status: formStatus, noter: formNoter };
+      apiUpdate(editId, updated);
+      save(tilhoer.map(t => t.id === editId ? { ...t, ...updated } : t));
     } else {
-      save([{
+      const nyt: BandeTilhoer = {
         id: crypto.randomUUID(), personNavn: formNavn, personCpr: formCpr, bande: formBande,
         rolle: formRolle, status: formStatus, noter: formNoter, tilfojetAf: userName, tilfojetDato: now,
-      }, ...tilhoer]);
+      };
+      apiCreate(nyt);
+      save([nyt, ...tilhoer]);
     }
     resetForm();
   };
@@ -122,7 +123,7 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
     setFormRolle(t.rolle); setFormStatus(t.status); setFormNoter(t.noter); setShowForm(true);
   };
 
-  const slet = (id: string) => save(tilhoer.filter(t => t.id !== id));
+  const slet = (id: string) => { apiRemove(id); save(tilhoer.filter(t => t.id !== id)); };
 
   const filtered = tilhoer.filter(t => {
     if (!soegning) return true;
