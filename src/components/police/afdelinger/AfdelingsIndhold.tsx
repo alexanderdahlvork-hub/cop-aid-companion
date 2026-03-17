@@ -68,6 +68,7 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
     if (!titel.trim()) return;
     const now = new Date().toISOString();
     if (editId) {
+      afdelingsIndholdApi.update(editId, { titel, indhold, type, opdateretDato: now });
       save(opslag.map(o => o.id === editId ? { ...o, titel, indhold, type, opdateretDato: now } : o));
     } else {
       const nyt: AfdelingsOpslag = {
@@ -77,6 +78,10 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
         oprettetAf: currentUserNavn,
         oprettetDato: now,
       };
+      afdelingsIndholdApi.create({
+        id: nyt.id, afdelingId, titel: nyt.titel, indhold: nyt.indhold,
+        type: nyt.type, pinned: 0, oprettetAf: nyt.oprettetAf, oprettetDato: nyt.oprettetDato,
+      });
       save([nyt, ...opslag]);
     }
     resetForm();
@@ -99,10 +104,13 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
   };
 
   const togglePin = (id: string) => {
+    const item = opslag.find(o => o.id === id);
+    if (item) afdelingsIndholdApi.update(id, { pinned: item.pinned ? 0 : 1 });
     save(opslag.map(o => o.id === id ? { ...o, pinned: !o.pinned } : o));
   };
 
   const slet = (id: string) => {
+    afdelingsIndholdApi.remove(id);
     save(opslag.filter(o => o.id !== id));
   };
 
