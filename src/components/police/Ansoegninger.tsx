@@ -12,7 +12,7 @@ import { alleUddannelser, alleCertifikater, alleTitler } from "@/data/ansatte";
 import type { Betjent } from "@/types/police";
 import { toast } from "@/components/ui/sonner";
 import { getRangIndex } from "@/lib/permissions";
-import { betjenteApi } from "@/lib/api";
+import { betjenteApi, ansoeningerApi, type IndsendelseDB } from "@/lib/api";
 
 interface AnsoegingerProps {
   currentUser: Betjent;
