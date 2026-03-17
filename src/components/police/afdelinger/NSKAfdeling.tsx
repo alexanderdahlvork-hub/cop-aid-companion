@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AfdelingLayout from "./AfdelingLayout";
 import type { Betjent, Person } from "@/types/police";
-import { personerApi } from "@/lib/api";
+import { personerApi, tilhoersforholdApi, type TilhoersforholdDB } from "@/lib/api";
 
 interface BandeTilhoer {
   id: string;
