@@ -41,9 +41,23 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
   const [type, setType] = useState<AfdelingsOpslag["type"]>("info");
 
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) setOpslag(JSON.parse(saved));
-  }, [storageKey]);
+    afdelingsIndholdApi.getAll(afdelingId).then(data => {
+      if (data.length > 0) {
+        setOpslag(data.map(d => ({
+          id: d.id, titel: d.titel, indhold: d.indhold,
+          type: d.type as AfdelingsOpslag["type"],
+          pinned: d.pinned === 1, oprettetAf: d.oprettetAf,
+          oprettetDato: d.oprettetDato, opdateretDato: d.opdateretDato,
+        })));
+      } else {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) setOpslag(JSON.parse(saved));
+      }
+    }).catch(() => {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) setOpslag(JSON.parse(saved));
+    });
+  }, [storageKey, afdelingId]);
 
   const save = (items: AfdelingsOpslag[]) => {
     setOpslag(items);
