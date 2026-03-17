@@ -53,8 +53,12 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
   const [showPersonDropdown, setShowPersonDropdown] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setTilhoer(JSON.parse(saved));
+    tilhoersforholdApi.getAll().then(data => {
+      setTilhoer(data as unknown as BandeTilhoer[]);
+    }).catch(() => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setTilhoer(JSON.parse(saved));
+    });
     personerApi.getAll()
       .then(setPersoner)
       .catch(console.error)
