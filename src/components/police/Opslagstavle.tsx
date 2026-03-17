@@ -24,29 +24,6 @@ const kategorier: { id: Opslag["kategori"]; label: string; color: string }[] = [
   { id: "nyhed", label: "Nyhed", color: "bg-warning/15 text-warning border-warning/30" },
 ];
 
-const STORAGE_KEY = "opslagstavle_opslag";
-
-const defaultOpslag: Opslag[] = [
-  {
-    id: "op1",
-    titel: "Banden 'Løverne' er blevet ulovliggjort",
-    indhold: "Pr. dags dato er banden 'Løverne' blevet erklæret ulovlig af Justitsministeriet. Alle betjente skal være opmærksomme på medlemmer og aktiviteter relateret til denne gruppering. Kontakt NSK-afdelingen ved mistanke.",
-    kategori: "advarsel",
-    forfatterNavn: "Rigspolitiet",
-    forfatterBadge: "ADM221",
-    oprettetDato: new Date().toISOString().split("T")[0],
-  },
-  {
-    id: "op2",
-    titel: "REMEO søger nye kandidater",
-    indhold: "REMEO-afdelingen søger erfarne betjente med minimum 2 års tjeneste til deres taktiske enhed. Interesserede bedes indsende en ansøgning via ansøgningssystemet eller kontakte afdelingslederen direkte.",
-    kategori: "rekruttering",
-    forfatterNavn: "Rigspolitiet",
-    forfatterBadge: "ADM221",
-    oprettetDato: new Date().toISOString().split("T")[0],
-  },
-];
-
 const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
   const [opslag, setOpslag] = useState<Opslag[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -58,22 +35,28 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
   const canManage = isAdmin || currentUser.rang === "Rigspolitichef";
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setOpslag(JSON.parse(stored));
-      } catch {
-        setOpslag(defaultOpslag);
+    opslagApi.getAll().then(data => {
+      if (data.length > 0) {
+        setOpslag(data);
+      } else {
+        const defaults: Opslag[] = [
+          {
+            id: "op1",
+            titel: "Banden 'Løverne' er blevet ulovliggjort",
+            indhold: "Pr. dags dato er banden 'Løverne' blevet erklæret ulovlig af Justitsministeriet.",
+            kategori: "advarsel",
+            forfatterNavn: "Rigspolitiet",
+            forfatterBadge: "ADM221",
+            oprettetDato: new Date().toISOString().split("T")[0],
+          },
+        ];
+        setOpslag(defaults);
       }
-    } else {
-      setOpslag(defaultOpslag);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultOpslag));
-    }
+    });
   }, []);
 
   const saveOpslag = (updated: Opslag[]) => {
     setOpslag(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
   const resetForm = () => {
