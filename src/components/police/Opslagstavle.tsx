@@ -15,16 +15,7 @@ interface OpslagstavleProps {
   isAdmin: boolean;
 }
 
-interface Opslag {
-  id: string;
-  titel: string;
-  indhold: string;
-  kategori: "info" | "rekruttering" | "advarsel" | "nyhed";
-  forfatterNavn: string;
-  forfatterBadge: string;
-  oprettetDato: string;
-  redigeretDato?: string;
-}
+type Opslag = OpslagDB;
 
 const kategorier: { id: Opslag["kategori"]; label: string; color: string }[] = [
   { id: "info", label: "Information", color: "bg-primary/15 text-primary border-primary/30" },
