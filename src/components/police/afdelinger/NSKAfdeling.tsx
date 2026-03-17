@@ -84,6 +84,16 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   };
 
+  const apiCreate = (item: BandeTilhoer) => {
+    tilhoersforholdApi.create(item as unknown as TilhoersforholdDB);
+  };
+  const apiUpdate = (id: string, data: Partial<BandeTilhoer>) => {
+    tilhoersforholdApi.update(id, data as unknown as Partial<TilhoersforholdDB>);
+  };
+  const apiRemove = (id: string) => {
+    tilhoersforholdApi.remove(id);
+  };
+
   const resetForm = () => {
     setShowForm(false); setEditId(null);
     setFormPersonId(""); setFormNavn(""); setFormCpr(""); setFormBande(""); setFormRolle(""); setFormStatus("aktiv"); setFormNoter("");

@@ -74,12 +74,9 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
     }
 
     if (editingId) {
-      const updated = opslag.map((o) =>
-        o.id === editingId
-          ? { ...o, titel, indhold, kategori, redigeretDato: new Date().toISOString().split("T")[0] }
-          : o
-      );
-      saveOpslag(updated);
+      const updatedItem = { ...opslag.find(o => o.id === editingId)!, titel, indhold, kategori, redigeretDato: new Date().toISOString().split("T")[0] };
+      opslagApi.update(editingId, { titel, indhold, kategori, redigeretDato: updatedItem.redigeretDato });
+      saveOpslag(opslag.map(o => o.id === editingId ? updatedItem : o));
       toast("Opslag opdateret");
     } else {
       const nyt: Opslag = {
@@ -91,6 +88,7 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
         forfatterBadge: currentUser.badgeNr,
         oprettetDato: new Date().toISOString().split("T")[0],
       };
+      opslagApi.create(nyt);
       saveOpslag([nyt, ...opslag]);
       toast("Opslag oprettet");
     }
@@ -106,6 +104,7 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
   };
 
   const handleDelete = (id: string) => {
+    opslagApi.remove(id);
     saveOpslag(opslag.filter((o) => o.id !== id));
     toast("Opslag slettet");
   };
