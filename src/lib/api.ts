@@ -421,3 +421,170 @@ export const opgaverApi = {
     await remove("opgaver", id);
   },
 };
+
+// ── Opslagstavle ──
+export interface OpslagDB {
+  id: string;
+  titel: string;
+  indhold: string;
+  kategori: string;
+  forfatterNavn: string;
+  forfatterBadge: string;
+  oprettetDato: string;
+  redigeretDato?: string;
+}
+
+export const opslagApi = {
+  async getAll(): Promise<OpslagDB[]> {
+    try {
+      const res = await getAll<OpslagDB>("opslag");
+      return res.results;
+    } catch {
+      const stored = localStorage.getItem("opslagstavle_opslag");
+      return stored ? JSON.parse(stored) : [];
+    }
+  },
+  async create(o: OpslagDB): Promise<void> {
+    try { await create("opslag", o); } catch { /* fallback */ }
+  },
+  async update(id: string, data: Partial<OpslagDB>): Promise<void> {
+    try { await update("opslag", id, data); } catch { /* fallback */ }
+  },
+  async remove(id: string): Promise<void> {
+    try { await remove("opslag", id); } catch { /* fallback */ }
+  },
+};
+
+// ── NSK Tilhørsforhold ──
+export interface TilhoersforholdDB {
+  id: string;
+  personNavn: string;
+  personCpr: string;
+  bande: string;
+  rolle: string;
+  status: string;
+  noter: string;
+  tilfojetAf: string;
+  tilfojetDato: string;
+}
+
+export const tilhoersforholdApi = {
+  async getAll(): Promise<TilhoersforholdDB[]> {
+    try {
+      const res = await getAll<TilhoersforholdDB>("nsk_tilhoersforhold");
+      return res.results;
+    } catch {
+      const stored = localStorage.getItem("nsk_netvaerk");
+      return stored ? JSON.parse(stored) : [];
+    }
+  },
+  async create(t: TilhoersforholdDB): Promise<void> {
+    try { await create("nsk_tilhoersforhold", t); } catch { /* fallback */ }
+  },
+  async update(id: string, data: Partial<TilhoersforholdDB>): Promise<void> {
+    try { await update("nsk_tilhoersforhold", id, data); } catch { /* fallback */ }
+  },
+  async remove(id: string): Promise<void> {
+    try { await remove("nsk_tilhoersforhold", id); } catch { /* fallback */ }
+  },
+};
+
+// ── Efterlysninger ──
+export interface EfterlysningDB {
+  id: string;
+  personId: string;
+  personNavn: string;
+  personCpr: string;
+  begrundelse: string;
+  sigtelseBoeder: string; // JSON
+  totalBoede: number;
+  totalFaengsel: number;
+  oprettetAf: string;
+  oprettetDato: string;
+  aktiv: number; // 1 or 0
+}
+
+export const efterlysningerApi = {
+  async getAll(): Promise<EfterlysningDB[]> {
+    try {
+      const res = await getAll<EfterlysningDB>("efterlysninger");
+      return res.results;
+    } catch { return []; }
+  },
+  async create(e: EfterlysningDB): Promise<void> {
+    try { await create("efterlysninger", e); } catch { /* fallback */ }
+  },
+  async update(id: string, data: Partial<EfterlysningDB>): Promise<void> {
+    try { await update("efterlysninger", id, data); } catch { /* fallback */ }
+  },
+  async remove(id: string): Promise<void> {
+    try { await remove("efterlysninger", id); } catch { /* fallback */ }
+  },
+};
+
+// ── Afdelingsindhold ──
+export interface AfdelingsIndholdDB {
+  id: string;
+  afdelingId: string;
+  titel: string;
+  indhold: string;
+  type: string;
+  pinned: number;
+  oprettetAf: string;
+  oprettetDato: string;
+  opdateretDato?: string;
+}
+
+export const afdelingsIndholdApi = {
+  async getAll(afdelingId?: string): Promise<AfdelingsIndholdDB[]> {
+    try {
+      const params = afdelingId ? { afdelingId } : undefined;
+      const res = await getAll<AfdelingsIndholdDB>("afdelingsindhold", params);
+      return res.results;
+    } catch { return []; }
+  },
+  async create(a: AfdelingsIndholdDB): Promise<void> {
+    try { await create("afdelingsindhold", a); } catch { /* fallback */ }
+  },
+  async update(id: string, data: Partial<AfdelingsIndholdDB>): Promise<void> {
+    try { await update("afdelingsindhold", id, data); } catch { /* fallback */ }
+  },
+  async remove(id: string): Promise<void> {
+    try { await remove("afdelingsindhold", id); } catch { /* fallback */ }
+  },
+};
+
+// ── Ansøgninger Indsendelser ──
+export interface IndsendelseDB {
+  id: string;
+  skabelonId: string;
+  skabelonTitel: string;
+  ansoegerNavn: string;
+  ansoegerBadge: string;
+  svar: string; // JSON
+  status: string;
+  dato: string;
+  behandletAf?: string;
+  kommentar?: string;
+}
+
+export const ansoeningerApi = {
+  async getAll(): Promise<IndsendelseDB[]> {
+    try {
+      const res = await getAll<IndsendelseDB>("ansoegning_indsendelser");
+      return res.results;
+    } catch {
+      const stored = localStorage.getItem("ansoegninger_indsendelser");
+      return stored ? JSON.parse(stored) : [];
+    }
+  },
+  async create(a: IndsendelseDB): Promise<void> {
+    try { await create("ansoegning_indsendelser", a); } catch { /* fallback */ }
+  },
+  async update(id: string, data: Partial<IndsendelseDB>): Promise<void> {
+    try { await update("ansoegning_indsendelser", id, data); } catch { /* fallback */ }
+  },
+  async remove(id: string): Promise<void> {
+    try { await remove("ansoegning_indsendelser", id); } catch { /* fallback */ }
+  },
+};

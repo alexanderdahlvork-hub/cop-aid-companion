@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AfdelingLayout from "./AfdelingLayout";
 import type { Betjent, Person } from "@/types/police";
-import { personerApi } from "@/lib/api";
+import { personerApi, tilhoersforholdApi, type TilhoersforholdDB } from "@/lib/api";
 
 interface BandeTilhoer {
   id: string;
@@ -28,7 +28,7 @@ const statusConfig = {
   eftersøgt: { label: "Eftersøgt", dot: "bg-destructive" },
 };
 
-const STORAGE_KEY = "nsk_netvaerk";
+const STORAGE_KEY = "nsk_netvaerk"; // kept as fallback key
 
 interface NSKAfdelingProps {
   currentUser?: Betjent;
@@ -53,8 +53,12 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
   const [showPersonDropdown, setShowPersonDropdown] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setTilhoer(JSON.parse(saved));
+    tilhoersforholdApi.getAll().then(data => {
+      setTilhoer(data as unknown as BandeTilhoer[]);
+    }).catch(() => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setTilhoer(JSON.parse(saved));
+    });
     personerApi.getAll()
       .then(setPersoner)
       .catch(console.error)
@@ -80,6 +84,16 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   };
 
+  const apiCreate = (item: BandeTilhoer) => {
+    tilhoersforholdApi.create(item as unknown as TilhoersforholdDB);
+  };
+  const apiUpdate = (id: string, data: Partial<BandeTilhoer>) => {
+    tilhoersforholdApi.update(id, data as unknown as Partial<TilhoersforholdDB>);
+  };
+  const apiRemove = (id: string) => {
+    tilhoersforholdApi.remove(id);
+  };
+
   const resetForm = () => {
     setShowForm(false); setEditId(null);
     setFormPersonId(""); setFormNavn(""); setFormCpr(""); setFormBande(""); setFormRolle(""); setFormStatus("aktiv"); setFormNoter("");
@@ -90,15 +104,16 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
     if (!formNavn.trim() || !formBande.trim()) return;
     const now = new Date().toISOString();
     if (editId) {
-      save(tilhoer.map(t => t.id === editId ? {
-        ...t, personNavn: formNavn, personCpr: formCpr, bande: formBande,
-        rolle: formRolle, status: formStatus, noter: formNoter,
-      } : t));
+      const updated = { personNavn: formNavn, personCpr: formCpr, bande: formBande, rolle: formRolle, status: formStatus, noter: formNoter };
+      apiUpdate(editId, updated);
+      save(tilhoer.map(t => t.id === editId ? { ...t, ...updated } : t));
     } else {
-      save([{
+      const nyt: BandeTilhoer = {
         id: crypto.randomUUID(), personNavn: formNavn, personCpr: formCpr, bande: formBande,
         rolle: formRolle, status: formStatus, noter: formNoter, tilfojetAf: userName, tilfojetDato: now,
-      }, ...tilhoer]);
+      };
+      apiCreate(nyt);
+      save([nyt, ...tilhoer]);
     }
     resetForm();
   };
@@ -108,7 +123,7 @@ const NetvaerkskortContent = ({ userName }: { userName: string }) => {
     setFormRolle(t.rolle); setFormStatus(t.status); setFormNoter(t.noter); setShowForm(true);
   };
 
-  const slet = (id: string) => save(tilhoer.filter(t => t.id !== id));
+  const slet = (id: string) => { apiRemove(id); save(tilhoer.filter(t => t.id !== id)); };
 
   const filtered = tilhoer.filter(t => {
     if (!soegning) return true;

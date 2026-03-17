@@ -8,51 +8,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import type { Betjent } from "@/types/police";
 import { toast } from "@/components/ui/sonner";
+import { opslagApi, type OpslagDB } from "@/lib/api";
 
 interface OpslagstavleProps {
   currentUser: Betjent;
   isAdmin: boolean;
 }
 
-interface Opslag {
-  id: string;
-  titel: string;
-  indhold: string;
-  kategori: "info" | "rekruttering" | "advarsel" | "nyhed";
-  forfatterNavn: string;
-  forfatterBadge: string;
-  oprettetDato: string;
-  redigeretDato?: string;
-}
+type Opslag = OpslagDB;
 
 const kategorier: { id: Opslag["kategori"]; label: string; color: string }[] = [
   { id: "info", label: "Information", color: "bg-primary/15 text-primary border-primary/30" },
   { id: "rekruttering", label: "Rekruttering", color: "bg-success/15 text-success border-success/30" },
   { id: "advarsel", label: "Advarsel", color: "bg-destructive/15 text-destructive border-destructive/30" },
   { id: "nyhed", label: "Nyhed", color: "bg-warning/15 text-warning border-warning/30" },
-];
-
-const STORAGE_KEY = "opslagstavle_opslag";
-
-const defaultOpslag: Opslag[] = [
-  {
-    id: "op1",
-    titel: "Banden 'Løverne' er blevet ulovliggjort",
-    indhold: "Pr. dags dato er banden 'Løverne' blevet erklæret ulovlig af Justitsministeriet. Alle betjente skal være opmærksomme på medlemmer og aktiviteter relateret til denne gruppering. Kontakt NSK-afdelingen ved mistanke.",
-    kategori: "advarsel",
-    forfatterNavn: "Rigspolitiet",
-    forfatterBadge: "ADM221",
-    oprettetDato: new Date().toISOString().split("T")[0],
-  },
-  {
-    id: "op2",
-    titel: "REMEO søger nye kandidater",
-    indhold: "REMEO-afdelingen søger erfarne betjente med minimum 2 års tjeneste til deres taktiske enhed. Interesserede bedes indsende en ansøgning via ansøgningssystemet eller kontakte afdelingslederen direkte.",
-    kategori: "rekruttering",
-    forfatterNavn: "Rigspolitiet",
-    forfatterBadge: "ADM221",
-    oprettetDato: new Date().toISOString().split("T")[0],
-  },
 ];
 
 const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
@@ -66,22 +35,28 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
   const canManage = isAdmin || currentUser.rang === "Rigspolitichef";
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setOpslag(JSON.parse(stored));
-      } catch {
-        setOpslag(defaultOpslag);
+    opslagApi.getAll().then(data => {
+      if (data.length > 0) {
+        setOpslag(data);
+      } else {
+        const defaults: Opslag[] = [
+          {
+            id: "op1",
+            titel: "Banden 'Løverne' er blevet ulovliggjort",
+            indhold: "Pr. dags dato er banden 'Løverne' blevet erklæret ulovlig af Justitsministeriet.",
+            kategori: "advarsel",
+            forfatterNavn: "Rigspolitiet",
+            forfatterBadge: "ADM221",
+            oprettetDato: new Date().toISOString().split("T")[0],
+          },
+        ];
+        setOpslag(defaults);
       }
-    } else {
-      setOpslag(defaultOpslag);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultOpslag));
-    }
+    });
   }, []);
 
   const saveOpslag = (updated: Opslag[]) => {
     setOpslag(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
   const resetForm = () => {
@@ -99,12 +74,9 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
     }
 
     if (editingId) {
-      const updated = opslag.map((o) =>
-        o.id === editingId
-          ? { ...o, titel, indhold, kategori, redigeretDato: new Date().toISOString().split("T")[0] }
-          : o
-      );
-      saveOpslag(updated);
+      const updatedItem = { ...opslag.find(o => o.id === editingId)!, titel, indhold, kategori, redigeretDato: new Date().toISOString().split("T")[0] };
+      opslagApi.update(editingId, { titel, indhold, kategori, redigeretDato: updatedItem.redigeretDato });
+      saveOpslag(opslag.map(o => o.id === editingId ? updatedItem : o));
       toast("Opslag opdateret");
     } else {
       const nyt: Opslag = {
@@ -116,6 +88,7 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
         forfatterBadge: currentUser.badgeNr,
         oprettetDato: new Date().toISOString().split("T")[0],
       };
+      opslagApi.create(nyt);
       saveOpslag([nyt, ...opslag]);
       toast("Opslag oprettet");
     }
@@ -131,6 +104,7 @@ const Opslagstavle = ({ currentUser, isAdmin }: OpslagstavleProps) => {
   };
 
   const handleDelete = (id: string) => {
+    opslagApi.remove(id);
     saveOpslag(opslag.filter((o) => o.id !== id));
     toast("Opslag slettet");
   };

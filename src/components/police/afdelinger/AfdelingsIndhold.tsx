@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { afdelingsIndholdApi, type AfdelingsIndholdDB } from "@/lib/api";
 
 export interface AfdelingsOpslag {
   id: string;
@@ -40,9 +41,23 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
   const [type, setType] = useState<AfdelingsOpslag["type"]>("info");
 
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) setOpslag(JSON.parse(saved));
-  }, [storageKey]);
+    afdelingsIndholdApi.getAll(afdelingId).then(data => {
+      if (data.length > 0) {
+        setOpslag(data.map(d => ({
+          id: d.id, titel: d.titel, indhold: d.indhold,
+          type: d.type as AfdelingsOpslag["type"],
+          pinned: d.pinned === 1, oprettetAf: d.oprettetAf,
+          oprettetDato: d.oprettetDato, opdateretDato: d.opdateretDato,
+        })));
+      } else {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) setOpslag(JSON.parse(saved));
+      }
+    }).catch(() => {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) setOpslag(JSON.parse(saved));
+    });
+  }, [storageKey, afdelingId]);
 
   const save = (items: AfdelingsOpslag[]) => {
     setOpslag(items);
@@ -53,6 +68,7 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
     if (!titel.trim()) return;
     const now = new Date().toISOString();
     if (editId) {
+      afdelingsIndholdApi.update(editId, { titel, indhold, type, opdateretDato: now });
       save(opslag.map(o => o.id === editId ? { ...o, titel, indhold, type, opdateretDato: now } : o));
     } else {
       const nyt: AfdelingsOpslag = {
@@ -62,6 +78,10 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
         oprettetAf: currentUserNavn,
         oprettetDato: now,
       };
+      afdelingsIndholdApi.create({
+        id: nyt.id, afdelingId, titel: nyt.titel, indhold: nyt.indhold,
+        type: nyt.type, pinned: 0, oprettetAf: nyt.oprettetAf, oprettetDato: nyt.oprettetDato,
+      });
       save([nyt, ...opslag]);
     }
     resetForm();
@@ -84,10 +104,13 @@ const AfdelingsIndhold = ({ afdelingId, currentUserNavn, isLeder }: AfdelingsInd
   };
 
   const togglePin = (id: string) => {
+    const item = opslag.find(o => o.id === id);
+    if (item) afdelingsIndholdApi.update(id, { pinned: item.pinned ? 0 : 1 });
     save(opslag.map(o => o.id === id ? { ...o, pinned: !o.pinned } : o));
   };
 
   const slet = (id: string) => {
+    afdelingsIndholdApi.remove(id);
     save(opslag.filter(o => o.id !== id));
   };
 
