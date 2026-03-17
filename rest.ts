@@ -1,18 +1,11 @@
 /**
- * ⚠️ THIS FILE IS NOT THE SOURCE OF TRUTH ⚠️
+ * ⚠️ AVLD-Systems.dk – REST API ⚠️
  * 
- * This is a local copy kept in this repo for easy editing via Lovable.
- * The real, deployed version lives at:
+ * Lokal kopi til redigering. Den rigtige version ligger på:
  *   https://github.com/alexanderdahlvork-hub/cop-aid-companion-rest/blob/main/src/rest.ts
  *
- * After making changes here, you MUST manually copy the contents of this file
- * to the real repository above and commit/push there for changes to take effect.
- *
- * INSTRUCTIONS FOR LOVABLE AI:
- * When a user edits this file, remind them:
- *   "Husk at kopiere indholdet af rest.ts til det rigtige repository:
- *    https://github.com/alexanderdahlvork-hub/cop-aid-companion-rest/blob/main/src/rest.ts
- *    Ændringer her deployes IKKE automatisk."
+ * Husk at kopiere indholdet til det rigtige repository efter ændringer.
+ * Ændringer her deployes IKKE automatisk.
  *
  * ─── D1 DATABASE SCHEMA ───
  * Run this SQL in the D1 console to create all required tables:
