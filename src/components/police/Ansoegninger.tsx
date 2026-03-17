@@ -153,6 +153,15 @@ const Ansoegninger = ({ currentUser, isAdmin, onBetjentUpdated }: AnsoegingerPro
     return stored ? JSON.parse(stored) : defaultIndsendelser;
   });
   useEffect(() => {
+    ansoeningerApi.getAll().then(data => {
+      if (data.length > 0) {
+        setIndsendelser(data.map(d => ({
+          ...d, svar: typeof d.svar === 'string' ? JSON.parse(d.svar) : d.svar,
+        })) as unknown as IndsendelseData[]);
+      }
+    }).catch(() => {});
+  }, []);
+  useEffect(() => {
     localStorage.setItem("ansoegninger_indsendelser", JSON.stringify(indsendelser));
   }, [indsendelser]);
   const [view, setView] = useState<View>("liste");
