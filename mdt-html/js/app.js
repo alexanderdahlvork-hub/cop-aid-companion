@@ -304,6 +304,7 @@ function renderPage(tabId) {
     case "efterlysninger": renderEfterlysninger(area); break;
     case "sag": renderSagEditor(area, tab.data); break;
     case "boeder": renderBodetakster(area); break;
+    case "fartberegner": renderFartberegner(area); break;
     case "sagsarkiv": renderSagsarkiv(area); break;
     case "flaade": renderFlaade(area); break;
     case "ansatte": renderAnsatte(area); break;
