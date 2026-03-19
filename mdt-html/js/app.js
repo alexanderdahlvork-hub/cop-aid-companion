@@ -95,6 +95,7 @@ const tabLabels = {
   forside:"Forside", opslagstavle:"Opslagstavle", kort:"Aktiv Patrulje", kr:"Personregister",
   koeretoej:"Køretøjsregister", ejendomme:"Ejendomsregister", efterlysninger:"Efterlysninger",
   opret_sag:"Opret Sag", boeder:"Bødetakster", sagsarkiv:"Sagsarkiv", flaade:"Flådestyring",
+  opret_sag:"Opret Sag", boeder:"Bødetakster", sagsarkiv:"Sagsarkiv", flaade:"Flådestyring", fartberegner:"Fartberegner",
   ansatte:"Ansatte", ansoegninger:"Ansøgninger", profil:"Min Profil",
   nsk:"NSK", lima:"Lima", faerdsel:"Færdsel", efterforskning:"Efterforskning", sig:"SIG", remeo:"Remeo",
 };
