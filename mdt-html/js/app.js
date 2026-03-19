@@ -75,6 +75,7 @@ const sidebarSections = [
     { id: "opret_sag", label: "Opret Sag", icon: "file" },
     { id: "boeder", label: "Bødetakster", icon: "folder" },
     { id: "sagsarkiv", label: "Sagsarkiv", icon: "folder" },
+    { id: "fartberegner", label: "Fartberegner", icon: "gauge" },
   ]},
   { label: "FLÅDESTYRING", items: [
     { id: "flaade", label: "Flådestyring", icon: "radio" },
