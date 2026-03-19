@@ -306,7 +306,10 @@ function renderPage(tabId) {
     case "flaade": renderFlaade(area); break;
     case "ansatte": renderAnsatte(area); break;
     case "profil": renderProfil(area); break;
-    case "nsk": case "lima": case "faerdsel": case "efterforskning": case "sig": case "remeo":
+    case "kort": renderKort(area); break;
+    case "ansoegninger": renderAnsoegninger(area); break;
+    case "nsk": renderNSK(area); break;
+    case "lima": case "faerdsel": case "efterforskning": case "sig": case "remeo":
       renderAfdeling(area, tab.type); break;
     default: area.innerHTML = `<div class="loading-center"><p>Siden "${tab.label}" kommer snart</p></div>`;
   }
