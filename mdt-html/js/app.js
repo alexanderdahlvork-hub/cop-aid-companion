@@ -75,6 +75,7 @@ const sidebarSections = [
     { id: "opret_sag", label: "Opret Sag", icon: "file" },
     { id: "boeder", label: "Bødetakster", icon: "folder" },
     { id: "sagsarkiv", label: "Sagsarkiv", icon: "folder" },
+    { id: "fartberegner", label: "Fartberegner", icon: "gauge" },
   ]},
   { label: "FLÅDESTYRING", items: [
     { id: "flaade", label: "Flådestyring", icon: "radio" },
@@ -94,6 +95,7 @@ const tabLabels = {
   forside:"Forside", opslagstavle:"Opslagstavle", kort:"Aktiv Patrulje", kr:"Personregister",
   koeretoej:"Køretøjsregister", ejendomme:"Ejendomsregister", efterlysninger:"Efterlysninger",
   opret_sag:"Opret Sag", boeder:"Bødetakster", sagsarkiv:"Sagsarkiv", flaade:"Flådestyring",
+  opret_sag:"Opret Sag", boeder:"Bødetakster", sagsarkiv:"Sagsarkiv", flaade:"Flådestyring", fartberegner:"Fartberegner",
   ansatte:"Ansatte", ansoegninger:"Ansøgninger", profil:"Min Profil",
   nsk:"NSK", lima:"Lima", faerdsel:"Færdsel", efterforskning:"Efterforskning", sig:"SIG", remeo:"Remeo",
 };
@@ -302,6 +304,7 @@ function renderPage(tabId) {
     case "efterlysninger": renderEfterlysninger(area); break;
     case "sag": renderSagEditor(area, tab.data); break;
     case "boeder": renderBodetakster(area); break;
+    case "fartberegner": renderFartberegner(area); break;
     case "sagsarkiv": renderSagsarkiv(area); break;
     case "flaade": renderFlaade(area); break;
     case "ansatte": renderAnsatte(area); break;
@@ -428,7 +431,7 @@ window.selectPerson = function(id) {
   const statusColors = { aktiv: "badge-success", eftersøgt: "badge-warning", anholdt: "badge-destructive", sigtet: "badge-primary" };
 
   const detail = document.getElementById("kr-detail");
-  let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="list-item-avatar" style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,.1);color:var(--primary);font-size:16px">${p.fornavn[0]}${p.efternavn[0]}</div><div><h2 style="font-size:18px;font-weight:600">${p.fornavn} ${p.efternavn}</h2><span class="mono" style="font-size:12px;color:var(--muted-fg)">${p.cpr}</span></div></div><span class="badge ${statusColors[p.status]}">${statusLabels[p.status]}</span></div>`;
+  let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="list-item-avatar" style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,.1);color:var(--primary);font-size:16px">${p.fornavn[0]}${p.efternavn[0]}</div><div><h2 style="font-size:18px;font-weight:600">${p.fornavn} ${p.efternavn}</h2><span class="mono" style="font-size:12px;color:var(--muted-fg)">${p.cpr}</span></div></div><div class="flex items-center gap-2"><button class="btn btn-primary btn-sm" onclick="showOpretSigtelseDialog('${p.id}')">${icons.file} Opret sigtelse</button><button class="btn btn-outline btn-sm" onclick="markEftersoegt('${p.id}')">${icons.alert} ${p.status === 'eftersøgt' ? 'Fjern efterlysning' : 'Efterlys'}</button><span class="badge ${statusColors[p.status]}">${statusLabels[p.status]}</span></div></div>`;
 
   if (p.status === "eftersøgt") {
     html += `<div class="alert-banner alert-warning mb-3">${icons.alert} Denne person er aktivt eftersøgt</div>`;
@@ -591,6 +594,175 @@ function renderBodetakster(container) {
     });
   });
 }
+
+// ═══════════════════════════════════════════
+// ── FARTBEREGNER ──
+// ═══════════════════════════════════════════
+function beregnFartboede(fart, graense, vejtype, vejarbejde) {
+  const overskridelse = fart - graense;
+  if (overskridelse <= 0) return null;
+  const procentOver = Math.round((overskridelse / graense) * 100);
+  let boede = 0, klip = 0, frakendelse = "", frakendelseTid = "", faengsel = false;
+  if (overskridelse <= 10) boede = 1000;
+  else if (overskridelse <= 15) boede = 1500;
+  else if (overskridelse <= 20) boede = 2000;
+  else if (overskridelse <= 30) { boede = 2500; klip = 1; }
+  else if (overskridelse <= 40) { boede = 3500; klip = 1; }
+  else if (overskridelse <= 50) { boede = 5000; klip = 1; }
+  else if (overskridelse <= 60) { boede = 6000; klip = 1; }
+  else { boede = 7000 + (overskridelse - 60) * 200; klip = 1; }
+  if (procentOver >= 100) { frakendelse = "Ubetinget"; frakendelseTid = "Min. 3 år + fængselsstraf"; faengsel = true; boede = Math.max(boede, 10000); klip = 3; }
+  else if (procentOver >= 60) { frakendelse = "Ubetinget"; frakendelseTid = "Min. 6 måneder"; klip = Math.max(klip, 2); }
+  else if (procentOver >= 40 || overskridelse > 40) { if (procentOver >= 40) { frakendelse = "Betinget"; frakendelseTid = "Betinget frakendelse i 3 år"; klip = Math.max(klip, 1); } }
+  if (vejarbejde) boede *= 2;
+  return { overskridelse, procentOver, boede, klip, frakendelse, frakendelseTid, faengsel };
+}
+
+function renderFartberegner(container) {
+  const vejtypeConfig = { by: { label: "Byzone", graenser: [30, 40, 50, 60, 70] }, landevej: { label: "Landevej / Motortrafikvej", graenser: [60, 70, 80, 90] }, motorvej: { label: "Motorvej", graenser: [80, 90, 100, 110, 120, 130] } };
+  let currentVejtype = "by", currentGraense = 50, currentVejarbejde = false;
+
+  function render() {
+    const cfg = vejtypeConfig[currentVejtype];
+    let html = `<div style="max-width:520px;margin:0 auto"><div class="card"><div class="flex items-center gap-2 mb-3">${icons.gauge}<h1 style="font-size:18px;font-weight:700">Fartbøde-beregner</h1></div>`;
+    html += `<div class="label">Vejtype</div><div class="grid grid-3 gap-2 mb-3">`;
+    ["by","landevej","motorvej"].forEach(v => { html += `<button class="btn ${currentVejtype === v ? 'btn-primary' : 'btn-outline'}" onclick="setFartVejtype('${v}')">${vejtypeConfig[v].label}</button>`; });
+    html += `</div><div class="mb-3"><button class="btn btn-sm ${currentVejarbejde ? '' : 'btn-outline'}" style="${currentVejarbejde ? 'background:var(--warning);color:#fff' : ''}" onclick="toggleFartVejarbejde()">${icons.alert} Vejarbejde ${currentVejarbejde ? '(aktiv)' : ''}</button></div>`;
+    html += `<div class="label">Hastighedsgrænse</div><div class="flex gap-2 mb-3" style="flex-wrap:wrap">`;
+    cfg.graenser.forEach(g => { html += `<button style="width:44px;height:44px;border-radius:50%;border:2px solid ${currentGraense === g ? 'var(--destructive)' : 'var(--border)'};background:${currentGraense === g ? 'rgba(214,54,75,.1)' : 'transparent'};color:${currentGraense === g ? 'var(--destructive)' : 'var(--muted-fg)'};font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="setFartGraense(${g})">${g}</button>`; });
+    html += `</div><div class="label">Målt hastighed (km/t)</div><div class="flex gap-2 mb-3"><input class="input flex-1" type="number" id="fart-input" placeholder="Over ${currentGraense} km/t..."><button class="btn btn-primary" onclick="beregnFart()">Beregn</button></div><div id="fart-resultat"></div></div></div>`;
+    container.innerHTML = html;
+  }
+  window.setFartVejtype = function(v) { currentVejtype = v; currentGraense = vejtypeConfig[v].graenser[Math.floor(vejtypeConfig[v].graenser.length / 2)]; render(); };
+  window.setFartGraense = function(g) { currentGraense = g; render(); };
+  window.toggleFartVejarbejde = function() { currentVejarbejde = !currentVejarbejde; render(); };
+  window.beregnFart = function() {
+    const fartVal = parseInt(document.getElementById("fart-input")?.value);
+    if (isNaN(fartVal) || fartVal <= 0) { showToast("Indtast en hastighed"); return; }
+    const res = beregnFartboede(fartVal, currentGraense, currentVejtype, currentVejarbejde);
+    const div = document.getElementById("fart-resultat");
+    if (!res) { div.innerHTML = `<div style="padding:12px;border-radius:8px;background:rgba(51,160,106,.1);border:1px solid rgba(51,160,106,.2);text-align:center"><p style="font-size:13px;color:var(--success);font-weight:500">Ingen overskridelse</p><p style="font-size:11px;color:var(--muted-fg)">Hastigheden er inden for grænsen.</p></div>`; return; }
+    let rhtml = `<div class="card" style="border:1px solid var(--border)"><div class="grid grid-2 gap-3" style="text-align:center"><div><p style="font-size:9px;color:var(--muted-fg);text-transform:uppercase">Overskridelse</p><p style="font-size:20px;font-weight:700;color:var(--destructive)">+${res.overskridelse} km/t</p><p style="font-size:10px;color:var(--muted-fg)">${res.procentOver}% over</p></div><div><p style="font-size:9px;color:var(--muted-fg);text-transform:uppercase">Bøde</p><p style="font-size:20px;font-weight:700;color:var(--warning)" class="mono">${formatDaDK(res.boede)} kr</p>${currentVejarbejde ? '<p style="font-size:10px;color:var(--destructive)">Dobbelt (vejarbejde)</p>' : ''}</div></div>`;
+    rhtml += `<div class="flex gap-2 mt-3" style="justify-content:center">`;
+    if (res.klip > 0) rhtml += `<span class="badge badge-primary">${res.klip} klip</span>`;
+    if (res.frakendelse) rhtml += `<span class="badge ${res.frakendelse === "Ubetinget" ? "badge-destructive" : "badge-warning"}">${res.frakendelse} frakendelse</span>`;
+    if (res.faengsel) rhtml += `<span class="badge badge-destructive">Fængselsstraf</span>`;
+    rhtml += `</div>`;
+    if (res.frakendelseTid) rhtml += `<div style="margin-top:12px;padding:8px;border-radius:8px;background:rgba(214,54,75,.08);border:1px solid rgba(214,54,75,.15)"><p style="font-size:11px;color:var(--destructive);font-weight:500">🚗 ${res.frakendelseTid}</p></div>`;
+    rhtml += `</div>`;
+    div.innerHTML = rhtml;
+  };
+  render();
+}
+
+// ═══════════════════════════════════════════
+// ── OPRET SIGTELSE DIALOG (fra personregister) ──
+// ═══════════════════════════════════════════
+window.markEftersoegt = async function(personId) {
+  const p = window._krPersoner.find(pp => pp.id === personId);
+  if (!p) return;
+  const newStatus = p.status === "eftersøgt" ? "aktiv" : "eftersøgt";
+  try { await personerApi.update(personId, { status: newStatus }); p.status = newStatus; showToast(newStatus === "eftersøgt" ? "Person efterlyst" : "Efterlysning fjernet"); selectPerson(personId); } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.showOpretSigtelseDialog = function(personId) {
+  const p = window._krPersoner.find(pp => pp.id === personId);
+  if (!p) return;
+  let valgteBoeder = [], erkender = null, fratagKoerekort = false, haendelse = "", openKat = null;
+  const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+
+  function renderDialog() {
+    const totalBoede = valgteBoeder.reduce((s, b) => s + b.beloeb, 0);
+    const totalFaengsel = valgteBoeder.reduce((s, b) => s + b.faengselMaaneder, 0);
+    const totalKlip = valgteBoeder.reduce((s, b) => { const orig = standardBoeder.find(x => x.id === b.boedeId); return s + (orig?.klip || 0); }, 0);
+    const kategorier = {};
+    standardBoeder.forEach(b => { if (!kategorier[b.kategori]) kategorier[b.kategori] = []; kategorier[b.kategori].push(b); });
+
+    let html = `<div class="dialog" style="max-width:680px;max-height:85vh;overflow-y:auto"><div class="dialog-title" style="text-align:center">Opret Sigtelse / Rapport</div>`;
+    // Person info
+    html += `<div class="card card-sm mb-3" style="background:var(--muted)"><div class="flex items-center gap-3"><div class="list-item-avatar" style="width:40px;height:40px;border-radius:10px;background:rgba(59,130,246,.1);color:var(--primary);font-size:14px">${p.fornavn[0]}${p.efternavn[0]}</div><div><div style="font-size:13px;font-weight:600">${p.fornavn} ${p.efternavn}</div><div class="mono" style="font-size:10px;color:var(--muted-fg)">CPR: ${p.cpr} · ${p.adresse || "—"}, ${p.postnr || ""} ${p.by || ""}</div></div></div></div>`;
+    // Erkender + fratag
+    html += `<div class="flex items-center gap-3 mb-3"><span style="font-size:11px;color:${erkender === null ? 'var(--destructive)' : 'var(--muted-fg)'}">Erkender${erkender === null ? ' *' : ''}</span><button class="btn btn-sm ${erkender === true ? '' : 'btn-outline'}" style="${erkender === true ? 'background:var(--success);color:#fff;' : ''}width:28px;height:28px;padding:0" onclick="window._sigErkender(true)">✓</button><button class="btn btn-sm ${erkender === false ? '' : 'btn-outline'}" style="${erkender === false ? 'background:var(--destructive);color:#fff;' : ''}width:28px;height:28px;padding:0" onclick="window._sigErkender(false)">✕</button><label style="font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;margin-left:12px"><input type="checkbox" ${fratagKoerekort ? 'checked' : ''} onchange="window._sigFratag(this.checked)"> Fratag kørekort</label></div>`;
+    // Tilføj sigtelse
+    html += `<button class="btn btn-primary w-full mb-2" onclick="window._sigTogglePanel()">+ Tilføj sigtelse</button>`;
+    html += `<div id="sig-boeder-panel" style="display:${openKat !== null ? 'block' : 'none'}"><div style="margin-bottom:8px"><input class="input" placeholder="Søg paragraf eller beskrivelse..." oninput="window._sigFilter(this.value)"></div><div id="sig-boeder-list" style="max-height:220px;overflow-y:auto">`;
+    for (const [kat, boeder] of Object.entries(kategorier)) {
+      const isOpen = openKat === kat;
+      const selCount = boeder.filter(b => valgteBoeder.some(v => v.boedeId === b.id)).length;
+      html += `<div class="sig-kat-group"><div class="accordion-header" style="padding:6px 12px" onclick="window._sigKat('${kat}')"><div class="flex items-center gap-2"><span style="font-size:11px;font-weight:500">${kat}</span>${selCount > 0 ? `<span class="badge badge-primary" style="font-size:9px">${selCount}</span>` : ''}</div><span style="font-size:10px;color:var(--muted-fg)">${isOpen ? '▲' : '▼'}</span></div><div style="display:${isOpen ? 'block' : 'none'}">`;
+      boeder.forEach(b => {
+        const count = valgteBoeder.filter(v => v.boedeId === b.id).length;
+        html += `<div class="flex items-center gap-2" style="padding:4px 12px;border-top:1px solid rgba(42,47,58,.3);${count > 0 ? 'background:rgba(59,130,246,.05)' : ''}"><div class="flex items-center gap-1 shrink-0"><button style="width:20px;height:20px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:700;color:${count > 0 ? 'var(--destructive)' : 'rgba(107,117,133,.3)'}" onclick="window._sigRemove('${b.id}')" ${count === 0 ? 'disabled' : ''}>−</button><span class="mono" style="width:20px;text-align:center;font-size:10px;font-weight:600;color:${count > 0 ? 'var(--primary)' : 'var(--muted-fg)'}">${count}</span><button style="width:20px;height:20px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:700;color:var(--primary)" onclick="window._sigAdd('${b.id}')">+</button></div><span style="flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.paragraf ? `<span style="color:var(--muted-fg)">${b.paragraf}</span> — ` : ''}${b.beskrivelse}</span><div class="flex items-center gap-1 shrink-0" style="font-size:9px">${(b.faengselMaaneder || 0) > 0 ? `<span style="color:var(--destructive)">${b.faengselMaaneder}md</span>` : ''}<span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)}kr</span></div></div>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `</div></div>`;
+    // Fartberegner
+    html += `<button class="btn btn-outline btn-sm mt-2 mb-3" onclick="window._sigFart()">${icons.gauge} Fartbøde-beregner</button>`;
+    // Summary
+    if (valgteBoeder.length > 0) {
+      html += `<div class="card mb-3" style="padding:0;overflow:hidden">`;
+      const grouped = {};
+      valgteBoeder.forEach(v => { if (!grouped[v.boedeId]) grouped[v.boedeId] = []; grouped[v.boedeId].push(v); });
+      for (const [boedeId, items] of Object.entries(grouped)) {
+        const b = items[0], count = items.length;
+        html += `<div class="flex items-center justify-between" style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:10px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${count > 1 ? `<span style="color:var(--primary);font-weight:600;margin-right:4px">${count}×</span>` : ''}${b.paragraf ? b.paragraf + ' — ' : ''}${b.beskrivelse}</span><div class="flex items-center gap-2 shrink-0">${b.faengselMaaneder > 0 ? `<span style="color:var(--destructive)">${b.faengselMaaneder * count}md</span>` : ''}<span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb * count)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg);font-size:10px" onclick="window._sigRemoveAll('${boedeId}')">✕</button></div></div>`;
+      }
+      html += `<div class="flex items-center justify-between" style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:10px"><span style="font-weight:600">Total</span><div class="flex items-center gap-3"><span class="mono" style="font-weight:700;color:var(--warning)">${formatDaDK(totalBoede)} kr</span>${totalFaengsel > 0 ? `<span style="font-weight:700;color:var(--destructive)">${totalFaengsel} md.</span>` : ''}${totalKlip > 0 ? `<span class="badge badge-primary">${totalKlip} klip</span>` : ''}</div></div></div>`;
+    }
+    // Hændelse + buttons
+    html += `<div class="label">Hændelsesforløb</div><textarea class="textarea mb-3" id="sig-haendelse" rows="3" placeholder="Beskriv hændelsesforløbet...">${haendelse}</textarea>`;
+    html += `<div class="flex gap-2"><button class="btn btn-primary flex-1" onclick="window._sigSubmit()">Opret sigtelse</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+    overlay.innerHTML = html;
+  }
+
+  window._sigErkender = function(v) { erkender = v; renderDialog(); };
+  window._sigFratag = function(v) { fratagKoerekort = v; };
+  window._sigTogglePanel = function() { const keys = [...new Set(standardBoeder.map(b => b.kategori))]; openKat = openKat ? null : keys[0]; renderDialog(); };
+  window._sigKat = function(kat) { openKat = openKat === kat ? null : kat; renderDialog(); };
+  window._sigAdd = function(boedeId) { const b = standardBoeder.find(x => x.id === boedeId); if (b) valgteBoeder.push({ boedeId: b.id, paragraf: b.paragraf, beskrivelse: b.beskrivelse, beloeb: b.beloeb, faengselMaaneder: b.faengselMaaneder || 0 }); renderDialog(); };
+  window._sigRemove = function(boedeId) { const idx = valgteBoeder.findIndex(v => v.boedeId === boedeId); if (idx >= 0) valgteBoeder.splice(idx, 1); renderDialog(); };
+  window._sigRemoveAll = function(boedeId) { valgteBoeder = valgteBoeder.filter(v => v.boedeId !== boedeId); renderDialog(); };
+  window._sigFilter = function(q) { document.querySelectorAll(".sig-kat-group").forEach(g => { let vis = 0; g.querySelectorAll("div[style*='border-top']").forEach(r => { const m = r.textContent.toLowerCase().includes(q.toLowerCase()); r.style.display = m ? "" : "none"; if (m) vis++; }); g.style.display = (q && vis === 0) ? "none" : ""; }); };
+
+  window._sigFart = function() {
+    const fo = el("div", { className: "dialog-overlay", style: { zIndex: 100 }, onclick: (e) => { if (e.target === fo) fo.remove(); } });
+    const vtc = { by: { label: "Byzone", graenser: [30,40,50,60,70] }, landevej: { label: "Landevej", graenser: [60,70,80,90] }, motorvej: { label: "Motorvej", graenser: [80,90,100,110,120,130] } };
+    let vt = "by", gr = 50;
+    function rf() {
+      let h = `<div class="dialog" style="max-width:420px"><div class="dialog-title">${icons.gauge} Fartbøde-beregner</div><div class="label">Vejtype</div><div class="grid grid-3 gap-2 mb-2">`;
+      ["by","landevej","motorvej"].forEach(v => { h += `<button class="btn btn-sm ${vt === v ? 'btn-primary' : 'btn-outline'}" id="fv-${v}">${vtc[v].label}</button>`; });
+      h += `</div><div class="label">Grænse</div><div class="flex gap-2 mb-2" style="flex-wrap:wrap">`;
+      vtc[vt].graenser.forEach(g => { h += `<button style="width:36px;height:36px;border-radius:50%;border:2px solid ${gr === g ? 'var(--destructive)' : 'var(--border)'};background:${gr === g ? 'rgba(214,54,75,.1)' : 'transparent'};color:${gr === g ? 'var(--destructive)' : 'var(--muted-fg)'};font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center" id="fg-${g}">${g}</button>`; });
+      h += `</div><div class="label">Hastighed</div><div class="flex gap-2 mb-2"><input class="input flex-1" type="number" id="fv-inp"><button class="btn btn-primary btn-sm" id="fv-calc">Beregn</button></div><div id="fv-res"></div><button class="btn btn-outline mt-3" id="fv-close">Luk</button></div>`;
+      fo.innerHTML = h;
+      ["by","landevej","motorvej"].forEach(v => document.getElementById("fv-"+v)?.addEventListener("click",()=>{vt=v;gr=vtc[v].graenser[Math.floor(vtc[v].graenser.length/2)];rf();}));
+      vtc[vt].graenser.forEach(g => document.getElementById("fg-"+g)?.addEventListener("click",()=>{gr=g;rf();}));
+      document.getElementById("fv-close")?.addEventListener("click",()=>fo.remove());
+      document.getElementById("fv-calc")?.addEventListener("click",()=>{
+        const val=parseInt(document.getElementById("fv-inp")?.value);if(isNaN(val))return;
+        const res=beregnFartboede(val,gr,vt,false);const rd=document.getElementById("fv-res");
+        if(!res){rd.innerHTML=`<p style="text-align:center;color:var(--success);font-size:12px">Ingen overskridelse</p>`;return;}
+        rd.innerHTML=`<div class="card card-sm"><div class="grid grid-2 gap-2" style="text-align:center"><div><p style="font-size:9px;color:var(--muted-fg)">Overskridelse</p><p style="font-size:16px;font-weight:700;color:var(--destructive)">+${res.overskridelse} km/t</p></div><div><p style="font-size:9px;color:var(--muted-fg)">Bøde</p><p style="font-size:16px;font-weight:700;color:var(--warning)" class="mono">${formatDaDK(res.boede)} kr</p></div></div><button class="btn btn-primary btn-sm w-full mt-2" id="fv-add">Tilføj til sigtelse</button></div>`;
+        document.getElementById("fv-add")?.addEventListener("click",()=>{valgteBoeder.push({boedeId:`fart-${Date.now()}`,paragraf:"Fartoverskridelse",beskrivelse:`${val} km/t i ${gr}-zone (${vtc[vt].label})`,beloeb:res.boede,faengselMaaneder:0});fo.remove();renderDialog();});
+      });
+    }
+    document.body.appendChild(fo); rf();
+  };
+
+  window._sigSubmit = async function() {
+    haendelse = document.getElementById("sig-haendelse")?.value || "";
+    if (erkender === null) { showToast("Angiv om personen erkender"); return; }
+    if (valgteBoeder.length === 0) { showToast("Tilføj mindst én sigtelse"); return; }
+    const totalBoede = valgteBoeder.reduce((s, b) => s + b.beloeb, 0);
+    const totalFaengsel = valgteBoeder.reduce((s, b) => s + b.faengselMaaneder, 0);
+    const sigtelse = { id: Date.now().toString(), personId: p.id, personNavn: `${p.fornavn} ${p.efternavn}`, personCpr: p.cpr, dato: new Date().toISOString().split("T")[0], sigtelseBoeder: valgteBoeder, totalBoede, faengselMaaneder: totalFaengsel, fratagKoerekort, erkender, involveretBetjente: [currentUser.id], rapport: { haendelsesforloeb: haendelse, konfiskeredeGenstande: "", magtanvendelse: "" }, skabelonType: "", sagsStatus: "aaben" };
+    try { await sigtelserApi.create(sigtelse); showToast("Sigtelse oprettet"); overlay.remove(); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+  };
+
+  document.body.appendChild(overlay);
+  renderDialog();
+};
 
 // ═══════════════════════════════════════════
 // ── SAGSARKIV ──
