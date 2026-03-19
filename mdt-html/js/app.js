@@ -306,7 +306,10 @@ function renderPage(tabId) {
     case "flaade": renderFlaade(area); break;
     case "ansatte": renderAnsatte(area); break;
     case "profil": renderProfil(area); break;
-    case "nsk": case "lima": case "faerdsel": case "efterforskning": case "sig": case "remeo":
+    case "kort": renderKort(area); break;
+    case "ansoegninger": renderAnsoegninger(area); break;
+    case "nsk": renderNSK(area); break;
+    case "lima": case "faerdsel": case "efterforskning": case "sig": case "remeo":
       renderAfdeling(area, tab.type); break;
     default: area.innerHTML = `<div class="loading-center"><p>Siden "${tab.label}" kommer snart</p></div>`;
   }
@@ -772,18 +775,261 @@ window.changePassword = async function() {
 };
 
 // ═══════════════════════════════════════════
-// ── AFDELINGER ──
+// ── AKTIV PATRULJE / KORT ──
+// ═══════════════════════════════════════════
+async function renderKort(container) {
+  container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser patruljer...</span></div>';
+  try {
+    const [patruljer, betjente] = await Promise.all([patruljerApi.getAll().catch(() => []), betjenteApi.getAll()]);
+    const statusColors = { ledig: "dot-success", i_brug: "dot-primary", optaget: "dot-warning", ude_af_drift: "dot-destructive" };
+    const statusLabels = { ledig: "Ledig", i_brug: "I brug", optaget: "Optaget", ude_af_drift: "Ude af drift" };
+
+    let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3">${icons.radio}<h1 style="font-size:18px;font-weight:700">Aktive Patruljer</h1></div><div class="flex gap-2"><button class="btn btn-primary btn-sm" onclick="showPatruljeForm()">${icons.plus} Opret patrulje</button></div></div>`;
+
+    // Stats
+    html += `<div class="grid grid-4 mb-3"><div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono">${patruljer.length}</div><div class="stat-label">Total patruljer</div></div><div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value mono" style="color:var(--success)">${patruljer.filter(p => p.status === "ledig").length}</div><div class="stat-label">Ledige</div></div><div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono" style="color:var(--primary)">${patruljer.filter(p => p.status === "i_brug").length}</div><div class="stat-label">I brug</div></div><div class="stat-card"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value mono" style="color:var(--warning)">${patruljer.filter(p => p.status === "optaget").length}</div><div class="stat-label">Optaget</div></div></div>`;
+
+    // Patrol list
+    patruljer.forEach(p => {
+      html += `<div class="card card-sm mb-2"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="dot ${statusColors[p.status] || 'dot-success'}"></div><span style="font-size:14px;font-weight:600">${p.navn}</span><span class="badge badge-muted">${p.kategori || "Standard"}</span></div><div class="flex items-center gap-3"><span style="font-size:11px;color:var(--muted-fg)">${p.medlemmer.length}/${p.pladser} pladser</span><select class="select" style="height:28px;font-size:10px" onchange="updatePatruljeStatus('${p.id}',this.value)"><option value="ledig" ${p.status==="ledig"?"selected":""}>Ledig</option><option value="i_brug" ${p.status==="i_brug"?"selected":""}>I brug</option><option value="optaget" ${p.status==="optaget"?"selected":""}>Optaget</option><option value="ude_af_drift" ${p.status==="ude_af_drift"?"selected":""}>Ude af drift</option></select><button class="btn btn-ghost btn-sm" onclick="joinPatrulje('${p.id}')">Tilmeld mig</button><button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="leavePatrulje('${p.id}')">Forlad</button></div></div>`;
+      if (p.medlemmer.length > 0) {
+        html += '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">';
+        p.medlemmer.forEach(m => { html += `<span class="badge badge-primary">🛡️ ${m.navn} (${m.badgeNr})</span>`; });
+        html += '</div>';
+      }
+      if (p.bemaerkning) html += `<div style="margin-top:6px;font-size:11px;color:var(--muted-fg);font-style:italic">📝 ${p.bemaerkning}</div>`;
+      html += '</div>';
+    });
+    if (patruljer.length === 0) html += '<div class="loading-center" style="min-height:200px"><p>Ingen patruljer oprettet</p></div>';
+    container.innerHTML = html;
+    window._kortPatruljer = patruljer;
+  } catch (err) { container.innerHTML = `<p style="color:var(--destructive)">Fejl: ${err.message}</p>`; }
+}
+
+window.showPatruljeForm = function() {
+  const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Opret patrulje</div><div class="label">Navn</div><input class="input mb-2" id="np2-navn" placeholder="F.eks. Patrulje Alpha"><div class="grid grid-2 gap-2 mb-2"><div><div class="label">Kategori</div><select class="select w-full" id="np2-kat"><option value="bil">Bil</option><option value="mc">MC</option><option value="fod">Fod</option><option value="civil">Civil</option></select></div><div><div class="label">Antal pladser</div><input class="input" id="np2-pladser" type="number" value="4" min="1"></div></div><div class="label">Bemærkning</div><textarea class="textarea mb-2" id="np2-bem" rows="2"></textarea><div class="flex gap-2"><button class="btn btn-primary" id="np2-submit">Opret</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("np2-submit").addEventListener("click", async () => {
+    const p = { id: Date.now().toString(), navn: document.getElementById("np2-navn").value, kategori: document.getElementById("np2-kat").value, pladser: parseInt(document.getElementById("np2-pladser").value) || 4, medlemmer: [], status: "ledig", bemaerkning: document.getElementById("np2-bem").value };
+    if (!p.navn) { showToast("Udfyld navn"); return; }
+    try { await patruljerApi.create(p); showToast("Patrulje oprettet"); overlay.remove(); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+  });
+};
+
+window.joinPatrulje = async function(patruljeId) {
+  try {
+    const patruljer = window._kortPatruljer || await patruljerApi.getAll();
+    const p = patruljer.find(pp => pp.id === patruljeId);
+    if (!p) return;
+    if (p.medlemmer.find(m => m.badgeNr === currentUser.badgeNr)) { showToast("Du er allerede tilmeldt"); return; }
+    if (p.medlemmer.length >= p.pladser) { showToast("Patruljen er fuld"); return; }
+    p.medlemmer.push({ badgeNr: currentUser.badgeNr, navn: `${currentUser.fornavn} ${currentUser.efternavn}` });
+    await patruljerApi.update(patruljeId, p);
+    showToast("Tilmeldt patrulje");
+    renderPage(activeTabId);
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.leavePatrulje = async function(patruljeId) {
+  try {
+    const patruljer = window._kortPatruljer || await patruljerApi.getAll();
+    const p = patruljer.find(pp => pp.id === patruljeId);
+    if (!p) return;
+    p.medlemmer = p.medlemmer.filter(m => m.badgeNr !== currentUser.badgeNr);
+    await patruljerApi.update(patruljeId, p);
+    showToast("Forladt patrulje");
+    renderPage(activeTabId);
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.updatePatruljeStatus = async function(patruljeId, status) {
+  try {
+    const patruljer = window._kortPatruljer || await patruljerApi.getAll();
+    const p = patruljer.find(pp => pp.id === patruljeId);
+    if (!p) return;
+    p.status = status;
+    await patruljerApi.update(patruljeId, p);
+    showToast("Status opdateret");
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+// ═══════════════════════════════════════════
+// ── ANSØGNINGER ──
+// ═══════════════════════════════════════════
+async function renderAnsoegninger(container) {
+  container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
+  try {
+    const [ansoegninger, betjente] = await Promise.all([ansoeningerApi.getAll(), betjenteApi.getAll()]);
+    const canManage = isAdmin;
+
+    let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3">${icons.file}<h1 style="font-size:18px;font-weight:700">Ansøgninger</h1><span style="font-size:12px;color:var(--muted-fg)">${ansoegninger.length} ansøgninger</span></div><button class="btn btn-primary btn-sm" onclick="showAnsoegningForm()">${icons.plus} Indsend ansøgning</button></div>`;
+
+    // Filter tabs
+    html += `<div class="flex gap-2 mb-3"><button class="btn btn-primary btn-sm" onclick="filterAnsoegninger('alle')">Alle</button><button class="btn btn-outline btn-sm" onclick="filterAnsoegninger('afventer')">Afventer</button><button class="btn btn-outline btn-sm" onclick="filterAnsoegninger('godkendt')">Godkendt</button><button class="btn btn-outline btn-sm" onclick="filterAnsoegninger('afvist')">Afvist</button></div>`;
+
+    html += '<div id="ansoeg-list">';
+    const statusColors = { afventer: "badge-warning", godkendt: "badge-success", afvist: "badge-destructive" };
+    const statusLabels = { afventer: "Afventer", godkendt: "Godkendt", afvist: "Afvist" };
+
+    ansoegninger.forEach(a => {
+      html += `<div class="card card-sm mb-2 ansoeg-item" data-status="${a.status || 'afventer'}"><div class="flex items-center justify-between"><div class="flex-1"><div class="flex items-center gap-2"><span style="font-size:13px;font-weight:600">${a.titel || a.type || "Ansøgning"}</span><span class="badge ${statusColors[a.status] || 'badge-warning'}">${statusLabels[a.status] || 'Afventer'}</span></div><div style="font-size:11px;color:var(--muted-fg);margin-top:4px">${a.ansoegerNavn || "Ukendt"} · ${a.oprettetDato || "—"}</div>${a.begrundelse ? `<p style="font-size:12px;color:var(--fg);margin-top:6px;white-space:pre-line">${a.begrundelse}</p>` : ""}</div>`;
+      if (canManage && (a.status === "afventer" || !a.status)) {
+        html += `<div class="flex gap-2 shrink-0"><button class="btn btn-sm" style="background:var(--success);color:#fff" onclick="behandlAnsoegning('${a.id}','godkendt')">Godkend</button><button class="btn btn-sm btn-destructive" onclick="behandlAnsoegning('${a.id}','afvist')">Afvis</button></div>`;
+      }
+      html += '</div></div>';
+    });
+    if (ansoegninger.length === 0) html += '<div class="loading-center" style="min-height:200px"><p>Ingen ansøgninger</p></div>';
+    html += '</div>';
+    container.innerHTML = html;
+    window._ansoegninger = ansoegninger;
+  } catch (err) { container.innerHTML = `<p style="color:var(--destructive)">Fejl: ${err.message}</p>`; }
+}
+
+window.filterAnsoegninger = function(filter) {
+  document.querySelectorAll(".ansoeg-item").forEach(item => {
+    item.style.display = (filter === "alle" || item.dataset.status === filter) ? "" : "none";
+  });
+};
+
+window.showAnsoegningForm = function() {
+  const afdelingOptions = afdelinger.map(a => `<option value="${a.label}">${a.label}</option>`).join("");
+  const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Indsend ansøgning</div><div class="label">Type</div><select class="select w-full mb-2" id="ans-type"><option value="Afdelingsansøgning">Afdelingsansøgning</option><option value="Uddannelse">Uddannelse</option><option value="Forfremmelse">Forfremmelse</option><option value="Andet">Andet</option></select><div class="label">Afdeling / Emne</div><select class="select w-full mb-2" id="ans-afdeling"><option value="">Vælg...</option>${afdelingOptions}</select><div class="label">Begrundelse</div><textarea class="textarea mb-2" id="ans-begrundelse" rows="4" placeholder="Forklar din ansøgning..."></textarea><div class="flex gap-2"><button class="btn btn-primary" id="ans-submit">Indsend</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("ans-submit").addEventListener("click", async () => {
+    const a = { id: Date.now().toString(), type: document.getElementById("ans-type").value, titel: document.getElementById("ans-type").value + (document.getElementById("ans-afdeling").value ? ": " + document.getElementById("ans-afdeling").value : ""), afdeling: document.getElementById("ans-afdeling").value, begrundelse: document.getElementById("ans-begrundelse").value, ansoegerNavn: `${currentUser.fornavn} ${currentUser.efternavn}`, ansoegerBadge: currentUser.badgeNr, oprettetDato: new Date().toISOString().split("T")[0], status: "afventer" };
+    if (!a.begrundelse) { showToast("Udfyld begrundelse"); return; }
+    try { await ansoeningerApi.create(a); showToast("Ansøgning indsendt"); overlay.remove(); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+  });
+};
+
+window.behandlAnsoegning = async function(id, status) {
+  try {
+    await ansoeningerApi.update(id, { status, behandletAf: `${currentUser.fornavn} ${currentUser.efternavn}`, behandletDato: new Date().toISOString().split("T")[0] });
+    showToast(status === "godkendt" ? "Ansøgning godkendt" : "Ansøgning afvist");
+    renderPage(activeTabId);
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+// ═══════════════════════════════════════════
+// ── NSK — TILHØRSFORHOLD ──
+// ═══════════════════════════════════════════
+async function renderNSK(container) {
+  container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser tilhørsforhold...</span></div>';
+  try {
+    const [tilhoersforhold, personer] = await Promise.all([tilhoersforholdApi.getAll(), personerApi.getAll()]);
+
+    let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3">${icons.target}<h1 style="font-size:18px;font-weight:700">NSK — Tilhørsforhold</h1><span style="font-size:12px;color:var(--muted-fg)">${tilhoersforhold.length} registreringer</span></div><button class="btn btn-primary btn-sm" onclick="showTilhoersforholdForm()">${icons.plus} Tilføj tilhørsforhold</button></div>`;
+
+    // Group by bande
+    const bander = {};
+    tilhoersforhold.forEach(t => {
+      if (!bander[t.bande]) bander[t.bande] = [];
+      bander[t.bande].push(t);
+    });
+
+    for (const [bande, members] of Object.entries(bander)) {
+      html += `<div class="card mb-2" style="padding:0;overflow:hidden;border-left:3px solid var(--destructive)"><div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open')"><div class="flex items-center gap-2"><span style="font-size:14px;font-weight:600">${bande}</span><span class="badge badge-destructive">${members.length} medlemmer</span></div><span style="color:var(--muted-fg)">▼</span></div><div class="accordion-body">`;
+      members.forEach(m => {
+        const person = personer.find(p => p.cpr === m.personCpr);
+        html += `<div style="padding:10px 16px;border-top:1px solid rgba(42,47,58,.5)"><div class="flex items-center justify-between"><div><span style="font-size:13px;font-weight:500">${m.personNavn || (person ? person.fornavn + " " + person.efternavn : "Ukendt")}</span> <span class="mono" style="font-size:10px;color:var(--muted-fg)">${m.personCpr}</span></div><div class="flex items-center gap-2"><span class="badge badge-muted">${m.rolle || "Medlem"}</span><span class="badge ${m.status === "aktiv" ? "badge-success" : "badge-muted"}">${m.status || "aktiv"}</span>`;
+        if (isAdmin) html += `<button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="deleteTilhoersforhold('${m.id}')">✕</button>`;
+        html += `</div></div></div>`;
+      });
+      html += '</div></div>';
+    }
+    if (Object.keys(bander).length === 0) html += '<div class="loading-center" style="min-height:200px"><p>Ingen tilhørsforhold registreret</p></div>';
+
+    // Also show generic afdeling content
+    html += `<div class="card mt-3"><h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Afdelingsopslag</h3><div id="nsk-afd-content"></div></div>`;
+
+    container.innerHTML = html;
+    window._nskPersoner = personer;
+
+    // Load afdeling content
+    try {
+      const indhold = await afdelingsIndholdApi.getAll("nsk");
+      const afdDiv = document.getElementById("nsk-afd-content");
+      if (indhold.length === 0) { afdDiv.innerHTML = '<p style="font-size:12px;color:var(--muted-fg)">Ingen opslag</p>'; }
+      else indhold.forEach(item => { afdDiv.innerHTML += `<div class="card card-sm mb-2"><span class="badge badge-muted">${item.type}</span> <span style="font-size:12px;font-weight:600">${item.titel}</span><p style="font-size:12px;color:var(--muted-fg);margin-top:4px;white-space:pre-wrap">${item.indhold}</p></div>`; });
+    } catch {}
+  } catch (err) { container.innerHTML = `<p style="color:var(--destructive)">Fejl: ${err.message}</p>`; }
+}
+
+window.showTilhoersforholdForm = function() {
+  const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Tilføj tilhørsforhold</div><div class="label">Søg person (CPR eller navn)</div><input class="input mb-2" id="th-search" placeholder="Søg..."><div id="th-person-results" style="max-height:120px;overflow-y:auto;margin-bottom:8px"></div><div id="th-selected" style="font-size:12px;color:var(--success);margin-bottom:8px"></div><div class="label">Gruppering / Bande</div><input class="input mb-2" id="th-bande" placeholder="Navn på gruppering..."><div class="grid grid-2 gap-2 mb-2"><div><div class="label">Rolle</div><select class="select w-full" id="th-rolle"><option value="Medlem">Medlem</option><option value="Leder">Leder</option><option value="Prospect">Prospect</option><option value="Associeret">Associeret</option></select></div><div><div class="label">Status</div><select class="select w-full" id="th-status"><option value="aktiv">Aktiv</option><option value="inaktiv">Inaktiv</option><option value="tidligere">Tidligere</option></select></div></div><div class="flex gap-2"><button class="btn btn-primary" id="th-submit">Tilføj</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+  document.body.appendChild(overlay);
+
+  let selectedPerson = null;
+  document.getElementById("th-search").addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase();
+    const results = document.getElementById("th-person-results");
+    if (q.length < 2) { results.innerHTML = ""; return; }
+    const matches = (window._nskPersoner || []).filter(p => `${p.fornavn} ${p.efternavn} ${p.cpr}`.toLowerCase().includes(q)).slice(0, 8);
+    results.innerHTML = matches.map(p => `<div class="list-item" style="padding:4px 8px;cursor:pointer" data-id="${p.id}" data-cpr="${p.cpr}" data-navn="${p.fornavn} ${p.efternavn}"><span style="font-size:12px">${p.fornavn} ${p.efternavn}</span> <span class="mono" style="font-size:10px;color:var(--muted-fg)">${p.cpr}</span></div>`).join("");
+    results.querySelectorAll(".list-item").forEach(item => {
+      item.addEventListener("click", () => {
+        selectedPerson = { id: item.dataset.id, cpr: item.dataset.cpr, navn: item.dataset.navn };
+        document.getElementById("th-selected").textContent = "Valgt: " + selectedPerson.navn + " (" + selectedPerson.cpr + ")";
+        results.innerHTML = "";
+        document.getElementById("th-search").value = selectedPerson.navn;
+      });
+    });
+  });
+
+  document.getElementById("th-submit").addEventListener("click", async () => {
+    if (!selectedPerson) { showToast("Vælg en person"); return; }
+    const bande = document.getElementById("th-bande").value;
+    if (!bande) { showToast("Udfyld gruppering"); return; }
+    const t = { id: Date.now().toString(), personId: selectedPerson.id, personCpr: selectedPerson.cpr, personNavn: selectedPerson.navn, bande, rolle: document.getElementById("th-rolle").value, status: document.getElementById("th-status").value, oprettetAf: `${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato: new Date().toISOString().split("T")[0] };
+    try { await tilhoersforholdApi.create(t); showToast("Tilhørsforhold tilføjet"); overlay.remove(); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+  });
+};
+
+window.deleteTilhoersforhold = async function(id) {
+  if (!confirm("Slet dette tilhørsforhold?")) return;
+  try { await tilhoersforholdApi.remove(id); showToast("Slettet"); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+// ═══════════════════════════════════════════
+// ── AFDELINGER (generisk) ──
 // ═══════════════════════════════════════════
 async function renderAfdeling(container, afdId) {
-  const titler = { nsk: "NSK — Tilhørsforhold", lima: "Lima — Aktionsstyrken", faerdsel: "Færdsel — Færdselsafdelingen", efterforskning: "Efterforskning", sig: "SIG — Særlig Indsatsgruppe", remeo: "Remeo" };
-  container.innerHTML = `<div class="card"><div class="flex items-center gap-3 mb-3">${icons.shield}<h1 style="font-size:18px;font-weight:700">${titler[afdId] || afdId}</h1></div><p style="font-size:12px;color:var(--muted-fg);margin-bottom:16px">Opslagstavle og afdelingsindhold</p><div id="afd-content"></div></div>`;
+  const titler = { lima: "Lima — Aktionsstyrken", faerdsel: "Færdsel — Færdselsafdelingen", efterforskning: "Efterforskning", sig: "SIG — Særlig Indsatsgruppe", remeo: "Remeo" };
+  container.innerHTML = `<div class="loading-center"><div class="spinner"></div><span>Indlæser...</span></div>`;
 
   try {
     const indhold = await afdelingsIndholdApi.getAll(afdId);
-    const contentDiv = document.getElementById("afd-content");
-    if (indhold.length === 0) { contentDiv.innerHTML = '<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:24px">Ingen opslag endnu</p>'; return; }
+    const canManage = isAdmin;
+
+    let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3">${icons.shield}<h1 style="font-size:18px;font-weight:700">${titler[afdId] || afdId}</h1><span style="font-size:12px;color:var(--muted-fg)">${indhold.length} opslag</span></div>`;
+    if (canManage) html += `<button class="btn btn-primary btn-sm" onclick="showAfdelingsIndholdForm('${afdId}')">${icons.plus} Tilføj indhold</button>`;
+    html += '</div>';
+
     indhold.forEach(item => {
-      contentDiv.innerHTML += `<div class="card card-sm mb-2"><div class="flex items-center gap-2 mb-1"><span class="badge badge-muted">${item.type}</span><span style="font-size:12px;font-weight:600">${item.titel}</span></div><p style="font-size:12px;color:var(--muted-fg);white-space:pre-wrap">${item.indhold}</p><div style="font-size:9px;color:var(--muted-fg);margin-top:6px">${item.oprettetAf} — ${new Date(item.oprettetDato).toLocaleDateString("da-DK")}</div></div>`;
+      html += `<div class="card card-sm mb-2"><div class="flex items-center justify-between mb-1"><div class="flex items-center gap-2"><span class="badge badge-muted">${item.type || "info"}</span><span style="font-size:12px;font-weight:600">${item.titel}</span></div>`;
+      if (canManage) html += `<button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="deleteAfdelingsIndhold('${item.id}')">✕</button>`;
+      html += `</div><p style="font-size:12px;color:var(--muted-fg);white-space:pre-wrap">${item.indhold}</p><div style="font-size:9px;color:var(--muted-fg);margin-top:6px">${item.oprettetAf || "—"} — ${item.oprettetDato ? new Date(item.oprettetDato).toLocaleDateString("da-DK") : "—"}</div></div>`;
     });
-  } catch (err) { document.getElementById("afd-content").innerHTML = '<p style="font-size:12px;color:var(--muted-fg)">Kunne ikke indlæse indhold</p>'; }
+    if (indhold.length === 0) html += '<div class="loading-center" style="min-height:200px"><p>Ingen indhold endnu</p></div>';
+    container.innerHTML = html;
+  } catch (err) { container.innerHTML = `<div class="card"><div class="flex items-center gap-3 mb-3">${icons.shield}<h1 style="font-size:18px;font-weight:700">${titler[afdId] || afdId}</h1></div><p style="font-size:12px;color:var(--muted-fg)">Kunne ikke indlæse indhold</p></div>`; }
 }
+
+window.showAfdelingsIndholdForm = function(afdId) {
+  const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Tilføj afdelingsindhold</div><div class="label">Titel</div><input class="input mb-2" id="ai-titel" placeholder="Overskrift..."><div class="label">Type</div><select class="select w-full mb-2" id="ai-type"><option value="info">Information</option><option value="taktisk">Taktisk plan</option><option value="vagtplan">Vagtplan</option><option value="udstyr">Udstyr</option><option value="nyhed">Nyhed</option></select><div class="label">Indhold</div><textarea class="textarea mb-2" id="ai-indhold" rows="4" placeholder="Skriv indhold..."></textarea><div class="flex gap-2"><button class="btn btn-primary" id="ai-submit">Tilføj</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("ai-submit").addEventListener("click", async () => {
+    const item = { id: Date.now().toString(), afdelingId: afdId, titel: document.getElementById("ai-titel").value, type: document.getElementById("ai-type").value, indhold: document.getElementById("ai-indhold").value, oprettetAf: `${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato: new Date().toISOString() };
+    if (!item.titel || !item.indhold) { showToast("Udfyld titel og indhold"); return; }
+    try { await afdelingsIndholdApi.create(item); showToast("Indhold tilføjet"); overlay.remove(); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+  });
+};
+
+window.deleteAfdelingsIndhold = async function(id) {
+  if (!confirm("Slet dette indhold?")) return;
+  try { await afdelingsIndholdApi.remove(id); showToast("Slettet"); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+};
