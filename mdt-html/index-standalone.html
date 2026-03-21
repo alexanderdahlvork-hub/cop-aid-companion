@@ -785,21 +785,68 @@ async function renderDashboard(container) {
   container.innerHTML = `
     <div class="card" style="position:relative;overflow:hidden">
       <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--primary);border-radius:12px 0 0 12px"></div>
-      <h1 style="font-size:16px;font-weight:700;color:var(--fg);padding-left:8px">Velkommen, ${currentUser.fornavn}</h1>
-      <p class="mono" style="font-size:12px;color:var(--muted-fg);padding-left:8px;margin-top:4px">${dagNavn[now.getDay()]} d. ${now.getDate()}. ${maaned[now.getMonth()]} — Badge: ${currentUser.badgeNr}</p>
+      <div style="position:absolute;top:0;right:0;width:128px;height:128px;background:rgba(59,130,246,.05);border-radius:50%;transform:translate(50%,-50%)"></div>
+      <h1 style="font-size:16px;font-weight:700;color:var(--fg);padding-left:8px;position:relative">Velkommen, ${currentUser.fornavn}</h1>
+      <p class="mono" style="font-size:12px;color:var(--muted-fg);padding-left:8px;margin-top:4px;position:relative">${dagNavn[now.getDay()]} d. ${now.getDate()}. ${maaned[now.getMonth()]} — Badge: ${currentUser.badgeNr}</p>
     </div>
-    <div class="grid grid-3 mt-3" id="dash-stats"></div>
-    <div class="card mt-3"><h3 style="font-size:14px;font-weight:600;margin-bottom:8px">Seneste Aktivitet</h3><p style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen aktivitet i denne session.</p></div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px">
+      <div>
+        <div class="card mb-3" style="cursor:pointer;position:relative;overflow:hidden" onclick="openTab('efterlysninger')">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--warning);border-radius:12px 0 0 12px"></div>
+          <div class="flex items-center justify-between" style="position:relative">
+            <div class="flex items-center gap-2">${icons.alert}<h3 style="font-size:14px;font-weight:600">Efterlyste Personer</h3></div>
+            <span style="color:var(--muted-fg)">${icons.chevron || '→'}</span>
+          </div>
+          <div class="flex items-center gap-3" style="margin-top:12px;position:relative">
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(224,100,42,.1);border:1px solid rgba(224,100,42,.15);display:flex;align-items:center;justify-content:center">
+              <span class="mono" style="font-size:18px;font-weight:700;color:var(--warning)" id="dash-efterlyste">0</span>
+            </div>
+            <p style="font-size:12px;color:var(--muted-fg)">aktive efterlysninger</p>
+          </div>
+        </div>
+        <div class="card" style="position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent);border-radius:12px 0 0 12px"></div>
+          <div class="flex items-center gap-2 mb-2" style="position:relative">${icons.radio}<h3 style="font-size:14px;font-weight:600">Seneste Aktivitet</h3></div>
+          <p style="font-size:12px;color:var(--muted-fg);font-style:italic;position:relative">Ingen aktivitet i denne session.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card mb-3" style="position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--primary);border-radius:12px 0 0 12px"></div>
+          <div class="flex items-center gap-2 mb-3" style="position:relative">
+            <span style="color:var(--success)">${icons.radio}</span>
+            <h3 style="font-size:14px;font-weight:600">Din Status</h3>
+          </div>
+          <div style="font-size:12px;position:relative" id="dash-status">
+            <div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Rang</span><span class="mono" style="font-weight:500">${isAdmin ? "Administrator" : currentUser.rang}</span></div>
+            ${currentUser.afdeling ? `<div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Afdeling</span><span class="mono" style="font-weight:500">${currentUser.afdeling}</span></div>` : ''}
+            <div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Uddannelser</span><span class="mono" style="font-weight:500">${currentUser.uddannelser.length}</span></div>
+            <div class="flex items-center justify-between"><span style="color:var(--muted-fg)">Status</span><span class="mono flex items-center gap-1" style="font-size:11px;font-weight:500;color:var(--success)"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite"></span> I TJENESTE</span></div>
+          </div>
+        </div>
+        <div class="card" style="position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:rgba(155,165,181,.2);border-radius:12px 0 0 12px"></div>
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;position:relative">Kollegaer <span class="mono" style="color:var(--muted-fg);font-weight:400" id="dash-kol-count">(0)</span></h3>
+          <div id="dash-kollegaer" style="position:relative"><p style="font-size:12px;color:var(--muted-fg);font-style:italic">Indlæser...</p></div>
+        </div>
+      </div>
+    </div>
   `;
   try {
     const [personer, betjente] = await Promise.all([personerApi.getAll(), betjenteApi.getAll()]);
     const efterlyste = personer.filter(p => p.status === "eftersøgt").length;
-    const statsDiv = $("#dash-stats");
-    statsDiv.innerHTML = `
-      <div class="stat-card" onclick="openTab('efterlysninger')" style="cursor:pointer"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value mono" style="color:var(--warning)">${efterlyste}</div><div class="stat-label">Efterlyste personer</div></div>
-      <div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono">${betjente.length}</div><div class="stat-label">Registrerede betjente</div></div>
-      <div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value mono">${personer.length}</div><div class="stat-label">Personer i registeret</div></div>
-    `;
+    const eftEl = document.getElementById("dash-efterlyste");
+    if (eftEl) eftEl.textContent = efterlyste;
+    const kolleger = betjente.filter(b => b.id !== currentUser.id).slice(0, 4);
+    const kolCount = document.getElementById("dash-kol-count");
+    if (kolCount) kolCount.textContent = `(${kolleger.length})`;
+    const kolDiv = document.getElementById("dash-kollegaer");
+    if (kolDiv) {
+      if (kolleger.length === 0) { kolDiv.innerHTML = '<p style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen kolleger</p>'; }
+      else {
+        kolDiv.innerHTML = kolleger.map(k => `<div class="flex items-center gap-2" style="margin-bottom:10px"><div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center">${icons.shield}</div><div><p style="font-size:12px;font-weight:500">${k.fornavn} ${k.efternavn}</p><p class="mono" style="font-size:10px;color:var(--muted-fg)">${k.rang} · ${k.badgeNr}</p></div></div>`).join("");
+      }
+    }
   } catch (err) { console.error(err); }
 }
 
