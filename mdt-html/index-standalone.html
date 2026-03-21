@@ -619,7 +619,21 @@ function initApp() {
   renderPage("forside");
   $("#sidebar-username").textContent = `${currentUser.fornavn} ${currentUser.efternavn}`;
   $("#sidebar-userrole").textContent = isAdmin ? "ADMIN" : currentUser.rang;
-  $("#top-badge").textContent = `Badge: ${currentUser.badgeNr}`;
+  $("#top-badge").textContent = currentUser.badgeNr;
+
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const dagNavn = ["SØN","MAN","TIR","ONS","TOR","FRE","LØR"];
+    const datoStr = `${dagNavn[now.getDay()]} ${String(now.getDate()).padStart(2,"0")}/${String(now.getMonth()+1).padStart(2,"0")}`;
+    const tidStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
+    const dateEl = document.getElementById("top-date");
+    const clockEl = document.getElementById("top-clock");
+    if (dateEl) dateEl.textContent = datoStr;
+    if (clockEl) clockEl.textContent = tidStr;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
 
   let popupOpen = false;
   $("#sidebar-user-btn").addEventListener("click", () => {
