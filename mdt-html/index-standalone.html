@@ -721,14 +721,25 @@ function closeTab(id) {
   renderTabs(); renderSidebar(); renderPage(activeTabId);
 }
 
+const tabIcons = {
+  forside: "home", opslagstavle: "megaphone", kort: "radio", kr: "users", koeretoej: "car",
+  ejendomme: "building", efterlysninger: "alert", opret_sag: "file", sag: "file",
+  boeder: "folder", sagsarkiv: "folder", flaade: "radio", fartberegner: "gauge",
+  ansatte: "shield", ansoegninger: "file", profil: "badge",
+  nsk: "target", lima: "shield", faerdsel: "gauge", efterforskning: "folder", sig: "crosshair", remeo: "heart",
+};
+
 function renderTabs() {
   const bar = $("#tabs-bar");
   bar.innerHTML = "";
   openTabs.forEach(tab => {
+    const iconKey = tabIcons[tab.type] || "file";
+    const iconSvg = icons[iconKey] || "";
     const btn = el("button", {
-      className: `tab-btn ${tab.id === activeTabId ? "active" : ""}`,
+      className: `tab-btn mono ${tab.id === activeTabId ? "active" : ""}`,
+      innerHTML: `${iconSvg} <span>${tab.label}</span>`,
       onclick: () => { activeTabId = tab.id; renderTabs(); renderSidebar(); renderPage(tab.id); },
-    }, [document.createTextNode(tab.label)]);
+    });
     if (tab.id !== "forside") {
       const closeBtn = el("button", { className: "tab-close", innerHTML: icons.x, onclick: (e) => { e.stopPropagation(); closeTab(tab.id); } });
       btn.appendChild(closeBtn);
