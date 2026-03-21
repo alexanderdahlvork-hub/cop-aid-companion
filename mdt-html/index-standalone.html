@@ -82,17 +82,28 @@ input, textarea, select, button { font-family: inherit; }
 
 /* ── Main Content ── */
 .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.top-header { padding: 10px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); }
-.top-header-title { font-size: 12px; font-weight: 600; color: var(--fg); }
-.top-header-badge { font-size: 10px; color: var(--muted-fg); padding: 2px 8px; background: var(--muted); border-radius: 6px; }
+.top-header { height: 40px; padding: 0 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: rgba(28,32,41,.6); backdrop-filter: blur(8px); flex-shrink: 0; }
+.top-header-search { position: relative; flex: 1; max-width: 320px; }
+.top-header-search input { width: 100%; height: 28px; padding: 0 10px 0 30px; background: rgba(30,34,43,.4); border: 1px solid var(--border); border-radius: 8px; color: var(--fg); font-size: 12px; outline: none; }
+.top-header-search input:focus { border-color: var(--primary); }
+.top-header-search svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--muted-fg); }
+.top-header-spacer { flex: 1; }
+.top-header-badge { font-size: 10px; color: var(--primary); padding: 2px 8px; background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.1); border-radius: 4px; font-weight: 500; }
+.top-header-status { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted-fg); }
+.top-header-status svg { width: 12px; height: 12px; color: var(--success); }
+.top-header-time { display: flex; align-items: center; gap: 8px; }
+.top-header-date { font-size: 10px; color: var(--muted-fg); }
+.top-header-clock { font-size: 13px; font-weight: 700; color: var(--primary); letter-spacing: .05em; }
 
 /* ── Tabs Bar ── */
-.tabs-bar { display: flex; align-items: center; gap: 2px; padding: 4px 8px; background: var(--muted); border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; }
-.tab-btn { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; font-size: 11px; color: var(--muted-fg); background: transparent; border: none; cursor: pointer; white-space: nowrap; transition: all .15s; }
-.tab-btn:hover { color: var(--fg); background: var(--secondary); }
-.tab-btn.active { color: var(--primary); background: var(--card); font-weight: 600; }
-.tab-close { margin-left: 4px; width: 14px; height: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted-fg); cursor: pointer; background: transparent; border: none; }
-.tab-close:hover { background: rgba(214,54,75,.2); color: var(--destructive); }
+.tabs-bar { height: 32px; display: flex; align-items: center; gap: 2px; padding: 0 4px; background: rgba(28,32,41,.3); border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; }
+.tab-btn { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; color: var(--muted-fg); background: transparent; border: 1px solid transparent; cursor: pointer; white-space: nowrap; transition: all .15s; }
+.tab-btn:hover { color: var(--fg); background: var(--muted); }
+.tab-btn.active { color: var(--primary); background: rgba(59,130,246,.15); font-weight: 600; border-color: rgba(59,130,246,.2); }
+.tab-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+.tab-close { margin-left: 4px; width: 14px; height: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted-fg); cursor: pointer; background: transparent; border: none; opacity: 0; transition: opacity .15s; }
+.tab-btn:hover .tab-close, .tab-btn.active .tab-close { opacity: 1; }
+.tab-close:hover { background: rgba(214,54,75,.15); color: var(--destructive); }
 
 /* ── Content Area ── */
 .content-area { flex: 1; overflow-y: auto; padding: 16px; }
@@ -221,10 +232,10 @@ input, textarea, select, button { font-family: inherit; }
 .info-field .info-value { font-size: 13px; font-weight: 500; color: var(--fg); }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted-fg); }
+::-webkit-scrollbar-thumb { background: rgba(59,130,246,.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,.3); }
   </style>
 </head>
 <body>
@@ -294,8 +305,20 @@ input, textarea, select, button { font-family: inherit; }
     <!-- Main area -->
     <div class="main-area">
       <div class="top-header">
-        <span class="top-header-title" id="top-title">AVLD-Systems.dk — Politi MDT</span>
+        <div class="top-header-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Søg person, nummerplade, sag..." class="mono">
+        </div>
+        <div class="top-header-spacer"></div>
         <span class="top-header-badge mono" id="top-badge"></span>
+        <div class="top-header-status mono">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/></svg>
+          ONLINE
+        </div>
+        <div class="top-header-time mono">
+          <span class="top-header-date" id="top-date"></span>
+          <span class="top-header-clock" id="top-clock"></span>
+        </div>
       </div>
       <div class="tabs-bar" id="tabs-bar"></div>
       <div class="content-area" id="content-area"></div>
@@ -596,7 +619,21 @@ function initApp() {
   renderPage("forside");
   $("#sidebar-username").textContent = `${currentUser.fornavn} ${currentUser.efternavn}`;
   $("#sidebar-userrole").textContent = isAdmin ? "ADMIN" : currentUser.rang;
-  $("#top-badge").textContent = `Badge: ${currentUser.badgeNr}`;
+  $("#top-badge").textContent = currentUser.badgeNr;
+
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const dagNavn = ["SØN","MAN","TIR","ONS","TOR","FRE","LØR"];
+    const datoStr = `${dagNavn[now.getDay()]} ${String(now.getDate()).padStart(2,"0")}/${String(now.getMonth()+1).padStart(2,"0")}`;
+    const tidStr = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
+    const dateEl = document.getElementById("top-date");
+    const clockEl = document.getElementById("top-clock");
+    if (dateEl) dateEl.textContent = datoStr;
+    if (clockEl) clockEl.textContent = tidStr;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
 
   let popupOpen = false;
   $("#sidebar-user-btn").addEventListener("click", () => {
@@ -684,14 +721,25 @@ function closeTab(id) {
   renderTabs(); renderSidebar(); renderPage(activeTabId);
 }
 
+const tabIcons = {
+  forside: "home", opslagstavle: "megaphone", kort: "radio", kr: "users", koeretoej: "car",
+  ejendomme: "building", efterlysninger: "alert", opret_sag: "file", sag: "file",
+  boeder: "folder", sagsarkiv: "folder", flaade: "radio", fartberegner: "gauge",
+  ansatte: "shield", ansoegninger: "file", profil: "badge",
+  nsk: "target", lima: "shield", faerdsel: "gauge", efterforskning: "folder", sig: "crosshair", remeo: "heart",
+};
+
 function renderTabs() {
   const bar = $("#tabs-bar");
   bar.innerHTML = "";
   openTabs.forEach(tab => {
+    const iconKey = tabIcons[tab.type] || "file";
+    const iconSvg = icons[iconKey] || "";
     const btn = el("button", {
-      className: `tab-btn ${tab.id === activeTabId ? "active" : ""}`,
+      className: `tab-btn mono ${tab.id === activeTabId ? "active" : ""}`,
+      innerHTML: `${iconSvg} <span>${tab.label}</span>`,
       onclick: () => { activeTabId = tab.id; renderTabs(); renderSidebar(); renderPage(tab.id); },
-    }, [document.createTextNode(tab.label)]);
+    });
     if (tab.id !== "forside") {
       const closeBtn = el("button", { className: "tab-close", innerHTML: icons.x, onclick: (e) => { e.stopPropagation(); closeTab(tab.id); } });
       btn.appendChild(closeBtn);
@@ -737,21 +785,68 @@ async function renderDashboard(container) {
   container.innerHTML = `
     <div class="card" style="position:relative;overflow:hidden">
       <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--primary);border-radius:12px 0 0 12px"></div>
-      <h1 style="font-size:16px;font-weight:700;color:var(--fg);padding-left:8px">Velkommen, ${currentUser.fornavn}</h1>
-      <p class="mono" style="font-size:12px;color:var(--muted-fg);padding-left:8px;margin-top:4px">${dagNavn[now.getDay()]} d. ${now.getDate()}. ${maaned[now.getMonth()]} — Badge: ${currentUser.badgeNr}</p>
+      <div style="position:absolute;top:0;right:0;width:128px;height:128px;background:rgba(59,130,246,.05);border-radius:50%;transform:translate(50%,-50%)"></div>
+      <h1 style="font-size:16px;font-weight:700;color:var(--fg);padding-left:8px;position:relative">Velkommen, ${currentUser.fornavn}</h1>
+      <p class="mono" style="font-size:12px;color:var(--muted-fg);padding-left:8px;margin-top:4px;position:relative">${dagNavn[now.getDay()]} d. ${now.getDate()}. ${maaned[now.getMonth()]} — Badge: ${currentUser.badgeNr}</p>
     </div>
-    <div class="grid grid-3 mt-3" id="dash-stats"></div>
-    <div class="card mt-3"><h3 style="font-size:14px;font-weight:600;margin-bottom:8px">Seneste Aktivitet</h3><p style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen aktivitet i denne session.</p></div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px">
+      <div>
+        <div class="card mb-3" style="cursor:pointer;position:relative;overflow:hidden" onclick="openTab('efterlysninger')">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--warning);border-radius:12px 0 0 12px"></div>
+          <div class="flex items-center justify-between" style="position:relative">
+            <div class="flex items-center gap-2">${icons.alert}<h3 style="font-size:14px;font-weight:600">Efterlyste Personer</h3></div>
+            <span style="color:var(--muted-fg)">${icons.chevron || '→'}</span>
+          </div>
+          <div class="flex items-center gap-3" style="margin-top:12px;position:relative">
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(224,100,42,.1);border:1px solid rgba(224,100,42,.15);display:flex;align-items:center;justify-content:center">
+              <span class="mono" style="font-size:18px;font-weight:700;color:var(--warning)" id="dash-efterlyste">0</span>
+            </div>
+            <p style="font-size:12px;color:var(--muted-fg)">aktive efterlysninger</p>
+          </div>
+        </div>
+        <div class="card" style="position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent);border-radius:12px 0 0 12px"></div>
+          <div class="flex items-center gap-2 mb-2" style="position:relative">${icons.radio}<h3 style="font-size:14px;font-weight:600">Seneste Aktivitet</h3></div>
+          <p style="font-size:12px;color:var(--muted-fg);font-style:italic;position:relative">Ingen aktivitet i denne session.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card mb-3" style="position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--primary);border-radius:12px 0 0 12px"></div>
+          <div class="flex items-center gap-2 mb-3" style="position:relative">
+            <span style="color:var(--success)">${icons.radio}</span>
+            <h3 style="font-size:14px;font-weight:600">Din Status</h3>
+          </div>
+          <div style="font-size:12px;position:relative" id="dash-status">
+            <div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Rang</span><span class="mono" style="font-weight:500">${isAdmin ? "Administrator" : currentUser.rang}</span></div>
+            ${currentUser.afdeling ? `<div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Afdeling</span><span class="mono" style="font-weight:500">${currentUser.afdeling}</span></div>` : ''}
+            <div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Uddannelser</span><span class="mono" style="font-weight:500">${currentUser.uddannelser.length}</span></div>
+            <div class="flex items-center justify-between"><span style="color:var(--muted-fg)">Status</span><span class="mono flex items-center gap-1" style="font-size:11px;font-weight:500;color:var(--success)"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite"></span> I TJENESTE</span></div>
+          </div>
+        </div>
+        <div class="card" style="position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:rgba(155,165,181,.2);border-radius:12px 0 0 12px"></div>
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;position:relative">Kollegaer <span class="mono" style="color:var(--muted-fg);font-weight:400" id="dash-kol-count">(0)</span></h3>
+          <div id="dash-kollegaer" style="position:relative"><p style="font-size:12px;color:var(--muted-fg);font-style:italic">Indlæser...</p></div>
+        </div>
+      </div>
+    </div>
   `;
   try {
     const [personer, betjente] = await Promise.all([personerApi.getAll(), betjenteApi.getAll()]);
     const efterlyste = personer.filter(p => p.status === "eftersøgt").length;
-    const statsDiv = $("#dash-stats");
-    statsDiv.innerHTML = `
-      <div class="stat-card" onclick="openTab('efterlysninger')" style="cursor:pointer"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value mono" style="color:var(--warning)">${efterlyste}</div><div class="stat-label">Efterlyste personer</div></div>
-      <div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono">${betjente.length}</div><div class="stat-label">Registrerede betjente</div></div>
-      <div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value mono">${personer.length}</div><div class="stat-label">Personer i registeret</div></div>
-    `;
+    const eftEl = document.getElementById("dash-efterlyste");
+    if (eftEl) eftEl.textContent = efterlyste;
+    const kolleger = betjente.filter(b => b.id !== currentUser.id).slice(0, 4);
+    const kolCount = document.getElementById("dash-kol-count");
+    if (kolCount) kolCount.textContent = `(${kolleger.length})`;
+    const kolDiv = document.getElementById("dash-kollegaer");
+    if (kolDiv) {
+      if (kolleger.length === 0) { kolDiv.innerHTML = '<p style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen kolleger</p>'; }
+      else {
+        kolDiv.innerHTML = kolleger.map(k => `<div class="flex items-center gap-2" style="margin-bottom:10px"><div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center">${icons.shield}</div><div><p style="font-size:12px;font-weight:500">${k.fornavn} ${k.efternavn}</p><p class="mono" style="font-size:10px;color:var(--muted-fg)">${k.rang} · ${k.badgeNr}</p></div></div>`).join("");
+      }
+    }
   } catch (err) { console.error(err); }
 }
 
