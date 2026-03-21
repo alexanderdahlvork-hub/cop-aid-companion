@@ -305,8 +305,20 @@ input, textarea, select, button { font-family: inherit; }
     <!-- Main area -->
     <div class="main-area">
       <div class="top-header">
-        <span class="top-header-title" id="top-title">AVLD-Systems.dk — Politi MDT</span>
+        <div class="top-header-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Søg person, nummerplade, sag..." class="mono">
+        </div>
+        <div class="top-header-spacer"></div>
         <span class="top-header-badge mono" id="top-badge"></span>
+        <div class="top-header-status mono">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/></svg>
+          ONLINE
+        </div>
+        <div class="top-header-time mono">
+          <span class="top-header-date" id="top-date"></span>
+          <span class="top-header-clock" id="top-clock"></span>
+        </div>
       </div>
       <div class="tabs-bar" id="tabs-bar"></div>
       <div class="content-area" id="content-area"></div>
