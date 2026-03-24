@@ -25,7 +25,9 @@ input, textarea, select, button { font-family: inherit; }
 
 /* ── Layout ── */
 #app { width: 100vw; height: 100vh; padding: 8px; }
-.app-shell { width: 100%; height: 100%; border-radius: 16px; background: var(--bg); overflow: hidden; border: 1px solid rgba(59,130,246,.2); display: flex; position: relative; }
+.app-shell { width: 100%; height: 100%; border-radius: 16px; background: var(--bg); overflow: hidden; border: 1px solid rgba(59,130,246,.2); display: flex; position: relative; box-shadow: 0 0 20px rgba(59,130,246,.15), 0 0 60px rgba(59,130,246,.05); }
+.app-shell::before { content:""; position:absolute; top:0; left:0; width:64px; height:1px; background:linear-gradient(to right,rgba(59,130,246,.6),transparent); z-index:10; }
+.app-shell::after { content:""; position:absolute; top:0; left:0; width:1px; height:64px; background:linear-gradient(to bottom,rgba(59,130,246,.6),transparent); z-index:10; }
 
 /* ── Login ── */
 #login-page { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; }
