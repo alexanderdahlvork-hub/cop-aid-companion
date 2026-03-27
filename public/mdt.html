@@ -3347,6 +3347,29 @@ body.theme-light .penalty-qty-btn,body.theme-light .penalty-qty-input{border-col
   .penalty-item{grid-template-columns:1fr}
 }
 
+/* ==== v27 charge summary table ==== */
+.charge-summary-clean{border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.015)}
+.charge-summary-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);font-weight:700}
+.charge-summary-header-cell{font-size:10px}
+.charge-summary-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+.charge-summary-row:hover{background:rgba(59,130,246,.04)}
+.charge-summary-row:last-of-type{border-bottom:none}
+.charge-summary-count{width:50px;font-size:13px;font-weight:900;color:var(--primary);flex-shrink:0}
+.charge-summary-desc{flex:1;min-width:0}
+.charge-summary-title{font-size:13px;font-weight:700;line-height:1.4}
+.charge-summary-badge{font-size:10px;margin-top:3px;font-weight:600}
+.charge-summary-cell{font-size:12px;font-weight:600;text-align:right}
+.charge-summary-cell[style*="width:130px"]{width:130px;flex-shrink:0}
+.charge-summary-cell[style*="width:80px"]{width:80px;flex-shrink:0}
+.charge-summary-cell[style*="width:60px"]{width:60px;flex-shrink:0}
+.charge-summary-total{display:flex;align-items:center;gap:10px;padding:14px;background:rgba(59,130,246,.06);border-top:2px solid rgba(59,130,246,.15)}
+body.theme-light .charge-summary-clean{border-color:rgba(15,23,42,.08);background:rgba(15,23,42,.02)}
+body.theme-light .charge-summary-header{background:rgba(15,23,42,.03);border-color:rgba(15,23,42,.06)}
+body.theme-light .charge-summary-row{border-color:rgba(15,23,42,.04)}
+body.theme-light .charge-summary-row:hover{background:rgba(37,99,235,.04)}
+body.theme-light .charge-summary-total{background:rgba(37,99,235,.06);border-color:rgba(37,99,235,.12)}
+@media(max-width:900px){.charge-summary-header,.charge-summary-row,.charge-summary-total{flex-wrap:wrap}.charge-summary-desc{width:100%}}
+
 </style>
 </head>
 <body>
