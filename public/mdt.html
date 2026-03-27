@@ -9125,21 +9125,13 @@ Andre relevante oplysninger:`
 
 
 <script>
-/* ==== v26 clean report + penalties override ==== */
+/* ==== v27 clean report + penalties override ==== */
 (function(){
+  function fmtDKK(n){ return Number(n||0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
   function getBoedetaksterLocal(){
-    try { if (Array.isArray(window.standardBoeder) && window.standardBoeder.length) return window.standardBoeder; } catch {}
-    try { if (typeof standardBoeder !== "undefined" && Array.isArray(standardBoeder) && standardBoeder.length) return standardBoeder; } catch {}
-    try {
-      const raw = localStorage.getItem("copaid_offline_boedetakster");
-      const arr = JSON.parse(raw || "[]");
-      if (Array.isArray(arr) && arr.length) return arr;
-    } catch {}
-    try {
-      const raw2 = localStorage.getItem("copaid_boedetakster");
-      const arr2 = JSON.parse(raw2 || "[]");
-      if (Array.isArray(arr2) && arr2.length) return arr2;
-    } catch {}
+    if (Array.isArray(window.standardBoeder) && window.standardBoeder.length) return window.standardBoeder;
+    try { const raw = localStorage.getItem("copaid_offline_boedetakster"); const arr = JSON.parse(raw||"[]"); if (arr.length) return arr; } catch {}
     return [];
   }
 
@@ -9154,18 +9146,18 @@ Andre relevante oplysninger:`
       <div class="penalty-box">
         <div class="penalty-head">
           <div>
-            <div class="penalty-title">Vælg sigtelser</div>
-            <div class="penalty-sub">Straffe fra Bødetakster. Vælg antal med + / - eller skriv tallet direkte.</div>
+            <div class="penalty-title">Vælg sigtelser fra bødetakster</div>
+            <div class="penalty-sub">Vælg antal og tilføj til sagen. Grupperede straffe vises med x-antal.</div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">Luk</button>
+          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">✕ Luk</button>
         </div>
         <div class="penalty-body">
           <div class="penalty-toolbar">
-            <input class="input" id="penalty-search" placeholder="Søg efter straf, paragraf eller beskrivelse...">
+            <input class="input" id="penalty-search" placeholder="Søg paragraf, beskrivelse eller kategori...">
             <select class="select" id="penalty-sort">
               <option value="name">Sorter: Navn</option>
-              <option value="fine">Sorter: Bøde</option>
-              <option value="time">Sorter: Fængselstid</option>
+              <option value="fine">Sorter: Bøde ↓</option>
+              <option value="time">Sorter: Fængsel ↓</option>
             </select>
           </div>
           <div class="penalty-list" id="penalty-list"></div>
@@ -9186,68 +9178,68 @@ Andre relevante oplysninger:`
         m.sigtelser = m.sigtelser || [];
         for (let i = 0; i < qty; i++) {
           m.sigtelser.push({
-            title: charge.beskrivelse || charge.title || "",
-            beskrivelse: charge.beskrivelse || charge.title || "",
-            lovhenvisning: charge.lovhenvisning || charge.paragraf || "",
-            boede: Number(charge.boede || charge.beloeb || 0),
-            faengselsTid: Number(charge.faengselsTid || charge.faengselMaaneder || charge.faengsel || 0),
-            klip: Number(charge.klip || 0)
+            id: charge.id || Date.now().toString(),
+            title: charge.beskrivelse || "",
+            beskrivelse: charge.beskrivelse || "",
+            lovhenvisning: charge.paragraf || "",
+            boede: Number(charge.beloeb || 0),
+            faengselsTid: Number(charge.faengselMaaneder || 0),
+            klip: Number(charge.klip || 0),
+            frakendelse: charge.frakendelse || "",
+            information: charge.information || ""
           });
         }
       });
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
-      showToast(`Sigtelse tilføjet x${qty}`);
+      showToast(`Tilføjet: ${charge.beskrivelse} x${qty}`);
     }
 
     function renderList(){
       const q = (document.getElementById("penalty-search")?.value || "").toLowerCase();
       const sort = document.getElementById("penalty-sort")?.value || "name";
-      let rows = takster.filter(c => `${c.beskrivelse || c.title || ""} ${c.lovhenvisning || c.paragraf || ""} ${c.kategori || ""}`.toLowerCase().includes(q));
+      let rows = takster.filter(c => `${c.beskrivelse||""} ${c.paragraf||""} ${c.kategori||""} ${c.information||""}`.toLowerCase().includes(q));
       rows.sort((a,b) => {
-        if (sort === "fine") return Number(b.boede||b.beloeb||0) - Number(a.boede||a.beloeb||0);
-        if (sort === "time") return Number(b.faengselsTid||b.faengselMaaneder||b.faengsel||0) - Number(a.faengselsTid||a.faengselMaaneder||a.faengsel||0);
-        return String(a.beskrivelse || a.title || "").localeCompare(String(b.beskrivelse || b.title || ""), "da");
+        if (sort === "fine") return Number(b.beloeb||0) - Number(a.beloeb||0);
+        if (sort === "time") return Number(b.faengselMaaneder||0) - Number(a.faengselMaaneder||0);
+        return String(a.beskrivelse||"").localeCompare(String(b.beskrivelse||""), "da");
       });
 
       const grouped = {};
-      rows.forEach(r => {
-        const kat = r.kategori || "Øvrige";
-        if (!grouped[kat]) grouped[kat] = [];
-        grouped[kat].push(r);
-      });
+      rows.forEach(r => { const kat = r.kategori || "Øvrige"; if (!grouped[kat]) grouped[kat] = []; grouped[kat].push(r); });
 
       const list = document.getElementById("penalty-list");
       if (!rows.length) {
-        list.innerHTML = `<div class="case-sub">Ingen straffe fundet i Bødetakster. Tilføj dem under "Bødetakster" først.</div>`;
+        list.innerHTML = `<div class="case-sub" style="padding:20px;text-align:center">Ingen straffe matcher din søgning.</div>`;
         return;
       }
 
       list.innerHTML = Object.entries(grouped).map(([kat, items], gIdx) => `
         <div class="penalty-group">
           <div class="penalty-group-head" data-group="${gIdx}">
-            <span>${kat}</span>
-            <span style="font-size:11px;color:var(--muted-fg)">${items.length} straffe ▼</span>
+            <span>${kat} <span style="font-weight:400;color:var(--muted-fg);font-size:12px">(${items.length})</span></span>
+            <span style="font-size:13px;color:var(--muted-fg)">▼</span>
           </div>
           <div class="penalty-group-body ${q ? 'open' : ''}" id="penalty-group-${gIdx}">
             ${items.map((c, idx) => `
               <div class="penalty-item">
-                <div>
-                  <div class="penalty-name">${esc(c.paragraf ? c.paragraf + " — " : "")}${esc(c.beskrivelse || c.title || "Ukendt straf")}</div>
-                  <div class="penalty-meta">${esc(c.information || c.lovhenvisning || "Ingen ekstra info")}</div>
+                <div style="min-width:0">
+                  <div class="penalty-name">${esc(c.paragraf ? c.paragraf + " — " : "")}${esc(c.beskrivelse)}</div>
+                  <div class="penalty-meta">${c.information ? esc(c.information) : c.frakendelse ? 'Frakendelse: '+esc(c.frakendelse) : 'Ingen ekstra info'}</div>
                 </div>
                 <div class="penalty-stat">
                   <div class="penalty-stat-label">Bøde</div>
-                  <div class="penalty-stat-value">${Number(c.boede || c.beloeb || 0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</div>
+                  <div class="penalty-stat-value" style="color:var(--warning)">${fmtDKK(c.beloeb)} kr.</div>
                 </div>
                 <div class="penalty-stat">
                   <div class="penalty-stat-label">Fængsel</div>
-                  <div class="penalty-stat-value">${Number(c.faengselsTid || c.faengselMaaneder || c.faengsel || 0)} md.</div>
+                  <div class="penalty-stat-value" style="color:${c.faengselMaaneder > 0 ? 'var(--destructive)' : 'var(--muted-fg)'}">${c.faengselMaaneder || 0} md.</div>
                 </div>
+                ${c.klip > 0 ? `<div class="penalty-stat" style="min-width:60px"><div class="penalty-stat-label">Klip</div><div class="penalty-stat-value" style="color:var(--primary)">${c.klip}</div></div>` : ''}
                 <div class="penalty-qty">
                   <button class="penalty-qty-btn" type="button" data-minus="${gIdx}-${idx}">−</button>
                   <input class="penalty-qty-input" type="number" min="1" value="1" data-qty="${gIdx}-${idx}">
                   <button class="penalty-qty-btn" type="button" data-plus="${gIdx}-${idx}">+</button>
-                  <button class="btn btn-primary btn-sm" type="button" data-add="${gIdx}-${idx}">Tilføj</button>
+                  <button class="btn btn-primary btn-sm" type="button" data-add="${gIdx}-${idx}" style="min-height:34px">Tilføj</button>
                 </div>
               </div>
             `).join("")}
@@ -9265,18 +9257,9 @@ Andre relevante oplysninger:`
         items.forEach((charge, idx) => {
           const key = `${gIdx}-${idx}`;
           const qty = list.querySelector(`[data-qty="${key}"]`);
-          list.querySelector(`[data-minus="${key}"]`)?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            qty.value = Math.max(1, Number(qty.value || 1) - 1);
-          });
-          list.querySelector(`[data-plus="${key}"]`)?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            qty.value = Math.max(1, Number(qty.value || 1) + 1);
-          });
-          list.querySelector(`[data-add="${key}"]`)?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            addCharge(charge, qty.value);
-          });
+          list.querySelector(`[data-minus="${key}"]`)?.addEventListener("click", (e) => { e.stopPropagation(); qty.value = Math.max(1, Number(qty.value||1) - 1); });
+          list.querySelector(`[data-plus="${key}"]`)?.addEventListener("click", (e) => { e.stopPropagation(); qty.value = Math.max(1, Number(qty.value||1) + 1); });
+          list.querySelector(`[data-add="${key}"]`)?.addEventListener("click", (e) => { e.stopPropagation(); addCharge(charge, qty.value); });
         });
       });
     }
@@ -9286,17 +9269,101 @@ Andre relevante oplysninger:`
     renderList();
   };
 
-  window.addSagBetjent = async function(id){
-    const b = (window._sagBetjente || []).find(x => x.id === id);
-    if (!b) return;
-    const sag = window._currentSag;
-    sag.involveretBetjente = sag.involveretBetjente || [];
-    if (sag.involveretBetjente.some(x => x.id === b.id)) return;
-    sag.involveretBetjente.push({ id:b.id, navn:`${b.fornavn} ${b.efternavn}`, badgeNr:b.badgeNr || "" });
-    await renderPage(activeTabId);
+  // ── Enhanced charge renderer with x-multiplier format ──
+  window._rerenderCharges = function(){
+    const wrap = document.getElementById('sag-sigtelser-wrap');
+    if (!wrap) return;
+    const sag = window._currentSag || {};
+    const allCharges = [];
+    (sag.mistaenkte || []).forEach(m => (m.sigtelser || []).forEach(s => allCharges.push({person:m.personNavn, erkender:m.erkender, ...s})));
+
+    if (!allCharges.length) {
+      wrap.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted-fg);font-size:12px">Ingen sigtelser tilføjet endnu. Klik "Åbn straffeliste" for at tilføje fra bødetakster.</div>';
+      return;
+    }
+
+    // Group identical charges
+    const grouped = {};
+    allCharges.forEach(r => {
+      const key = `${r.lovhenvisning||r.paragraf||""}||${r.beskrivelse||r.title||""}||${Number(r.boede||r.beloeb||0)}||${Number(r.faengselsTid||r.faengselMaaneder||0)}||${Number(r.klip||0)}`;
+      if (!grouped[key]) grouped[key] = {
+        lovhenvisning: r.lovhenvisning || r.paragraf || "",
+        beskrivelse: r.beskrivelse || r.title || "",
+        boede: Number(r.boede || r.beloeb || 0),
+        faengselsTid: Number(r.faengselsTid || r.faengselMaaneder || 0),
+        klip: Number(r.klip || 0),
+        frakendelse: r.frakendelse || "",
+        count: 0,
+        persons: new Set()
+      };
+      grouped[key].count += 1;
+      if (r.person) grouped[key].persons.add(r.person);
+    });
+
+    const items = Object.values(grouped);
+    const totalBoede = allCharges.reduce((a,b)=>a+Number(b.boede||b.beloeb||0),0);
+    const totalFaengsel = allCharges.reduce((a,b)=>a+Number(b.faengselsTid||b.faengselMaaneder||0),0);
+    const totalKlip = allCharges.reduce((a,b)=>a+Number(b.klip||0),0);
+
+    wrap.innerHTML = `
+      <div class="charge-summary-clean">
+        <div class="charge-summary-header">
+          <div class="charge-summary-header-cell" style="width:50px">Antal</div>
+          <div class="charge-summary-header-cell" style="flex:1">Sigtelse</div>
+          <div class="charge-summary-header-cell" style="width:130px;text-align:right">Pr. stk.</div>
+          <div class="charge-summary-header-cell" style="width:130px;text-align:right">Subtotal</div>
+          <div class="charge-summary-header-cell" style="width:80px;text-align:right">Fængsel</div>
+          <div class="charge-summary-header-cell" style="width:60px;text-align:right">Klip</div>
+        </div>
+        ${items.map(item => `
+          <div class="charge-summary-row">
+            <div class="charge-summary-count">x${item.count}</div>
+            <div class="charge-summary-desc">
+              <div class="charge-summary-title">${item.lovhenvisning ? esc(item.lovhenvisning) + ' — ' : ''}${esc(item.beskrivelse)}</div>
+              ${item.frakendelse ? `<div class="charge-summary-badge" style="color:var(--destructive)">Frakendelse: ${esc(item.frakendelse)}</div>` : ''}
+            </div>
+            <div class="charge-summary-cell mono" style="color:var(--muted-fg)">${fmtDKK(item.boede)} kr.</div>
+            <div class="charge-summary-cell mono" style="color:var(--warning);font-weight:800">${fmtDKK(item.boede * item.count)} kr.</div>
+            <div class="charge-summary-cell mono" style="color:${item.faengselsTid > 0 ? 'var(--destructive)' : 'var(--muted-fg)'}">${item.faengselsTid > 0 ? (item.faengselsTid * item.count) + ' md.' : '—'}</div>
+            <div class="charge-summary-cell mono" style="color:${item.klip > 0 ? 'var(--primary)' : 'var(--muted-fg)'}">${item.klip > 0 ? (item.klip * item.count) : '—'}</div>
+          </div>
+        `).join('')}
+        <div class="charge-summary-total">
+          <div class="charge-summary-count">${allCharges.length}</div>
+          <div class="charge-summary-desc"><strong>Total straf</strong></div>
+          <div class="charge-summary-cell"></div>
+          <div class="charge-summary-cell mono" style="color:var(--warning);font-weight:900;font-size:15px">${fmtDKK(totalBoede)} kr.</div>
+          <div class="charge-summary-cell mono" style="color:var(--destructive);font-weight:900">${totalFaengsel > 0 ? totalFaengsel + ' md.' : '—'}</div>
+          <div class="charge-summary-cell mono" style="color:var(--primary);font-weight:900">${totalKlip > 0 ? totalKlip : '—'}</div>
+        </div>
+      </div>`;
   };
 
-  const originalSaveSag = window.saveSag;
+  // ── Patch the sag editor to add the "Åbn straffeliste" button ──
+  const originalRenderSagEditor = window.renderSagEditor;
+  window.renderSagEditor = function(container, data){
+    originalRenderSagEditor(container, data);
+    setTimeout(() => {
+      // Find sigtelser section and ensure button exists
+      const chargeSearch = document.getElementById("sag-charge-search");
+      if (chargeSearch && !document.getElementById("open-penalty-picker-btn")) {
+        const wrapper = chargeSearch.closest(".sag-select-wrap") || chargeSearch.parentElement;
+        if (wrapper) {
+          // Replace the simple picker input with a proper button
+          wrapper.innerHTML = `
+            <button class="btn btn-primary" id="open-penalty-picker-btn" onclick="openPenaltyPicker()" style="width:100%;justify-content:center;gap:8px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Åbn straffeliste — tilføj sigtelser fra bødetakster
+            </button>`;
+        }
+      }
+
+      // Also ensure _rerenderCharges runs
+      if (typeof window._rerenderCharges === "function") window._rerenderCharges();
+    }, 80);
+  };
+
+  // Override saveSag
   window.saveSag = async function(){
     const sag = window._currentSag;
     sag.titel = document.getElementById("sag-titel")?.value || sag.titel;
@@ -9313,102 +9380,7 @@ Andre relevante oplysninger:`
       const tab = openTabs.find(t => t.id === activeTabId);
       if (tab) tab.label = sag.titel || sag.sagsnummer;
       renderTabs();
-    } catch (e) {
-      showToast("Fejl: " + e.message);
-    }
-  };
-
-  const originalRenderSagEditor = window.renderSagEditor || renderSagEditor;
-  window.renderSagEditor = function(container, data){
-    originalRenderSagEditor(container, data);
-    setTimeout(() => {
-      const root = container.querySelector('[style*="max-width:1180px"]') || container.firstElementChild;
-      if (!root) return;
-      root.classList.add('clean-report-shell');
-
-      const btnContainer = Array.from(container.querySelectorAll('button')).find(b => (b.textContent || '').includes('Gem') || (b.textContent || '').includes('Opret'))?.parentElement?.parentElement;
-      const wrappers = container.querySelectorAll('.card, .grid.grid-2, .grid.grid-3');
-      // minimal DOM surgery only if old structure exists
-      const sigTitle = Array.from(container.querySelectorAll('h3')).find(h => (h.textContent || '').includes('Sigtelser'));
-      if (sigTitle) {
-        const card = sigTitle.closest('.card');
-        if (card && !card.querySelector('[onclick="openPenaltyPicker()"]')) {
-          const btn = document.createElement('button');
-          btn.className = 'btn btn-outline btn-sm';
-          btn.setAttribute('onclick', 'openPenaltyPicker()');
-          btn.textContent = 'Åbn straffeliste';
-          sigTitle.insertAdjacentElement('afterend', btn);
-        }
-      }
-
-      // remove remaining clutter
-      container.querySelectorAll('.card').forEach(card => {
-        const t = (card.innerText || '').toLowerCase();
-        if (t.includes('tags / referencer') || t.includes('+ hændelse') || t.includes('+ rapport') || t.includes('+ telefonlog') || t.includes('+ ny tab') || t.includes('kort resume')) {
-          if (t.includes('kort resume')) {
-            // only remove resume field
-            card.querySelectorAll('.label').forEach(lbl => {
-              if ((lbl.textContent || '').toLowerCase().includes('kort resume')) {
-                const ta = lbl.nextElementSibling;
-                lbl.remove();
-                ta?.remove();
-              }
-            });
-          } else {
-            card.remove();
-          }
-        }
-      });
-
-      // attach rerender hook for grouped charges view
-      window._rerenderCharges = function(){
-        const wrap = document.getElementById('sag-sigtelser-wrap');
-        if (!wrap) return;
-        const sag = window._currentSag || {};
-        const rows = [];
-        (sag.mistaenkte || []).forEach(m => (m.sigtelser || []).forEach(s => rows.push({person:m.personNavn, erkender:m.erkender, ...s})));
-        if (!rows.length) {
-          wrap.innerHTML = '<div class="case-sub">Ingen sigtelser endnu. Åbn straffelisten for at vælge straffe fra Bødetakster.</div>';
-          return;
-        }
-        const grouped = {};
-        rows.forEach(r => {
-          const key = JSON.stringify({
-            person: r.person || "",
-            erkender: r.erkender,
-            title: r.beskrivelse || r.title || "",
-            lov: r.lovhenvisning || r.paragraf || "",
-            boede: Number(r.boede || r.beloeb || 0),
-            faengsel: Number(r.faengselsTid || r.faengselMaaneder || r.faengsel || 0),
-            klip: Number(r.klip || 0)
-          });
-          if (!grouped[key]) grouped[key] = {
-            person:r.person || "", erkender:r.erkender, title:r.beskrivelse || r.title || "",
-            lovhenvisning:r.lovhenvisning || r.paragraf || "", boede:Number(r.boede || r.beloeb || 0),
-            faengselsTid:Number(r.faengselsTid || r.faengselMaaneder || r.faengsel || 0), klip:Number(r.klip || 0), count:0
-          };
-          grouped[key].count += 1;
-        });
-        const items = Object.values(grouped);
-        const totalBoede = rows.reduce((a,b)=>a+Number(b.boede||b.beloeb||0),0);
-        const totalFaengsel = rows.reduce((a,b)=>a+Number(b.faengselsTid||b.faengselMaaneder||b.faengsel||0),0);
-        const totalKlip = rows.reduce((a,b)=>a+Number(b.klip||0),0);
-        wrap.innerHTML = `
-          <div class="sag-charge-summary">
-            ${items.map(item => {
-              const parts = [];
-              if (item.lovhenvisning) parts.push(esc(item.lovhenvisning));
-              parts.push(esc(item.title || "Ukendt sigtelse"));
-              parts.push(`${Number(item.boede || 0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.`);
-              if (item.klip) parts.push(`${item.klip} klip`);
-              if (item.faengselsTid) parts.push(`${item.faengselsTid} md.`);
-              return `<div class="sag-charge-row-compact"><div class="sag-charge-count">x${item.count}</div><div class="sag-charge-line">${parts.join(' - ')}<small>${esc(item.person || '')} · Erkender: ${item.erkender===true || item.erkender==='true' ? 'Ja' : item.erkender===false || item.erkender==='false' ? 'Nej' : 'Ikke valgt'}</small></div><div class="sag-charge-total">${(Number(item.boede || 0) * Number(item.count || 1)).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.${item.faengselsTid ? `<br>${item.faengselsTid * item.count} md.` : ''}${item.klip ? `<br>${item.klip * item.count} klip` : ''}</div></div>`;
-            }).join('')}
-            <div class="sag-charge-row-compact"><div class="sag-charge-count"></div><div class="sag-charge-line"><strong>Total</strong></div><div class="sag-charge-total"><strong>${totalBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</strong>${totalFaengsel ? `<br><strong>${totalFaengsel} md.</strong>` : ''}${totalKlip ? `<br><strong>${totalKlip} klip</strong>` : ''}</div></div>
-          </div>`;
-      };
-      window._rerenderCharges();
-    }, 50);
+    } catch (e) { showToast("Fejl: " + e.message); }
   };
 })();
 </script>
