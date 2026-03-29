@@ -4504,45 +4504,81 @@ function cardBadge(status) {
 }
 
 async function renderHaendelser(container) {
-  container.innerHTML = `
-    <div class="flex items-center justify-between mb-3">
-      <div>
-        <h2 style="font-size:18px;font-weight:700">Hændelser</h2>
-        <p style="font-size:12px;color:var(--muted-fg)">Overblik over aktive hændelser og hurtig adgang til videre rapportskrivning.</p>
-      </div>
-      <button class="btn btn-primary" onclick="void openTab('sag',{label:'Ny Hændelse'})">+ Ny hændelse</button>
-    </div>
-    <div class="grid grid-3 mb-3">
-      ${demoHaendelser.map(h => `
-        <div class="card">
-          <div class="flex items-center justify-between mb-2">
-            <div>
-              <div class="mono" style="font-size:11px;color:var(--muted-fg)">${h.id}</div>
-              <div style="font-size:14px;font-weight:600">${h.titel}</div>
-            </div>
-            ${cardBadge(h.status)}
-          </div>
-          <div style="font-size:12px;color:var(--muted-fg);line-height:1.6">
-            Ansvarlig: ${h.ansvarlig}<br>
-            Prioritet: ${h.prioritet}<br>
-            Tidspunkt: ${h.tidspunkt}
-          </div>
-          <div class="flex gap-2 mt-3">
-            <button class="btn btn-outline btn-sm" onclick="void openTab('sag',{label:'${h.titel.replace(/'/g, "\'")}'} )">Åbn som sag</button>
-            <button class="btn btn-secondary btn-sm" onclick="showToast('Hændelse markeret til rapport')">Markér til rapport</button>
-          </div>
+  container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser hændelser...</span></div>';
+  let sager = [];
+  try { sager = await sagerApi.getAll(); } catch(e) {}
+  const statusLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
+  const statusColors = {aaben:"badge-success",under_efterforskning:"badge-primary",afventer_retten:"badge-warning",lukket:"badge-muted"};
+  const prioritetColors = {hoej:"var(--destructive)",mellem:"var(--warning)",lav:"var(--success)"};
+
+  const openSager = sager.filter(s => s.status !== "lukket");
+  const totalMistaenkte = sager.reduce((a,s) => a + (s.mistaenkte||[]).length, 0);
+
+  let html = `
+    <div style="max-width:1200px;margin:0 auto">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;padding:18px 20px;border:1px solid rgba(255,255,255,.05);border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012));box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 18px 40px rgba(0,0,0,.16)">
+        <div>
+          <h1 style="font-size:24px;font-weight:900;letter-spacing:-0.03em">Hændelser</h1>
+          <p style="font-size:12px;color:var(--muted-fg);margin-top:4px;letter-spacing:.08em;text-transform:uppercase">Overblik over aktive hændelser og hurtig rapportskrivning</p>
         </div>
-      `).join("")}
-    </div>
-    <div class="card">
-      <div style="font-size:13px;font-weight:600;margin-bottom:10px">Hvad der er tilføjet</div>
-      <div style="font-size:12px;color:var(--muted-fg);line-height:1.7">
-        • Hændelser og rapporter ligger nu som egne sider.<br>
-        • Du kan bruge dem som indgang til sagssystemet med flere tabs åbne.<br>
-        • I en rigtig FiveM version skal de kobles til database og MDT events.
+        <button class="btn btn-primary" onclick="void openTab('sag',{label:'Ny Hændelse'})">${icons.plus} Ny hændelse</button>
       </div>
-    </div>
-  `;
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div style="padding:16px;border:1px solid rgba(255,255,255,.05);border-radius:16px;background:rgba(255,255,255,.02)">
+          <div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Åbne sager</div>
+          <div style="font-size:28px;font-weight:900;color:var(--primary)">${openSager.length}</div>
+        </div>
+        <div style="padding:16px;border:1px solid rgba(255,255,255,.05);border-radius:16px;background:rgba(255,255,255,.02)">
+          <div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Total sager</div>
+          <div style="font-size:28px;font-weight:900">${sager.length}</div>
+        </div>
+        <div style="padding:16px;border:1px solid rgba(255,255,255,.05);border-radius:16px;background:rgba(255,255,255,.02)">
+          <div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Mistænkte</div>
+          <div style="font-size:28px;font-weight:900;color:var(--warning)">${totalMistaenkte}</div>
+        </div>
+        <div style="padding:16px;border:1px solid rgba(255,255,255,.05);border-radius:16px;background:rgba(255,255,255,.02)">
+          <div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Lukkede</div>
+          <div style="font-size:28px;font-weight:900;color:var(--success)">${sager.filter(s=>s.status==="lukket").length}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+        ${demoHaendelser.map(h => `
+          <div style="padding:16px;border:1px solid rgba(255,255,255,.05);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.012));transition:border-color .15s,transform .15s;cursor:pointer" onmouseover="this.style.borderColor='rgba(59,130,246,.2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.05)';this.style.transform='none'" onclick="void openTab('sag',{label:'${h.titel.replace(/'/g,"\\'")}'})" >
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span class="mono" style="font-size:10px;color:var(--primary);font-weight:600">${h.id}</span>
+              ${cardBadge(h.status)}
+            </div>
+            <div style="font-size:14px;font-weight:800;margin-bottom:8px;line-height:1.3">${h.titel}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:var(--muted-fg)">
+              <div>Ansvarlig: <span style="color:var(--fg);font-weight:600">${h.ansvarlig}</span></div>
+              <div>Prioritet: <span style="color:${h.prioritet==='Høj'?'var(--destructive)':h.prioritet==='Mellem'?'var(--warning)':'var(--success)'};font-weight:600">${h.prioritet}</span></div>
+            </div>
+            <div style="font-size:10px;color:var(--muted-fg);margin-top:8px">${h.tidspunkt}</div>
+          </div>
+        `).join("")}
+      </div>
+
+      ${sager.length > 0 ? `
+      <div style="border:1px solid rgba(255,255,255,.05);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.015)">
+        <div style="padding:14px 16px;font-size:14px;font-weight:800;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)">Seneste sager fra arkiv</div>
+        ${sager.slice(0,5).map(s => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(59,130,246,.04)'" onmouseout="this.style.background='transparent'" onclick="void openTab('sag',{sagId:'${s.id}',label:'${esc(s.titel||s.sagsnummer)}'})">
+            <div>
+              <div style="font-size:13px;font-weight:700">${s.titel || "Unavngivet"}</div>
+              <div class="mono" style="font-size:10px;color:var(--muted-fg)">${s.sagsnummer} · ${s.oprettetAf} · ${new Date(s.oprettet).toLocaleDateString("da-DK")}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge ${statusColors[s.status]||'badge-muted'}">${statusLabels[s.status]||s.status}</span>
+              <span style="font-size:11px;color:var(--muted-fg)">${(s.mistaenkte||[]).length} mist.</span>
+            </div>
+          </div>
+        `).join("")}
+      </div>` : ''}
+    </div>`;
+
+  container.innerHTML = html;
 }
 
 async function renderRapporter(container) {
@@ -5271,33 +5307,52 @@ async function renderSagEditor(container, data) {
             </select>
           </div>
         </div>
-        <div class="grid grid-3 mb-2">
-          <div class="card card-sm">
-            <div class="label">Total måneder</div>
-            <input class="input" type="number" min="0" value="${m.totalFaengsel || 0}" onchange="setMistaenktNumber(${i}, 'totalFaengsel', this.value)">
-          </div>
-          <div class="card card-sm">
-            <div class="label">Bøde (DKK)</div>
-            <input class="input" type="number" min="0" value="${m.totalBoede || 0}" onchange="setMistaenktNumber(${i}, 'totalBoede', this.value)">
-          </div>
-          <div class="card card-sm">
-            <div class="label">Sigtelser</div>
-            <div style="font-size:22px;font-weight:700">${(m.sigtelser || []).length}</div>
-          </div>
-        </div>
         <div>`;
-      if ((m.sigtelser || []).length === 0) {
-        html += `<div style="font-size:11px;color:var(--muted-fg)">Ingen sigtelser endnu.</div>`;
+      // Group sigtelser by key for x-multiplier display
+      const sigtelser = m.sigtelser || [];
+      if (sigtelser.length === 0) {
+        html += `<div style="font-size:11px;color:var(--muted-fg);padding:8px 0">Ingen sigtelser endnu. Klik "+ Sigtelse" for at tilføje fra bødetakster.</div>`;
       } else {
-        (m.sigtelser || []).forEach((s, si) => {
-          html += `<div class="list-item" style="display:flex;justify-content:space-between;gap:8px">
-            <div>
-              <div style="font-size:12px;font-weight:600">${s.titel || "Ukendt sigtelse"}</div>
-              <div style="font-size:10px;color:var(--muted-fg)">Fængsel: ${s.faengsel || 0} mdr · Bøde: ${s.boede || 0} DKK</div>
-            </div>
-            <button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="removeSigtelseFromMistaenkt(${i}, ${si})">✕</button>
+        const grouped = {};
+        sigtelser.forEach((s, si) => {
+          const key = `${s.lovhenvisning||s.titel||s.beskrivelse||s.title||""}||${Number(s.boede||0)}||${Number(s.faengselsTid||s.faengsel||0)}||${Number(s.klip||0)}`;
+          if (!grouped[key]) grouped[key] = { ...s, count: 0, indices: [] };
+          grouped[key].count++;
+          grouped[key].indices.push(si);
+        });
+        const totalBoede = sigtelser.reduce((a,s) => a + Number(s.boede||0), 0);
+        const totalFaengsel = sigtelser.reduce((a,s) => a + Number(s.faengselsTid||s.faengsel||0), 0);
+        const totalKlip = sigtelser.reduce((a,s) => a + Number(s.klip||0), 0);
+
+        html += `<div style="border:1px solid rgba(255,255,255,.05);border-radius:12px;overflow:hidden;margin-bottom:8px">`;
+        Object.values(grouped).forEach(g => {
+          const lov = g.lovhenvisning || g.titel || g.beskrivelse || g.title || "Ukendt";
+          const besk = g.beskrivelse || g.title || g.titel || "";
+          const perBoede = Number(g.boede||0);
+          const perFaengsel = Number(g.faengselsTid||g.faengsel||0);
+          const perKlip = Number(g.klip||0);
+          const parts = [];
+          if (g.lovhenvisning && g.lovhenvisning !== besk) parts.push(g.lovhenvisning + ' - ' + besk);
+          else parts.push(besk || lov);
+          parts.push(perBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' kr.');
+          if (perKlip) parts.push(perKlip + ' Klip');
+          if (perFaengsel) parts.push(perFaengsel + ' md.');
+
+          html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px">
+            <span style="font-weight:800;color:var(--primary);min-width:28px">x${g.count}</span>
+            <span style="font-weight:600;color:var(--fg);flex:1">| ${parts.join(' - ')}</span>
+            <span class="mono" style="font-weight:700;color:var(--warning);white-space:nowrap">${(perBoede * g.count).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
+            <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px" onclick="removeSigtelseFromMistaenkt(${i}, ${g.indices[g.indices.length-1]})">✕</button>
           </div>`;
         });
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:12px;font-weight:800">
+          <span>Total straf</span>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span class="mono" style="color:var(--warning)">${totalBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
+            ${totalFaengsel ? `<span style="color:var(--destructive)">${totalFaengsel} md.</span>` : ''}
+            ${totalKlip ? `<span class="badge badge-primary">${totalKlip} klip</span>` : ''}
+          </div>
+        </div></div>`;
       }
       html += `</div></div>`;
     });
@@ -5490,19 +5545,16 @@ window.setMistaenktNumber = async function(i, field, value) {
   if (!m) return;
   m[field] = Number(value || 0);
 };
-window.addSigtelseToMistaenkt = async function(i) {
-  const titel = prompt("Navn på sigtelse:");
-  if (!titel) return;
-  const faengsel = prompt("Fængsel i måneder (tal):", "0");
-  const boede = prompt("Bøde i DKK (tal):", "0");
-  const m = window._currentSag.mistaenkte[i];
-  if (!m) return;
-  m.sigtelser = m.sigtelser || [];
-  m.sigtelser.push({ titel, faengsel: Number(faengsel || 0), boede: Number(boede || 0) });
-  m.totalFaengsel = Number(m.totalFaengsel || 0) + Number(faengsel || 0);
-  m.totalBoede = Number(m.totalBoede || 0) + Number(boede || 0);
-  addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + titel);
-  await renderPage(activeTabId);
+window.addSigtelseToMistaenkt = async function(mistaenktIdx) {
+  // Open penalty picker targeting specific suspect
+  window._sigTargetMistaenkt = mistaenktIdx;
+  if (typeof window.openPenaltyPickerForMistaenkt === "function") {
+    window.openPenaltyPickerForMistaenkt(mistaenktIdx);
+  } else if (typeof window.openPenaltyPicker === "function") {
+    window.openPenaltyPicker();
+  } else {
+    showToast("Straffeliste ikke tilgængelig");
+  }
 };
 window.removeSigtelseFromMistaenkt = async function(i, si) {
   const m = window._currentSag.mistaenkte[i];
@@ -9061,6 +9113,107 @@ Andre relevante oplysninger:`
   }
 
   window.closePenaltyPicker = function(){ document.getElementById("penalty-modal")?.remove(); };
+
+  // Penalty picker targeting a specific suspect
+  window.openPenaltyPickerForMistaenkt = function(mistaenktIdx) {
+    const takster = getBoedetaksterLocal();
+    const sag = window._currentSag;
+    if (!sag || !sag.mistaenkte[mistaenktIdx]) { showToast("Mistænkt ikke fundet"); return; }
+    const m = sag.mistaenkte[mistaenktIdx];
+
+    const modal = document.createElement("div");
+    modal.className = "penalty-modal";
+    modal.id = "penalty-modal";
+    modal.innerHTML = `
+      <div class="penalty-box">
+        <div class="penalty-head">
+          <div>
+            <div class="penalty-title">Tilføj sigtelser — ${esc(m.personNavn)}</div>
+            <div class="penalty-sub">Vælg straffe fra bødetakster. Brug +/- for antal.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">Luk</button>
+        </div>
+        <div class="penalty-body">
+          <div class="penalty-toolbar">
+            <input class="input" id="penalty-search-m" placeholder="Søg efter straf, paragraf...">
+            <select class="select" id="penalty-sort-m">
+              <option value="name">Sorter: Navn</option>
+              <option value="fine">Sorter: Bøde</option>
+              <option value="time">Sorter: Fængselstid</option>
+            </select>
+          </div>
+          <div class="penalty-list" id="penalty-list-m"></div>
+        </div>
+      </div>`;
+    modal.addEventListener("click", (e) => { if (e.target === modal) closePenaltyPicker(); });
+    document.body.appendChild(modal);
+
+    function addChargeToSuspect(charge, qty) {
+      qty = Math.max(1, Number(qty || 1));
+      m.sigtelser = m.sigtelser || [];
+      for (let i = 0; i < qty; i++) {
+        m.sigtelser.push({
+          title: charge.beskrivelse || charge.title || "",
+          beskrivelse: charge.beskrivelse || charge.title || "",
+          lovhenvisning: charge.lovhenvisning || charge.paragraf || "",
+          boede: Number(charge.boede || charge.beloeb || 0),
+          faengselsTid: Number(charge.faengselsTid || charge.faengselMaaneder || charge.faengsel || 0),
+          klip: Number(charge.klip || 0)
+        });
+      }
+      m.totalBoede = (m.sigtelser || []).reduce((a,s) => a + Number(s.boede || 0), 0);
+      m.totalFaengsel = (m.sigtelser || []).reduce((a,s) => a + Number(s.faengselsTid || 0), 0);
+      addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
+      if (typeof window._rerenderCharges === "function") window._rerenderCharges();
+      showToast(`Sigtelse tilføjet x${qty} til ${m.personNavn}`);
+    }
+
+    function renderListM() {
+      const q = (document.getElementById("penalty-search-m")?.value || "").toLowerCase();
+      const sort = document.getElementById("penalty-sort-m")?.value || "name";
+      let rows = takster.filter(c => `${c.beskrivelse||c.title||""} ${c.lovhenvisning||c.paragraf||""} ${c.kategori||""}`.toLowerCase().includes(q));
+      rows.sort((a,b) => {
+        if (sort==="fine") return Number(b.boede||b.beloeb||0)-Number(a.boede||a.beloeb||0);
+        if (sort==="time") return Number(b.faengselsTid||b.faengselMaaneder||b.faengsel||0)-Number(a.faengselsTid||a.faengselMaaneder||a.faengsel||0);
+        return String(a.beskrivelse||a.title||"").localeCompare(String(b.beskrivelse||b.title||""),"da");
+      });
+      const grouped = {};
+      rows.forEach(r => { const kat=r.kategori||"Øvrige"; if(!grouped[kat])grouped[kat]=[]; grouped[kat].push(r); });
+      const list = document.getElementById("penalty-list-m");
+      if (!rows.length) { list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted-fg)">Ingen straffe fundet</div>'; return; }
+      list.innerHTML = Object.entries(grouped).map(([kat,items],gIdx) => `
+        <div class="penalty-group">
+          <div class="penalty-group-head" data-groupm="${gIdx}"><span>${kat}</span><span style="font-size:11px;color:var(--muted-fg)">${items.length} straffe ▼</span></div>
+          <div class="penalty-group-body ${q?'open':''}" id="penalty-groupm-${gIdx}">
+            ${items.map((c,idx) => `
+              <div class="penalty-item">
+                <div><div class="penalty-name">${esc(c.paragraf?c.paragraf+" — ":"")}${esc(c.beskrivelse||c.title||"")}</div><div class="penalty-meta">${esc(c.information||"")}</div></div>
+                <div class="penalty-stat"><div class="penalty-stat-label">Bøde</div><div class="penalty-stat-value">${Number(c.boede||c.beloeb||0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</div></div>
+                <div class="penalty-stat"><div class="penalty-stat-label">Fængsel</div><div class="penalty-stat-value">${Number(c.faengselsTid||c.faengselMaaneder||c.faengsel||0)} md.</div></div>
+                <div class="penalty-qty">
+                  <button class="penalty-qty-btn" type="button" data-minusm="${gIdx}-${idx}">−</button>
+                  <input class="penalty-qty-input" type="number" min="1" value="1" data-qtym="${gIdx}-${idx}">
+                  <button class="penalty-qty-btn" type="button" data-plusm="${gIdx}-${idx}">+</button>
+                  <button class="btn btn-primary btn-sm" type="button" data-addm="${gIdx}-${idx}">Tilføj</button>
+                </div>
+              </div>`).join("")}
+          </div>
+        </div>`).join("");
+      list.querySelectorAll("[data-groupm]").forEach(head => { head.addEventListener("click",()=>{ document.getElementById(`penalty-groupm-${head.dataset.groupm}`)?.classList.toggle("open"); }); });
+      Object.entries(grouped).forEach(([kat,items],gIdx) => {
+        items.forEach((charge,idx) => {
+          const key=`${gIdx}-${idx}`;
+          const qty=list.querySelector(`[data-qtym="${key}"]`);
+          list.querySelector(`[data-minusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)-1);});
+          list.querySelector(`[data-plusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)+1);});
+          list.querySelector(`[data-addm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();addChargeToSuspect(charge,qty.value);});
+        });
+      });
+    }
+    document.getElementById("penalty-search-m").addEventListener("input",renderListM);
+    document.getElementById("penalty-sort-m").addEventListener("change",renderListM);
+    renderListM();
+  };
 
   window.openPenaltyPicker = function(){
     const takster = getBoedetaksterLocal();
