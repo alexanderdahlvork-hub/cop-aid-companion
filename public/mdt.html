@@ -9095,6 +9095,107 @@ Andre relevante oplysninger:`
 
   window.closePenaltyPicker = function(){ document.getElementById("penalty-modal")?.remove(); };
 
+  // Penalty picker targeting a specific suspect
+  window.openPenaltyPickerForMistaenkt = function(mistaenktIdx) {
+    const takster = getBoedetaksterLocal();
+    const sag = window._currentSag;
+    if (!sag || !sag.mistaenkte[mistaenktIdx]) { showToast("Mistænkt ikke fundet"); return; }
+    const m = sag.mistaenkte[mistaenktIdx];
+
+    const modal = document.createElement("div");
+    modal.className = "penalty-modal";
+    modal.id = "penalty-modal";
+    modal.innerHTML = `
+      <div class="penalty-box">
+        <div class="penalty-head">
+          <div>
+            <div class="penalty-title">Tilføj sigtelser — ${esc(m.personNavn)}</div>
+            <div class="penalty-sub">Vælg straffe fra bødetakster. Brug +/- for antal.</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">Luk</button>
+        </div>
+        <div class="penalty-body">
+          <div class="penalty-toolbar">
+            <input class="input" id="penalty-search-m" placeholder="Søg efter straf, paragraf...">
+            <select class="select" id="penalty-sort-m">
+              <option value="name">Sorter: Navn</option>
+              <option value="fine">Sorter: Bøde</option>
+              <option value="time">Sorter: Fængselstid</option>
+            </select>
+          </div>
+          <div class="penalty-list" id="penalty-list-m"></div>
+        </div>
+      </div>`;
+    modal.addEventListener("click", (e) => { if (e.target === modal) closePenaltyPicker(); });
+    document.body.appendChild(modal);
+
+    function addChargeToSuspect(charge, qty) {
+      qty = Math.max(1, Number(qty || 1));
+      m.sigtelser = m.sigtelser || [];
+      for (let i = 0; i < qty; i++) {
+        m.sigtelser.push({
+          title: charge.beskrivelse || charge.title || "",
+          beskrivelse: charge.beskrivelse || charge.title || "",
+          lovhenvisning: charge.lovhenvisning || charge.paragraf || "",
+          boede: Number(charge.boede || charge.beloeb || 0),
+          faengselsTid: Number(charge.faengselsTid || charge.faengselMaaneder || charge.faengsel || 0),
+          klip: Number(charge.klip || 0)
+        });
+      }
+      m.totalBoede = (m.sigtelser || []).reduce((a,s) => a + Number(s.boede || 0), 0);
+      m.totalFaengsel = (m.sigtelser || []).reduce((a,s) => a + Number(s.faengselsTid || 0), 0);
+      addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
+      if (typeof window._rerenderCharges === "function") window._rerenderCharges();
+      showToast(`Sigtelse tilføjet x${qty} til ${m.personNavn}`);
+    }
+
+    function renderListM() {
+      const q = (document.getElementById("penalty-search-m")?.value || "").toLowerCase();
+      const sort = document.getElementById("penalty-sort-m")?.value || "name";
+      let rows = takster.filter(c => `${c.beskrivelse||c.title||""} ${c.lovhenvisning||c.paragraf||""} ${c.kategori||""}`.toLowerCase().includes(q));
+      rows.sort((a,b) => {
+        if (sort==="fine") return Number(b.boede||b.beloeb||0)-Number(a.boede||a.beloeb||0);
+        if (sort==="time") return Number(b.faengselsTid||b.faengselMaaneder||b.faengsel||0)-Number(a.faengselsTid||a.faengselMaaneder||a.faengsel||0);
+        return String(a.beskrivelse||a.title||"").localeCompare(String(b.beskrivelse||b.title||""),"da");
+      });
+      const grouped = {};
+      rows.forEach(r => { const kat=r.kategori||"Øvrige"; if(!grouped[kat])grouped[kat]=[]; grouped[kat].push(r); });
+      const list = document.getElementById("penalty-list-m");
+      if (!rows.length) { list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted-fg)">Ingen straffe fundet</div>'; return; }
+      list.innerHTML = Object.entries(grouped).map(([kat,items],gIdx) => `
+        <div class="penalty-group">
+          <div class="penalty-group-head" data-groupm="${gIdx}"><span>${kat}</span><span style="font-size:11px;color:var(--muted-fg)">${items.length} straffe ▼</span></div>
+          <div class="penalty-group-body ${q?'open':''}" id="penalty-groupm-${gIdx}">
+            ${items.map((c,idx) => `
+              <div class="penalty-item">
+                <div><div class="penalty-name">${esc(c.paragraf?c.paragraf+" — ":"")}${esc(c.beskrivelse||c.title||"")}</div><div class="penalty-meta">${esc(c.information||"")}</div></div>
+                <div class="penalty-stat"><div class="penalty-stat-label">Bøde</div><div class="penalty-stat-value">${Number(c.boede||c.beloeb||0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</div></div>
+                <div class="penalty-stat"><div class="penalty-stat-label">Fængsel</div><div class="penalty-stat-value">${Number(c.faengselsTid||c.faengselMaaneder||c.faengsel||0)} md.</div></div>
+                <div class="penalty-qty">
+                  <button class="penalty-qty-btn" type="button" data-minusm="${gIdx}-${idx}">−</button>
+                  <input class="penalty-qty-input" type="number" min="1" value="1" data-qtym="${gIdx}-${idx}">
+                  <button class="penalty-qty-btn" type="button" data-plusm="${gIdx}-${idx}">+</button>
+                  <button class="btn btn-primary btn-sm" type="button" data-addm="${gIdx}-${idx}">Tilføj</button>
+                </div>
+              </div>`).join("")}
+          </div>
+        </div>`).join("");
+      list.querySelectorAll("[data-groupm]").forEach(head => { head.addEventListener("click",()=>{ document.getElementById(`penalty-groupm-${head.dataset.groupm}`)?.classList.toggle("open"); }); });
+      Object.entries(grouped).forEach(([kat,items],gIdx) => {
+        items.forEach((charge,idx) => {
+          const key=`${gIdx}-${idx}`;
+          const qty=list.querySelector(`[data-qtym="${key}"]`);
+          list.querySelector(`[data-minusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)-1);});
+          list.querySelector(`[data-plusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)+1);});
+          list.querySelector(`[data-addm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();addChargeToSuspect(charge,qty.value);});
+        });
+      });
+    }
+    document.getElementById("penalty-search-m").addEventListener("input",renderListM);
+    document.getElementById("penalty-sort-m").addEventListener("change",renderListM);
+    renderListM();
+  };
+
   window.openPenaltyPicker = function(){
     const takster = getBoedetaksterLocal();
     const modal = document.createElement("div");
