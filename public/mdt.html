@@ -5526,19 +5526,16 @@ window.setMistaenktNumber = async function(i, field, value) {
   if (!m) return;
   m[field] = Number(value || 0);
 };
-window.addSigtelseToMistaenkt = async function(i) {
-  const titel = prompt("Navn på sigtelse:");
-  if (!titel) return;
-  const faengsel = prompt("Fængsel i måneder (tal):", "0");
-  const boede = prompt("Bøde i DKK (tal):", "0");
-  const m = window._currentSag.mistaenkte[i];
-  if (!m) return;
-  m.sigtelser = m.sigtelser || [];
-  m.sigtelser.push({ titel, faengsel: Number(faengsel || 0), boede: Number(boede || 0) });
-  m.totalFaengsel = Number(m.totalFaengsel || 0) + Number(faengsel || 0);
-  m.totalBoede = Number(m.totalBoede || 0) + Number(boede || 0);
-  addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + titel);
-  await renderPage(activeTabId);
+window.addSigtelseToMistaenkt = async function(mistaenktIdx) {
+  // Open penalty picker targeting specific suspect
+  window._sigTargetMistaenkt = mistaenktIdx;
+  if (typeof window.openPenaltyPickerForMistaenkt === "function") {
+    window.openPenaltyPickerForMistaenkt(mistaenktIdx);
+  } else if (typeof window.openPenaltyPicker === "function") {
+    window.openPenaltyPicker();
+  } else {
+    showToast("Straffeliste ikke tilgængelig");
+  }
 };
 window.removeSigtelseFromMistaenkt = async function(i, si) {
   const m = window._currentSag.mistaenkte[i];
