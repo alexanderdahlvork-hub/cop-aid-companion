@@ -9270,6 +9270,7 @@ Andre relevante oplysninger:`
       m.totalFaengsel = (m.sigtelser || []).reduce((a,s) => a + Number(s.faengselsTid || 0), 0);
       addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
+      renderPage(activeTabId);
       showToast(`Sigtelse tilføjet x${qty} til ${m.personNavn}`);
     }
 
