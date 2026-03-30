@@ -9044,13 +9044,13 @@ Andre relevante oplysninger:`
         const wrap = document.getElementById("sag-sigtelser-wrap");
         if (!wrap) return;
 
-        const suspects = (sag.mistaenkte || []).filter(m => (m.sigtelser || []).length);
+        const suspects = (sag.mistaenkte || []).map((m, originalIndex) => ({ m, originalIndex })).filter(entry => (entry.m.sigtelser || []).length);
         if (!suspects.length) {
           wrap.innerHTML = `<div class="case-sub">Ingen sigtelser endnu. Vælg en mistænkt og tilføj sigtelser fra bødetakster.</div>`;
           return;
         }
 
-        wrap.innerHTML = suspects.map((m, suspectIdx) => {
+        wrap.innerHTML = suspects.map(({ m, originalIndex }) => {
           const sigtelser = m.sigtelser || [];
           const grouped = {};
           sigtelser.forEach((s, si) => {
@@ -9071,7 +9071,7 @@ Andre relevante oplysninger:`
                   <div style="font-size:13px;font-weight:800">${esc(m.personNavn || 'Ukendt')}</div>
                   <div class="mono" style="font-size:10px;color:var(--muted-fg);margin-top:2px">${esc(m.personCpr || '')}</div>
                 </div>
-                <button class="btn btn-outline btn-sm" onclick="openPenaltyPickerForMistaenkt(${suspectIdx})">+ Sigtelse</button>
+                <button class="btn btn-outline btn-sm" onclick="openPenaltyPickerForMistaenkt(${originalIndex})">+ Sigtelse</button>
               </div>
               ${Object.values(grouped).map(g => {
                 const lov = g.lovhenvisning || g.paragraf || '';
@@ -9090,7 +9090,7 @@ Andre relevante oplysninger:`
                     <span style="font-weight:800;color:var(--primary);min-width:28px">x${g.count}</span>
                     <span style="font-size:12px;font-weight:600;color:var(--fg);flex:1">| ${parts.join(' - ')}</span>
                     <span class="mono" style="font-size:11px;font-weight:700;color:var(--warning);white-space:nowrap">${(perBoede * g.count).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
-                    <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px" onclick="removeSigtelseFromMistaenkt(${suspectIdx}, ${g.indices[g.indices.length-1]})">✕</button>
+                    <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px" onclick="removeSigtelseFromMistaenkt(${originalIndex}, ${g.indices[g.indices.length-1]})">✕</button>
                   </div>`;
               }).join('')}
               <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(59,130,246,.05);font-size:12px;font-weight:800">
