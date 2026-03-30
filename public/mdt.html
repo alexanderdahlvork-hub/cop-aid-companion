@@ -9172,20 +9172,14 @@ Andre relevante oplysninger:`
 
       buildPicker(
         "sag-charge-search","sag-charge-pop",window._sagBoedetakster,
-        c => `<div style="font-size:13px;font-weight:700">${esc(c.beskrivelse || c.title || "")}</div><div style="font-size:11px;color:var(--muted-fg)">${Number(c.boede || 0)} DKK · ${Number(c.faengselsTid || c.faengsel || 0)} md.</div>`,
+        c => `<div style="font-size:13px;font-weight:700">${esc((c.paragraf || c.lovhenvisning || '') ? `${c.paragraf || c.lovhenvisning} - ` : '')}${esc(c.beskrivelse || c.title || '')}</div><div style="font-size:11px;color:var(--muted-fg)">${Number(c.boede || c.beloeb || 0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr. · ${Number(c.faengselsTid || c.faengselMaaneder || c.faengsel || 0)} md.${Number(c.klip || 0) ? ` · ${Number(c.klip || 0)} klip` : ''}</div>`,
         async (c) => {
           if (!sag.mistaenkte.length) { showToast("Tilføj mindst én mistænkt først"); return; }
-          // add charge to all suspects for simplicity
-          sag.mistaenkte.forEach(m => {
-            m.sigtelser = m.sigtelser || [];
-            m.sigtelser.push({
-              title: c.beskrivelse || c.title || "",
-              beskrivelse: c.beskrivelse || c.title || "",
-              boede: Number(c.boede || 0),
-              faengselsTid: Number(c.faengselsTid || c.faengsel || 0)
-            });
-          });
-          renderSigtelserWrap();
+          if (sag.mistaenkte.length === 1) {
+            window.openPenaltyPickerForMistaenkt(0);
+            return;
+          }
+          showToast("Tilføj sigtelser inde på den konkrete mistænkte");
         }
       );
 
