@@ -9043,26 +9043,66 @@ Andre relevante oplysninger:`
       function renderSigtelserWrap() {
         const wrap = document.getElementById("sag-sigtelser-wrap");
         if (!wrap) return;
-        const rows = collectCharges();
-        if (!rows.length) {
-          wrap.innerHTML = `<div class="case-sub">Ingen sigtelser endnu. Vælg sigtelser fra bødetakster ovenfor.</div>`;
+
+        const suspects = (sag.mistaenkte || []).map((m, originalIndex) => ({ m, originalIndex })).filter(entry => (entry.m.sigtelser || []).length);
+        if (!suspects.length) {
+          wrap.innerHTML = `<div class="case-sub">Ingen sigtelser endnu. Vælg en mistænkt og tilføj sigtelser fra bødetakster.</div>`;
           return;
         }
-        const totalBoede = rows.reduce((a,b)=>a+Number(b.boede||0),0);
-        const totalFaengsel = rows.reduce((a,b)=>a+Number(b.faengselsTid||0),0);
-        wrap.innerHTML = `
-          <div class="sag-charge-list">
-            ${rows.map((r, idx) => `<div class="sag-charge-item">
-              <div><strong>${esc(r.beskrivelse||r.title||"")}</strong><div style="font-size:11px;color:var(--muted-fg);margin-top:3px">${esc(r.person||"")}</div></div>
-              <div>${Number(r.boede||0)} DKK</div>
-              <div>${Number(r.faengselsTid||0)} md.</div>
-            </div>`).join("")}
-            <div class="sag-charge-item">
-              <div><strong>Total</strong></div>
-              <div><strong>${totalBoede} DKK</strong></div>
-              <div><strong>${totalFaengsel} md.</strong></div>
-            </div>
-          </div>`;
+
+        wrap.innerHTML = suspects.map(({ m, originalIndex }) => {
+          const sigtelser = m.sigtelser || [];
+          const grouped = {};
+          sigtelser.forEach((s, si) => {
+            const key = `${s.lovhenvisning||s.paragraf||''}||${s.beskrivelse||s.title||''}||${Number(s.boede||0)}||${Number(s.faengselsTid||s.faengsel||0)}||${Number(s.klip||0)}`;
+            if (!grouped[key]) grouped[key] = { ...s, count: 0, indices: [] };
+            grouped[key].count++;
+            grouped[key].indices.push(si);
+          });
+
+          const totalBoede = sigtelser.reduce((a,b)=>a+Number(b.boede||0),0);
+          const totalFaengsel = sigtelser.reduce((a,b)=>a+Number(b.faengselsTid||b.faengsel||0),0);
+          const totalKlip = sigtelser.reduce((a,b)=>a+Number(b.klip||0),0);
+
+          return `
+            <div style="border:1px solid rgba(255,255,255,.06);border-radius:14px;overflow:hidden;margin-bottom:10px;background:rgba(255,255,255,.02)">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.025)">
+                <div>
+                  <div style="font-size:13px;font-weight:800">${esc(m.personNavn || 'Ukendt')}</div>
+                  <div class="mono" style="font-size:10px;color:var(--muted-fg);margin-top:2px">${esc(m.personCpr || '')}</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="openPenaltyPickerForMistaenkt(${originalIndex})">+ Sigtelse</button>
+              </div>
+              ${Object.values(grouped).map(g => {
+                const lov = g.lovhenvisning || g.paragraf || '';
+                const tekst = g.beskrivelse || g.title || 'Ukendt sigtelse';
+                const perBoede = Number(g.boede||0);
+                const perFaengsel = Number(g.faengselsTid||g.faengsel||0);
+                const perKlip = Number(g.klip||0);
+                const parts = [];
+                if (lov) parts.push(`${lov} - ${tekst}`);
+                else parts.push(tekst);
+                parts.push(`${perBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.`);
+                if (perKlip) parts.push(`${perKlip} Klip`);
+                if (perFaengsel) parts.push(`${perFaengsel} md.`);
+                return `
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04)">
+                    <span style="font-weight:800;color:var(--primary);min-width:28px">x${g.count}</span>
+                    <span style="font-size:12px;font-weight:600;color:var(--fg);flex:1">| ${parts.join(' - ')}</span>
+                    <span class="mono" style="font-size:11px;font-weight:700;color:var(--warning);white-space:nowrap">${(perBoede * g.count).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
+                    <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px" onclick="removeSigtelseFromMistaenkt(${originalIndex}, ${g.indices[g.indices.length-1]})">✕</button>
+                  </div>`;
+              }).join('')}
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(59,130,246,.05);font-size:12px;font-weight:800">
+                <span>Total straf</span>
+                <div style="display:flex;gap:12px;align-items:center">
+                  <span class="mono" style="color:var(--warning)">${totalBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
+                  ${totalFaengsel ? `<span style="color:var(--destructive)">${totalFaengsel} md.</span>` : ''}
+                  ${totalKlip ? `<span class="badge badge-primary">${totalKlip} klip</span>` : ''}
+                </div>
+              </div>
+            </div>`;
+        }).join('');
       }
 
       function renderBeviserWrap() {
@@ -9132,20 +9172,14 @@ Andre relevante oplysninger:`
 
       buildPicker(
         "sag-charge-search","sag-charge-pop",window._sagBoedetakster,
-        c => `<div style="font-size:13px;font-weight:700">${esc(c.beskrivelse || c.title || "")}</div><div style="font-size:11px;color:var(--muted-fg)">${Number(c.boede || 0)} DKK · ${Number(c.faengselsTid || c.faengsel || 0)} md.</div>`,
+        c => `<div style="font-size:13px;font-weight:700">${esc((c.paragraf || c.lovhenvisning || '') ? `${c.paragraf || c.lovhenvisning} - ` : '')}${esc(c.beskrivelse || c.title || '')}</div><div style="font-size:11px;color:var(--muted-fg)">${Number(c.boede || c.beloeb || 0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr. · ${Number(c.faengselsTid || c.faengselMaaneder || c.faengsel || 0)} md.${Number(c.klip || 0) ? ` · ${Number(c.klip || 0)} klip` : ''}</div>`,
         async (c) => {
           if (!sag.mistaenkte.length) { showToast("Tilføj mindst én mistænkt først"); return; }
-          // add charge to all suspects for simplicity
-          sag.mistaenkte.forEach(m => {
-            m.sigtelser = m.sigtelser || [];
-            m.sigtelser.push({
-              title: c.beskrivelse || c.title || "",
-              beskrivelse: c.beskrivelse || c.title || "",
-              boede: Number(c.boede || 0),
-              faengselsTid: Number(c.faengselsTid || c.faengsel || 0)
-            });
-          });
-          renderSigtelserWrap();
+          if (sag.mistaenkte.length === 1) {
+            window.openPenaltyPickerForMistaenkt(0);
+            return;
+          }
+          showToast("Tilføj sigtelser inde på den konkrete mistænkte");
         }
       );
 
