@@ -9337,6 +9337,13 @@ Andre relevante oplysninger:`
     modal.addEventListener("click", (e) => { if (e.target === modal) closePenaltyPicker(); });
     document.body.appendChild(modal);
 
+    function updateHeaderStats() {
+      const countEl = document.getElementById("pp-stat-count");
+      const fineEl = document.getElementById("pp-stat-fine");
+      if (countEl) countEl.textContent = (m.sigtelser || []).length;
+      if (fineEl) fineEl.textContent = (m.sigtelser || []).reduce((a,s)=>a+Number(s.boede||0),0).toLocaleString('da-DK');
+    }
+
     function addChargeToSuspect(charge, qty) {
       qty = Math.max(1, Number(qty || 1));
       m.sigtelser = m.sigtelser || [];
@@ -9353,10 +9360,16 @@ Andre relevante oplysninger:`
       m.totalBoede = (m.sigtelser || []).reduce((a,s) => a + Number(s.boede || 0), 0);
       m.totalFaengsel = (m.sigtelser || []).reduce((a,s) => a + Number(s.faengselsTid || 0), 0);
       addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
+      updateHeaderStats();
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
       renderPage(activeTabId);
-      showToast(`Sigtelse tilføjet x${qty} til ${m.personNavn}`);
+      showToast(`✓ ${esc(charge.beskrivelse || charge.title)} x${qty}`);
     }
+
+    const katIcons = {
+      "Færdsel": "🚗", "Narko": "💊", "Våben": "🔫", "Vold": "👊",
+      "Tyveri": "🔓", "Øvrige": "📋", "Orden": "⚖️", "Bedrageri": "💳"
+    };
 
     function renderListM() {
       const q = (document.getElementById("penalty-search-m")?.value || "").toLowerCase();
@@ -9365,35 +9378,79 @@ Andre relevante oplysninger:`
       rows.sort((a,b) => {
         if (sort==="fine") return Number(b.boede||b.beloeb||0)-Number(a.boede||a.beloeb||0);
         if (sort==="time") return Number(b.faengselsTid||b.faengselMaaneder||b.faengsel||0)-Number(a.faengselsTid||a.faengselMaaneder||a.faengsel||0);
+        if (sort==="category") return String(a.kategori||"Øvrige").localeCompare(String(b.kategori||"Øvrige"),"da");
         return String(a.beskrivelse||a.title||"").localeCompare(String(b.beskrivelse||b.title||""),"da");
       });
       const grouped = {};
       rows.forEach(r => { const kat=r.kategori||"Øvrige"; if(!grouped[kat])grouped[kat]=[]; grouped[kat].push(r); });
       const list = document.getElementById("penalty-list-m");
-      if (!rows.length) { list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted-fg)">Ingen straffe fundet</div>'; return; }
-      list.innerHTML = Object.entries(grouped).map(([kat,items],gIdx) => `
+      if (!rows.length) {
+        list.innerHTML = `<div class="penalty-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div style="font-size:13px;font-weight:600">Ingen straffe matcher søgningen</div>
+          <div style="font-size:11px;margin-top:4px">Prøv et andet søgeord</div>
+        </div>`;
+        return;
+      }
+      const sortedKats = Object.keys(grouped).sort((a,b) => a.localeCompare(b,"da"));
+      list.innerHTML = sortedKats.map((kat, gIdx) => {
+        const items = grouped[kat];
+        const icon = katIcons[kat] || "📋";
+        return `
         <div class="penalty-group">
-          <div class="penalty-group-head" data-groupm="${gIdx}"><span>${kat}</span><span style="font-size:11px;color:var(--muted-fg)">${items.length} straffe ▼</span></div>
+          <div class="penalty-group-head" data-groupm="${gIdx}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:16px">${icon}</span>
+              <span>${esc(kat)}</span>
+              <span class="penalty-group-badge">${items.length}</span>
+            </div>
+            <div class="pg-icon ${q?'open':''}" style="color:var(--muted-fg)">▼</div>
+          </div>
           <div class="penalty-group-body ${q?'open':''}" id="penalty-groupm-${gIdx}">
-            ${items.map((c,idx) => `
-              <div class="penalty-item">
-                <div><div class="penalty-name">${esc(c.paragraf?c.paragraf+" — ":"")}${esc(c.beskrivelse||c.title||"")}</div><div class="penalty-meta">${esc(c.information||"")}</div></div>
-                <div class="penalty-stat"><div class="penalty-stat-label">Bøde</div><div class="penalty-stat-value">${Number(c.boede||c.beloeb||0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</div></div>
-                <div class="penalty-stat"><div class="penalty-stat-label">Fængsel</div><div class="penalty-stat-value">${Number(c.faengselsTid||c.faengselMaaneder||c.faengsel||0)} md.</div></div>
-                <div class="penalty-qty">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 100px 80px 70px auto;gap:0;padding:8px 18px 4px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700">
+              <span>Lovovertrædelse</span><span style="text-align:center">Bøde</span><span style="text-align:center">Fængsel</span><span style="text-align:center">Klip</span><span style="text-align:right;padding-right:4px">Handling</span>
+            </div>
+            ${items.map((c,idx) => {
+              const boede = Number(c.boede||c.beloeb||0);
+              const faengsel = Number(c.faengselsTid||c.faengselMaaneder||c.faengsel||0);
+              const klip = Number(c.klip||0);
+              return `
+              <div class="penalty-row">
+                <div>
+                  <div class="penalty-row-name">${esc(c.beskrivelse||c.title||"")}</div>
+                  ${c.paragraf || c.lovhenvisning ? `<div class="penalty-row-para">${esc(c.paragraf||c.lovhenvisning)}</div>` : ''}
+                  ${c.information ? `<div class="penalty-row-info">${esc(c.information)}</div>` : ''}
+                </div>
+                <div class="penalty-cell penalty-cell-warn"><div class="penalty-cell-label">Bøde</div>${boede.toLocaleString('da-DK')} kr.</div>
+                <div class="penalty-cell penalty-cell-danger"><div class="penalty-cell-label">Fængsel</div>${faengsel} md.</div>
+                <div class="penalty-cell penalty-cell-info"><div class="penalty-cell-label">Klip</div>${klip}</div>
+                <div class="penalty-actions">
                   <button class="penalty-qty-btn" type="button" data-minusm="${gIdx}-${idx}">−</button>
                   <input class="penalty-qty-input" type="number" min="1" value="1" data-qtym="${gIdx}-${idx}">
                   <button class="penalty-qty-btn" type="button" data-plusm="${gIdx}-${idx}">+</button>
-                  <button class="btn btn-primary btn-sm" type="button" data-addm="${gIdx}-${idx}">Tilføj</button>
+                  <button class="penalty-add-btn" type="button" data-addm="${gIdx}-${idx}">Tilføj</button>
                 </div>
-              </div>`).join("")}
+              </div>`;
+            }).join("")}
           </div>
-        </div>`).join("");
-      list.querySelectorAll("[data-groupm]").forEach(head => { head.addEventListener("click",()=>{ document.getElementById(`penalty-groupm-${head.dataset.groupm}`)?.classList.toggle("open"); }); });
+        </div>`;
+      }).join("");
+
+      list.querySelectorAll("[data-groupm]").forEach(head => {
+        head.addEventListener("click",()=>{
+          const body = document.getElementById(`penalty-groupm-${head.dataset.groupm}`);
+          const icon = head.querySelector(".pg-icon");
+          body?.classList.toggle("open");
+          icon?.classList.toggle("open");
+        });
+      });
       Object.entries(grouped).forEach(([kat,items],gIdx) => {
+        // gIdx might not match sortedKats order, recalculate
+        const realIdx = sortedKats.indexOf(kat);
         items.forEach((charge,idx) => {
-          const key=`${gIdx}-${idx}`;
+          const key=`${realIdx}-${idx}`;
           const qty=list.querySelector(`[data-qtym="${key}"]`);
+          if (!qty) return;
           list.querySelector(`[data-minusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)-1);});
           list.querySelector(`[data-plusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)+1);});
           list.querySelector(`[data-addm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();addChargeToSuspect(charge,qty.value);});
