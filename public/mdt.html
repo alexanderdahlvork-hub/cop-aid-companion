@@ -9293,22 +9293,42 @@ Andre relevante oplysninger:`
     const modal = document.createElement("div");
     modal.className = "penalty-modal";
     modal.id = "penalty-modal";
+    const currentCharges = (m.sigtelser || []).length;
+    const currentFine = (m.sigtelser || []).reduce((a,s)=>a+Number(s.boede||0),0);
     modal.innerHTML = `
       <div class="penalty-box">
         <div class="penalty-head">
-          <div>
-            <div class="penalty-title">Tilføj sigtelser — ${esc(m.personNavn)}</div>
-            <div class="penalty-sub">Vælg straffe fra bødetakster. Brug +/- for antal.</div>
+          <div class="penalty-head-left">
+            <div class="penalty-head-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 2-6 6v10l6 6 6-6V8z"/><circle cx="14" cy="14" r="2"/></svg>
+            </div>
+            <div>
+              <div class="penalty-title">Sigtelser — ${esc(m.personNavn)}</div>
+              <div class="penalty-sub">Vælg lovovertrædelser fra bødetakster · Brug +/- for antal</div>
+            </div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">Luk</button>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div class="penalty-head-stats">
+              <div class="penalty-head-stat"><div class="penalty-head-stat-val" id="pp-stat-count">${currentCharges}</div><div class="penalty-head-stat-label">Sigtelser</div></div>
+              <div class="penalty-head-stat"><div class="penalty-head-stat-val" id="pp-stat-fine">${currentFine.toLocaleString('da-DK')}</div><div class="penalty-head-stat-label">Total DKK</div></div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()" style="gap:6px">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Luk
+            </button>
+          </div>
         </div>
         <div class="penalty-body">
           <div class="penalty-toolbar">
-            <input class="input" id="penalty-search-m" placeholder="Søg efter straf, paragraf...">
+            <div class="penalty-search-wrap">
+              <div class="penalty-search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <input class="input" id="penalty-search-m" placeholder="Søg paragraf, beskrivelse, kategori...">
+            </div>
             <select class="select" id="penalty-sort-m">
               <option value="name">Sorter: Navn</option>
-              <option value="fine">Sorter: Bøde</option>
+              <option value="fine">Sorter: Højeste bøde</option>
               <option value="time">Sorter: Fængselstid</option>
+              <option value="category">Sorter: Kategori</option>
             </select>
           </div>
           <div class="penalty-list" id="penalty-list-m"></div>
