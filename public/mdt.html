@@ -3304,47 +3304,71 @@ body.theme-light .sag-charge-item{
 .sag-charge-line small{display:block;font-size:11px;color:var(--muted-fg);font-weight:600;margin-top:3px}
 .sag-charge-total{font-size:13px;font-weight:800;text-align:right;white-space:nowrap}
 
-.penalty-modal{position:fixed;inset:0;z-index:1400;background:rgba(2,6,12,.70);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px}
-.penalty-box{width:min(980px,96vw);max-height:86vh;overflow:hidden;border:1px solid rgba(255,255,255,.06);border-radius:22px;background:linear-gradient(180deg, rgba(12,18,30,.98), rgba(8,12,20,.98));box-shadow:0 30px 70px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03)}
-.penalty-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.05)}
-.penalty-title{font-size:20px;font-weight:900;letter-spacing:-0.02em}
-.penalty-sub{font-size:12px;color:var(--muted-fg);margin-top:4px}
-.penalty-body{padding:18px 20px;overflow:auto;max-height:calc(86vh - 84px)}
-.penalty-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:12px;margin-bottom:14px}
-.penalty-list{display:grid;gap:12px}
-.penalty-group{border:1px solid rgba(255,255,255,.05);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.015)}
-.penalty-group-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:800;background:rgba(255,255,255,.02)}
-.penalty-group-body{display:none;padding:10px}
-.penalty-group-body.open{display:grid;gap:10px}
-.penalty-item{display:grid;grid-template-columns:minmax(0,1fr) 120px 120px auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid rgba(255,255,255,.05);border-radius:14px;background:rgba(255,255,255,.02)}
-.penalty-name{font-size:14px;font-weight:800}
-.penalty-meta{font-size:11px;color:var(--muted-fg);margin-top:4px}
-.penalty-stat{border:1px solid rgba(255,255,255,.05);border-radius:12px;background:rgba(255,255,255,.025);padding:10px 12px;text-align:center}
-.penalty-stat-label{font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.penalty-stat-value{font-size:14px;font-weight:800}
-.penalty-qty{display:flex;align-items:center;gap:8px;justify-content:flex-end}
-.penalty-qty-btn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:var(--fg);cursor:pointer;font-weight:800}
-.penalty-qty-input{width:58px;min-height:34px;text-align:center;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:var(--fg)}
+.penalty-modal{position:fixed;inset:0;z-index:1400;background:rgba(2,6,12,.75);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.penalty-box{width:min(1060px,96vw);max-height:90vh;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:linear-gradient(180deg, rgba(14,20,32,.99), rgba(8,12,22,.99));box-shadow:0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04);display:flex;flex-direction:column}
+.penalty-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.015);flex-shrink:0}
+.penalty-head-left{display:flex;align-items:center;gap:14px}
+.penalty-head-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.12));display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+.penalty-title{font-size:18px;font-weight:900;letter-spacing:-0.03em}
+.penalty-sub{font-size:11px;color:var(--muted-fg);margin-top:3px;letter-spacing:.01em}
+.penalty-head-stats{display:flex;gap:16px;align-items:center;margin-right:12px}
+.penalty-head-stat{text-align:center}
+.penalty-head-stat-val{font-size:18px;font-weight:900;color:var(--primary);font-family:var(--font-mono)}
+.penalty-head-stat-label{font-size:9px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.penalty-body{padding:0;overflow:auto;flex:1;min-height:0}
+.penalty-toolbar{display:flex;gap:10px;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.01);position:sticky;top:0;z-index:2;backdrop-filter:blur(8px)}
+.penalty-toolbar .input{flex:1;height:38px;font-size:13px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding-left:36px}
+.penalty-toolbar .select{width:180px;height:38px;font-size:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;flex-shrink:0}
+.penalty-search-wrap{position:relative;flex:1}
+.penalty-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg);pointer-events:none}
+.penalty-list{padding:12px 24px 24px}
+.penalty-group{border:1px solid rgba(255,255,255,.06);border-radius:14px;overflow:hidden;margin-bottom:10px;background:rgba(255,255,255,.01)}
+.penalty-group-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;font-size:13px;font-weight:800;background:rgba(255,255,255,.025);transition:background .15s;user-select:none}
+.penalty-group-head:hover{background:rgba(255,255,255,.05)}
+.penalty-group-head .pg-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:transform .2s}
+.penalty-group-head .pg-icon.open{transform:rotate(180deg)}
+.penalty-group-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(59,130,246,.12);color:var(--primary)}
+.penalty-group-body{display:none;border-top:1px solid rgba(255,255,255,.04)}
+.penalty-group-body.open{display:block}
+.penalty-row{display:grid;grid-template-columns:minmax(0,1fr) 100px 80px 70px auto;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .12s}
+.penalty-row:last-child{border-bottom:none}
+.penalty-row:hover{background:rgba(59,130,246,.04)}
+.penalty-row-name{font-size:13px;font-weight:700;line-height:1.3}
+.penalty-row-para{font-size:10px;color:var(--muted-fg);margin-top:2px;font-family:var(--font-mono)}
+.penalty-row-info{font-size:10px;color:var(--muted-fg);margin-top:1px;font-style:italic}
+.penalty-cell{text-align:center;font-size:12px;font-weight:700;font-family:var(--font-mono)}
+.penalty-cell-label{font-size:8px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;font-family:var(--font-body)}
+.penalty-cell-warn{color:var(--warning)}
+.penalty-cell-danger{color:var(--destructive)}
+.penalty-cell-info{color:var(--primary)}
+.penalty-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.penalty-qty-btn{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--fg);cursor:pointer;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.penalty-qty-btn:hover{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.2);color:var(--primary)}
+.penalty-qty-input{width:42px;height:30px;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--fg);font-size:13px;font-weight:700;font-family:var(--font-mono)}
+.penalty-add-btn{height:30px;padding:0 14px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;border:none;background:linear-gradient(135deg,var(--primary),rgba(59,130,246,.8));color:#fff;transition:all .15s;white-space:nowrap}
+.penalty-add-btn:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.25)}
+.penalty-empty{padding:40px;text-align:center;color:var(--muted-fg)}
+.penalty-empty svg{margin:0 auto 12px;opacity:.4}
 
-body.theme-light .clean-report-card,
-body.theme-light .clean-report-item,
-body.theme-light .clean-pill,
-body.theme-light .sag-charge-row-compact,
-body.theme-light .penalty-group,
-body.theme-light .penalty-item,
-body.theme-light .penalty-stat{
-  border-color:rgba(15,23,42,.08)!important;background:rgba(15,23,42,.02)!important;
-}
-body.theme-light .penalty-box{background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,255,.96))!important;border-color:rgba(15,23,42,.08)!important}
+body.theme-light .penalty-box{background:linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,250,255,.98))!important;border-color:rgba(15,23,42,.1)!important;box-shadow:0 40px 80px rgba(0,0,0,.12)!important}
+body.theme-light .penalty-group{border-color:rgba(15,23,42,.08)!important;background:rgba(15,23,42,.01)!important}
 body.theme-light .penalty-group-head{background:rgba(15,23,42,.03)!important}
-body.theme-light .penalty-qty-btn,body.theme-light .penalty-qty-input{border-color:rgba(15,23,42,.08)!important;background:#fff!important}
+body.theme-light .penalty-group-head:hover{background:rgba(15,23,42,.06)!important}
+body.theme-light .penalty-row{border-color:rgba(15,23,42,.06)!important}
+body.theme-light .penalty-row:hover{background:rgba(59,130,246,.04)!important}
+body.theme-light .penalty-qty-btn,body.theme-light .penalty-qty-input{border-color:rgba(15,23,42,.1)!important;background:#fff!important}
+body.theme-light .penalty-toolbar .input,body.theme-light .penalty-toolbar .select{background:#fff!important;border-color:rgba(15,23,42,.1)!important}
+body.theme-light .penalty-head{background:rgba(15,23,42,.02)!important;border-color:rgba(15,23,42,.08)!important}
 
 @media (max-width:1100px){
   .clean-report-top,.clean-report-grid{grid-template-columns:1fr}
 }
 @media (max-width:900px){
-  .penalty-toolbar{grid-template-columns:1fr}
-  .penalty-item{grid-template-columns:1fr}
+  .penalty-toolbar{flex-direction:column}
+  .penalty-toolbar .select{width:100%}
+  .penalty-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .penalty-row .penalty-cell{display:none}
+  .penalty-row .penalty-cell:first-of-type{display:block}
 }
 
 </style>
@@ -9269,22 +9293,42 @@ Andre relevante oplysninger:`
     const modal = document.createElement("div");
     modal.className = "penalty-modal";
     modal.id = "penalty-modal";
+    const currentCharges = (m.sigtelser || []).length;
+    const currentFine = (m.sigtelser || []).reduce((a,s)=>a+Number(s.boede||0),0);
     modal.innerHTML = `
       <div class="penalty-box">
         <div class="penalty-head">
-          <div>
-            <div class="penalty-title">Tilføj sigtelser — ${esc(m.personNavn)}</div>
-            <div class="penalty-sub">Vælg straffe fra bødetakster. Brug +/- for antal.</div>
+          <div class="penalty-head-left">
+            <div class="penalty-head-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 2-6 6v10l6 6 6-6V8z"/><circle cx="14" cy="14" r="2"/></svg>
+            </div>
+            <div>
+              <div class="penalty-title">Sigtelser — ${esc(m.personNavn)}</div>
+              <div class="penalty-sub">Vælg lovovertrædelser fra bødetakster · Brug +/- for antal</div>
+            </div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">Luk</button>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div class="penalty-head-stats">
+              <div class="penalty-head-stat"><div class="penalty-head-stat-val" id="pp-stat-count">${currentCharges}</div><div class="penalty-head-stat-label">Sigtelser</div></div>
+              <div class="penalty-head-stat"><div class="penalty-head-stat-val" id="pp-stat-fine">${currentFine.toLocaleString('da-DK')}</div><div class="penalty-head-stat-label">Total DKK</div></div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()" style="gap:6px">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Luk
+            </button>
+          </div>
         </div>
         <div class="penalty-body">
           <div class="penalty-toolbar">
-            <input class="input" id="penalty-search-m" placeholder="Søg efter straf, paragraf...">
+            <div class="penalty-search-wrap">
+              <div class="penalty-search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <input class="input" id="penalty-search-m" placeholder="Søg paragraf, beskrivelse, kategori...">
+            </div>
             <select class="select" id="penalty-sort-m">
               <option value="name">Sorter: Navn</option>
-              <option value="fine">Sorter: Bøde</option>
+              <option value="fine">Sorter: Højeste bøde</option>
               <option value="time">Sorter: Fængselstid</option>
+              <option value="category">Sorter: Kategori</option>
             </select>
           </div>
           <div class="penalty-list" id="penalty-list-m"></div>
@@ -9292,6 +9336,13 @@ Andre relevante oplysninger:`
       </div>`;
     modal.addEventListener("click", (e) => { if (e.target === modal) closePenaltyPicker(); });
     document.body.appendChild(modal);
+
+    function updateHeaderStats() {
+      const countEl = document.getElementById("pp-stat-count");
+      const fineEl = document.getElementById("pp-stat-fine");
+      if (countEl) countEl.textContent = (m.sigtelser || []).length;
+      if (fineEl) fineEl.textContent = (m.sigtelser || []).reduce((a,s)=>a+Number(s.boede||0),0).toLocaleString('da-DK');
+    }
 
     function addChargeToSuspect(charge, qty) {
       qty = Math.max(1, Number(qty || 1));
@@ -9309,10 +9360,16 @@ Andre relevante oplysninger:`
       m.totalBoede = (m.sigtelser || []).reduce((a,s) => a + Number(s.boede || 0), 0);
       m.totalFaengsel = (m.sigtelser || []).reduce((a,s) => a + Number(s.faengselsTid || 0), 0);
       addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
+      updateHeaderStats();
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
       renderPage(activeTabId);
-      showToast(`Sigtelse tilføjet x${qty} til ${m.personNavn}`);
+      showToast(`✓ ${esc(charge.beskrivelse || charge.title)} x${qty}`);
     }
+
+    const katIcons = {
+      "Færdsel": "🚗", "Narko": "💊", "Våben": "🔫", "Vold": "👊",
+      "Tyveri": "🔓", "Øvrige": "📋", "Orden": "⚖️", "Bedrageri": "💳"
+    };
 
     function renderListM() {
       const q = (document.getElementById("penalty-search-m")?.value || "").toLowerCase();
@@ -9321,35 +9378,79 @@ Andre relevante oplysninger:`
       rows.sort((a,b) => {
         if (sort==="fine") return Number(b.boede||b.beloeb||0)-Number(a.boede||a.beloeb||0);
         if (sort==="time") return Number(b.faengselsTid||b.faengselMaaneder||b.faengsel||0)-Number(a.faengselsTid||a.faengselMaaneder||a.faengsel||0);
+        if (sort==="category") return String(a.kategori||"Øvrige").localeCompare(String(b.kategori||"Øvrige"),"da");
         return String(a.beskrivelse||a.title||"").localeCompare(String(b.beskrivelse||b.title||""),"da");
       });
       const grouped = {};
       rows.forEach(r => { const kat=r.kategori||"Øvrige"; if(!grouped[kat])grouped[kat]=[]; grouped[kat].push(r); });
       const list = document.getElementById("penalty-list-m");
-      if (!rows.length) { list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted-fg)">Ingen straffe fundet</div>'; return; }
-      list.innerHTML = Object.entries(grouped).map(([kat,items],gIdx) => `
+      if (!rows.length) {
+        list.innerHTML = `<div class="penalty-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div style="font-size:13px;font-weight:600">Ingen straffe matcher søgningen</div>
+          <div style="font-size:11px;margin-top:4px">Prøv et andet søgeord</div>
+        </div>`;
+        return;
+      }
+      const sortedKats = Object.keys(grouped).sort((a,b) => a.localeCompare(b,"da"));
+      list.innerHTML = sortedKats.map((kat, gIdx) => {
+        const items = grouped[kat];
+        const icon = katIcons[kat] || "📋";
+        return `
         <div class="penalty-group">
-          <div class="penalty-group-head" data-groupm="${gIdx}"><span>${kat}</span><span style="font-size:11px;color:var(--muted-fg)">${items.length} straffe ▼</span></div>
+          <div class="penalty-group-head" data-groupm="${gIdx}">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:16px">${icon}</span>
+              <span>${esc(kat)}</span>
+              <span class="penalty-group-badge">${items.length}</span>
+            </div>
+            <div class="pg-icon ${q?'open':''}" style="color:var(--muted-fg)">▼</div>
+          </div>
           <div class="penalty-group-body ${q?'open':''}" id="penalty-groupm-${gIdx}">
-            ${items.map((c,idx) => `
-              <div class="penalty-item">
-                <div><div class="penalty-name">${esc(c.paragraf?c.paragraf+" — ":"")}${esc(c.beskrivelse||c.title||"")}</div><div class="penalty-meta">${esc(c.information||"")}</div></div>
-                <div class="penalty-stat"><div class="penalty-stat-label">Bøde</div><div class="penalty-stat-value">${Number(c.boede||c.beloeb||0).toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</div></div>
-                <div class="penalty-stat"><div class="penalty-stat-label">Fængsel</div><div class="penalty-stat-value">${Number(c.faengselsTid||c.faengselMaaneder||c.faengsel||0)} md.</div></div>
-                <div class="penalty-qty">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 100px 80px 70px auto;gap:0;padding:8px 18px 4px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700">
+              <span>Lovovertrædelse</span><span style="text-align:center">Bøde</span><span style="text-align:center">Fængsel</span><span style="text-align:center">Klip</span><span style="text-align:right;padding-right:4px">Handling</span>
+            </div>
+            ${items.map((c,idx) => {
+              const boede = Number(c.boede||c.beloeb||0);
+              const faengsel = Number(c.faengselsTid||c.faengselMaaneder||c.faengsel||0);
+              const klip = Number(c.klip||0);
+              return `
+              <div class="penalty-row">
+                <div>
+                  <div class="penalty-row-name">${esc(c.beskrivelse||c.title||"")}</div>
+                  ${c.paragraf || c.lovhenvisning ? `<div class="penalty-row-para">${esc(c.paragraf||c.lovhenvisning)}</div>` : ''}
+                  ${c.information ? `<div class="penalty-row-info">${esc(c.information)}</div>` : ''}
+                </div>
+                <div class="penalty-cell penalty-cell-warn"><div class="penalty-cell-label">Bøde</div>${boede.toLocaleString('da-DK')} kr.</div>
+                <div class="penalty-cell penalty-cell-danger"><div class="penalty-cell-label">Fængsel</div>${faengsel} md.</div>
+                <div class="penalty-cell penalty-cell-info"><div class="penalty-cell-label">Klip</div>${klip}</div>
+                <div class="penalty-actions">
                   <button class="penalty-qty-btn" type="button" data-minusm="${gIdx}-${idx}">−</button>
                   <input class="penalty-qty-input" type="number" min="1" value="1" data-qtym="${gIdx}-${idx}">
                   <button class="penalty-qty-btn" type="button" data-plusm="${gIdx}-${idx}">+</button>
-                  <button class="btn btn-primary btn-sm" type="button" data-addm="${gIdx}-${idx}">Tilføj</button>
+                  <button class="penalty-add-btn" type="button" data-addm="${gIdx}-${idx}">Tilføj</button>
                 </div>
-              </div>`).join("")}
+              </div>`;
+            }).join("")}
           </div>
-        </div>`).join("");
-      list.querySelectorAll("[data-groupm]").forEach(head => { head.addEventListener("click",()=>{ document.getElementById(`penalty-groupm-${head.dataset.groupm}`)?.classList.toggle("open"); }); });
+        </div>`;
+      }).join("");
+
+      list.querySelectorAll("[data-groupm]").forEach(head => {
+        head.addEventListener("click",()=>{
+          const body = document.getElementById(`penalty-groupm-${head.dataset.groupm}`);
+          const icon = head.querySelector(".pg-icon");
+          body?.classList.toggle("open");
+          icon?.classList.toggle("open");
+        });
+      });
       Object.entries(grouped).forEach(([kat,items],gIdx) => {
+        // gIdx might not match sortedKats order, recalculate
+        const realIdx = sortedKats.indexOf(kat);
         items.forEach((charge,idx) => {
-          const key=`${gIdx}-${idx}`;
+          const key=`${realIdx}-${idx}`;
           const qty=list.querySelector(`[data-qtym="${key}"]`);
+          if (!qty) return;
           list.querySelector(`[data-minusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)-1);});
           list.querySelector(`[data-plusm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();qty.value=Math.max(1,Number(qty.value||1)+1);});
           list.querySelector(`[data-addm="${key}"]`)?.addEventListener("click",e=>{e.stopPropagation();addChargeToSuspect(charge,qty.value);});
