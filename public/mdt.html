@@ -9496,6 +9496,96 @@ Andre relevante oplysninger:`
     document.getElementById("penalty-search-m").addEventListener("input",renderListM);
     document.getElementById("penalty-sort-m").addEventListener("change",renderListM);
     renderListM();
+
+    // Speed calculator toggle
+    const speedToggle = document.getElementById("pp-speed-toggle");
+    const speedPanel = document.getElementById("pp-speed-panel");
+    let speedOpen = false;
+    let spVt = "by", spGr = 50, spVejarbejde = false;
+    const spVtc = { by:{label:"Byzone",g:[30,40,50,60,70]}, landevej:{label:"Landevej",g:[60,70,80,90]}, motorvej:{label:"Motorvej",g:[80,90,100,110,120,130]} };
+
+    function renderSpeedPanel() {
+      speedPanel.className = "penalty-speed-panel";
+      speedPanel.style.display = "";
+      const curRes = document.getElementById("pp-speed-result");
+      speedPanel.innerHTML = `
+        <div class="speed-inner">
+          <div class="speed-header">
+            <div class="speed-title"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12m-10 0a10 10 0 1 0 20 0a10 10 0 1 0 -20 0"/><path d="M12 12l4 -4"/><path d="M12 7v1"/></svg> Fartbøde-beregner</div>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('pp-speed-panel').style.display='none';document.getElementById('pp-speed-toggle').classList.remove('active')" style="gap:5px;font-size:11px">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Luk
+            </button>
+          </div>
+          <div class="speed-grid">
+            <div class="speed-col">
+              <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Vejtype</div>
+                <div class="speed-vejtype-grid">${["by","landevej","motorvej"].map(v=>`<button class="speed-vejtype-btn ${spVt===v?'active':''}" data-spvt="${v}">${spVtc[v].label}</button>`).join("")}</div>
+              </div>
+              <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Grænse (km/t)</div>
+                <div class="speed-limit-grid">${spVtc[spVt].g.map(g=>`<button class="speed-limit-btn ${spGr===g?'active':''}" data-spgr="${g}">${g}</button>`).join("")}</div>
+              </div>
+              <div class="flex items-center gap-2" style="margin-top:2px">
+                <input type="checkbox" id="pp-sp-vej" ${spVejarbejde?'checked':''}>
+                <label for="pp-sp-vej" style="font-size:11px;color:var(--fg);font-weight:600">Vejarbejde (50% tillæg)</label>
+              </div>
+            </div>
+            <div class="speed-col">
+              <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Målt hastighed (km/t)</div>
+                <input class="input" type="number" id="pp-sp-speed" placeholder="Indtast hastighed..." style="height:40px;font-size:14px;font-weight:700">
+              </div>
+              <button class="btn btn-primary w-full" id="pp-sp-calc" style="height:38px;font-size:13px;font-weight:800">Beregn bøde</button>
+              <div id="pp-speed-result"></div>
+            </div>
+          </div>
+        </div>`;
+
+      speedPanel.querySelectorAll("[data-spvt]").forEach(btn => btn.addEventListener("click",()=>{ spVt=btn.dataset.spvt; spGr=spVtc[spVt].g[Math.floor(spVtc[spVt].g.length/2)]; renderSpeedPanel(); }));
+      speedPanel.querySelectorAll("[data-spgr]").forEach(btn => btn.addEventListener("click",()=>{ spGr=Number(btn.dataset.spgr); renderSpeedPanel(); }));
+      document.getElementById("pp-sp-vej")?.addEventListener("change",e=>{ spVejarbejde=e.target.checked; });
+      document.getElementById("pp-sp-speed")?.addEventListener("keydown",e=>{ if(e.key==="Enter") document.getElementById("pp-sp-calc")?.click(); });
+      document.getElementById("pp-sp-calc")?.addEventListener("click",()=>{
+        const val = parseInt(document.getElementById("pp-sp-speed")?.value);
+        if (isNaN(val)||val<=0) { showToast("Indtast en hastighed"); return; }
+        const res = beregnFartboede(val, spGr, spVt, spVejarbejde);
+        const rd = document.getElementById("pp-speed-result");
+        if (!res) { rd.innerHTML=`<div class="speed-result-card" style="text-align:center;padding:16px"><span style="color:var(--success);font-weight:700">✅ Ingen overskridelse</span></div>`; return; }
+        rd.innerHTML = `
+          <div class="speed-result-card">
+            <div class="speed-result-grid">
+              <div><div class="speed-result-label">Overskridelse</div><div class="speed-result-val" style="color:var(--destructive)">+${res.overskridelse}</div></div>
+              <div><div class="speed-result-label">Bøde</div><div class="speed-result-val" style="color:var(--warning)">${res.boede.toLocaleString('da-DK')}</div></div>
+              <div><div class="speed-result-label">Klip</div><div class="speed-result-val" style="color:var(--primary)">${res.klip}</div></div>
+              <div><div class="speed-result-label">Frakendelse</div><div class="speed-result-val" style="font-size:11px;color:${res.frakendelse?'var(--destructive)':'var(--muted-fg)'}">${res.frakendelse||"Ingen"}</div></div>
+            </div>
+            ${res.faengsel>0?`<div style="margin-top:8px;padding:6px 10px;border-radius:8px;background:rgba(214,54,75,.08);border:1px solid rgba(214,54,75,.15);font-size:11px;font-weight:700;color:var(--destructive);text-align:center">⚠️ Fængselsstraf: ${res.faengsel} måned(er)</div>`:''}
+            <button class="speed-add-charge-btn" id="pp-sp-add">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tilføj fartbøde til sigtelse
+            </button>
+          </div>`;
+        document.getElementById("pp-sp-add")?.addEventListener("click",()=>{
+          const vtLabel = spVtc[spVt].label;
+          addChargeToSuspect({
+            beskrivelse: "Fartoverskridelse: " + val + " km/t i " + spGr + "-zone (" + vtLabel + ")" + (spVejarbejde?" [vejarbejde]":""),
+            lovhenvisning: "FL. §42 - Hastighedsoverskridelse",
+            boede: res.boede,
+            klip: res.klip,
+            faengselsTid: res.faengsel || 0
+          }, 1);
+        });
+      });
+    }
+
+    speedToggle?.addEventListener("click", () => {
+      speedOpen = !speedOpen;
+      if (speedOpen) {
+        speedToggle.classList.add("active");
+        renderSpeedPanel();
+      } else {
+        speedToggle.classList.remove("active");
+        speedPanel.style.display = "none";
+      }
+    });
   };
 
   window.openPenaltyPicker = function(){
