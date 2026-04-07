@@ -3349,6 +3349,37 @@ body.theme-light .sag-charge-item{
 .penalty-add-btn:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.25)}
 .penalty-empty{padding:40px;text-align:center;color:var(--muted-fg)}
 .penalty-empty svg{margin:0 auto 12px;opacity:.4}
+.penalty-speed-btn{height:38px;padding:0 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:linear-gradient(135deg,rgba(214,54,75,.12),rgba(214,54,75,.06));color:var(--destructive);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.penalty-speed-btn:hover{background:linear-gradient(135deg,rgba(214,54,75,.2),rgba(214,54,75,.1));border-color:rgba(214,54,75,.3);transform:translateY(-1px)}
+.penalty-speed-btn.active{background:linear-gradient(135deg,rgba(214,54,75,.25),rgba(214,54,75,.15));border-color:rgba(214,54,75,.4);box-shadow:0 0 12px rgba(214,54,75,.15)}
+.penalty-speed-panel{border-bottom:1px solid rgba(255,255,255,.06);background:rgba(214,54,75,.03);padding:20px 24px;animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;max-height:0;padding:0 24px}to{opacity:1;max-height:500px;padding:20px 24px}}
+.penalty-speed-panel .speed-inner{max-width:680px;margin:0 auto}
+.penalty-speed-panel .speed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.penalty-speed-panel .speed-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.penalty-speed-panel .speed-title svg{color:var(--destructive)}
+.speed-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.speed-col{display:flex;flex-direction:column;gap:10px}
+.speed-vejtype-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.speed-vejtype-btn{padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted-fg);transition:all .12s;text-align:center}
+.speed-vejtype-btn:hover{background:rgba(255,255,255,.06)}
+.speed-vejtype-btn.active{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.3);color:var(--primary)}
+.speed-limit-grid{display:flex;gap:6px;flex-wrap:wrap}
+.speed-limit-btn{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.1);background:transparent;color:var(--muted-fg);font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.speed-limit-btn:hover{border-color:var(--muted-fg)}
+.speed-limit-btn.active{border-color:var(--destructive);background:rgba(214,54,75,.1);color:var(--destructive)}
+.speed-result-card{padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.speed-result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.speed-result-val{font-size:18px;font-weight:900;font-family:var(--font-mono)}
+.speed-result-label{font-size:8px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.speed-add-charge-btn{width:100%;height:34px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--destructive),rgba(214,54,75,.8));color:#fff;font-size:12px;font-weight:800;cursor:pointer;margin-top:10px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.speed-add-charge-btn:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 12px rgba(214,54,75,.25)}
+body.theme-light .penalty-speed-btn{background:linear-gradient(135deg,rgba(214,54,75,.08),rgba(214,54,75,.04))!important;border-color:rgba(214,54,75,.15)!important}
+body.theme-light .penalty-speed-panel{background:rgba(214,54,75,.03)!important;border-color:rgba(15,23,42,.06)!important}
+body.theme-light .speed-vejtype-btn{background:#fff!important;border-color:rgba(15,23,42,.1)!important}
+body.theme-light .speed-limit-btn{border-color:rgba(15,23,42,.15)!important}
+body.theme-light .speed-result-card{background:rgba(15,23,42,.02)!important;border-color:rgba(15,23,42,.08)!important}
+@media(max-width:700px){.speed-grid{grid-template-columns:1fr}.speed-result-grid{grid-template-columns:repeat(2,1fr)}}
 
 body.theme-light .penalty-box{background:linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,250,255,.98))!important;border-color:rgba(15,23,42,.1)!important;box-shadow:0 40px 80px rgba(0,0,0,.12)!important}
 body.theme-light .penalty-group{border-color:rgba(15,23,42,.08)!important;background:rgba(15,23,42,.01)!important}
