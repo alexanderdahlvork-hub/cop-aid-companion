@@ -5841,58 +5841,361 @@ window.saveSag = async function() {
 
 // ═══ FLÅDESTYRING ═══
 
+const FLEET_CATEGORIES = [
+  { id: "almen", label: "Almen Patrulje", prefix: "Bravo", icon: "🚔", pladser: 2 },
+  { id: "mc", label: "Motorcykel", prefix: "Mike", icon: "🏍️", pladser: 1 },
+  { id: "civil", label: "Civil Enhed", prefix: "Charlie", icon: "👁️", pladser: 2 },
+  { id: "k9", label: "K9 Enhed", prefix: "Kilo", icon: "🐕", pladser: 2 },
+  { id: "lima", label: "LIMA", prefix: "Lima", icon: "🛡️", pladser: 4 },
+  { id: "srt", label: "SRT", prefix: "Sierra", icon: "🎯", pladser: 6 },
+  { id: "helikopter", label: "Helikopter", prefix: "Hotel", icon: "🚁", pladser: 2 },
+  { id: "efterforskning", label: "Efterforskning", prefix: "Echo", icon: "🔍", pladser: 3 },
+  { id: "faerdsel", label: "Færdsel", prefix: "Foxtrot", icon: "🚦", pladser: 2 },
+];
+
+window._fleetCollapsed = window._fleetCollapsed || {};
+window._fleetSearch = window._fleetSearch || "";
+
+function getPatrolCategory(p) {
+  const cat = FLEET_CATEGORIES.find(c =>
+    p.kategori?.toLowerCase() === c.id ||
+    p.kategori?.toLowerCase() === c.label.toLowerCase() ||
+    p.navn?.startsWith(c.prefix)
+  );
+  return cat ? cat.id : "andet";
+}
+
 async function renderFlaade(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser patruljer...</span></div>';
   try {
     const patrols = await patruljerApi.getAll();
-    let html = `<div class="flex items-center justify-between mb-3"><div><h2 style="font-size:18px;font-weight:700">Flådestyring</h2><p style="font-size:12px;color:var(--muted-fg)">Patruljer, kapacitet og status i et renere overblik.</p></div><div class="flex gap-2"><span class="badge badge-primary">Bemandede: ${patrols.filter(p=>p.medlemmer.length>0).length}</span><span class="badge badge-success">Ledige: ${patrols.filter(p=>p.status==="ledig").length}</span></div></div>`;
-    const statusColors = {ledig:"badge-success",i_brug:"badge-primary",optaget:"badge-warning",ude_af_drift:"badge-destructive"};
-    const statusLabels = {ledig:"Ledig",i_brug:"I brug",optaget:"Optaget",ude_af_drift:"Ude af drift"};
-    if (patrols.length === 0) html += '<div class="card"><p style="font-size:12px;color:var(--muted-fg)">Ingen patruljer registreret.</p></div>';
-    patrols.forEach(p => {
-      html += `<div class="card card-sm mb-2" style="padding:14px"><div class="flex items-center justify-between"><div><span style="font-size:13px;font-weight:700">${p.navn}</span> <span class="badge ${statusColors[p.status]}">${statusLabels[p.status]}</span><div style="font-size:11px;color:var(--muted-fg);margin-top:4px">${p.medlemmer.length}/${p.pladser} pladser</div></div><div style="font-size:11px;color:var(--muted-fg)">${p.type || "Patrulje"}</div></div>`;
-      if (p.medlemmer.length > 0) {
-        html += '<div style="margin-top:10px;display:grid;gap:6px">';
-        p.medlemmer.forEach(m => { html += `<div class="list-item" style="padding:10px 12px">🛡️ ${m.navn} (${m.badgeNr})</div>`; });
+    window._fleetPatrols = patrols;
+
+    const statusDot = { ledig: "background:#22c55e", i_brug: "background:#3b82f6", optaget: "background:#f59e0b", ude_af_drift: "background:#ef4444" };
+    const statusLabel = { ledig: "Ledig", i_brug: "I brug", optaget: "Optaget", ude_af_drift: "Ude af drift" };
+    const statusBadge = { ledig: "badge-success", i_brug: "badge-primary", optaget: "badge-warning", ude_af_drift: "badge-destructive" };
+
+    const search = window._fleetSearch.toLowerCase();
+    const filtered = patrols.filter(p => {
+      if (!search) return true;
+      return `${p.navn} ${p.medlemmer.map(m=>m.navn+" "+m.badgeNr).join(" ")}`.toLowerCase().includes(search);
+    });
+
+    // Group by category
+    const grouped = {};
+    filtered.forEach(p => {
+      const catId = getPatrolCategory(p);
+      if (!grouped[catId]) grouped[catId] = [];
+      grouped[catId].push(p);
+    });
+
+    const activeCount = patrols.filter(p => p.medlemmer.length > 0).length;
+    const officerCount = patrols.reduce((s, p) => s + p.medlemmer.length, 0);
+
+    let html = `
+      <div style="margin-bottom:16px">
+        <div class="flex items-center justify-between" style="margin-bottom:12px">
+          <div class="flex items-center gap-3">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-alpha, rgba(59,130,246,0.1));display:flex;align-items:center;justify-content:center;font-size:18px">🚔</div>
+            <div>
+              <h2 style="font-size:18px;font-weight:700;margin:0">Flådestyring</h2>
+              <div class="flex items-center gap-3" style="margin-top:2px">
+                <span style="font-size:12px;color:var(--muted-fg)"><b style="color:var(--fg)">${patrols.length}</b> patruljer</span>
+                <span style="font-size:12px;color:var(--muted-fg)"><b style="color:var(--primary)">${activeCount}</b> aktive</span>
+                <span style="font-size:12px;color:var(--muted-fg)"><b style="color:var(--fg)">${officerCount}</b> betjente ude</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="showFleetCreateDialog()">${icons.plus} Ny patrulje</button>
+          </div>
+        </div>
+        <input class="input" id="fleet-search" placeholder="Søg patrulje, betjent eller badge..." value="${window._fleetSearch || ""}" style="background:var(--card);border:1px solid var(--border)">
+      </div>
+    `;
+
+    // Render categories
+    const allCats = [...FLEET_CATEGORIES, { id: "andet", label: "Andet", icon: "📁", prefix: "", pladser: 4 }];
+    allCats.forEach(cat => {
+      const catPatrols = grouped[cat.id];
+      if (!catPatrols || catPatrols.length === 0) return;
+      const isCollapsed = window._fleetCollapsed[cat.id] || false;
+      const catActive = catPatrols.filter(p => p.medlemmer.length > 0).length;
+
+      html += `
+        <div style="margin-bottom:8px">
+          <div onclick="toggleFleetCategory('${cat.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='var(--hover-bg, rgba(128,128,128,0.08))'" onmouseout="this.style.background='transparent'">
+            <div class="flex items-center gap-2" style="gap:10px">
+              <span style="font-size:14px;transition:transform 0.2s;display:inline-block;transform:rotate(${isCollapsed ? '0' : '90'}deg)">▶</span>
+              <span style="font-size:16px">${cat.icon}</span>
+              <span style="font-size:14px;font-weight:600">${cat.label}</span>
+              <span style="font-size:12px;color:var(--muted-fg)">${catPatrols.length} enheder</span>
+            </div>
+            ${catActive > 0 ? `<span class="badge badge-primary" style="font-size:9px">${catActive} aktiv${catActive>1?'e':''}</span>` : ''}
+          </div>
+      `;
+
+      if (!isCollapsed) {
+        html += '<div style="margin-left:8px;margin-top:4px;display:flex;flex-direction:column;gap:6px">';
+        catPatrols.forEach(p => {
+          const isFull = p.medlemmer.length >= p.pladser;
+          const fillPct = Math.round((p.medlemmer.length / p.pladser) * 100);
+          const isMyPatrol = p.medlemmer.some(m => m.badgeNr === currentUser?.badgeNr);
+
+          html += `
+            <div class="card" style="padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin:0;${isMyPatrol ? 'border-left:3px solid var(--primary);' : ''}">
+              <div class="flex items-center justify-between" style="margin-bottom:8px">
+                <div class="flex items-center gap-2" style="gap:8px">
+                  <div style="width:8px;height:8px;border-radius:50%;${statusDot[p.status] || statusDot.ledig}"></div>
+                  <span style="font-size:14px;font-weight:700">${p.navn}</span>
+                  <span class="badge ${statusBadge[p.status]}" style="font-size:9px">${statusLabel[p.status]}</span>
+                  ${isMyPatrol ? '<span class="badge badge-primary" style="font-size:8px">Din patrulje</span>' : ''}
+                </div>
+                <div class="flex items-center gap-2">
+                  <span style="font-size:11px;color:var(--muted-fg);font-family:monospace">${p.medlemmer.length}/${p.pladser}</span>
+                  <select class="select" style="height:26px;font-size:10px;padding:0 6px;border-radius:6px;min-width:auto" onchange="updateFleetStatus('${p.id}',this.value)">
+                    <option value="ledig" ${p.status==="ledig"?"selected":""}>Ledig</option>
+                    <option value="i_brug" ${p.status==="i_brug"?"selected":""}>I brug</option>
+                    <option value="optaget" ${p.status==="optaget"?"selected":""}>Optaget</option>
+                    <option value="ude_af_drift" ${p.status==="ude_af_drift"?"selected":""}>Ude af drift</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Capacity bar -->
+              <div style="margin-bottom:8px">
+                <div style="height:3px;border-radius:3px;background:var(--border);overflow:hidden">
+                  <div style="height:100%;border-radius:3px;width:${fillPct}%;background:${isFull ? 'var(--warning)' : 'var(--primary)'};transition:width 0.3s"></div>
+                </div>
+              </div>
+
+              <!-- Members -->
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:28px">
+                ${p.medlemmer.length === 0 ? '<span style="font-size:11px;color:var(--muted-fg);opacity:0.5;font-style:italic">Ingen tilmeldte</span>' : ''}
+                ${p.medlemmer.map(m => `
+                  <div style="display:inline-flex;align-items:center;gap:6px;background:var(--hover-bg, rgba(128,128,128,0.06));border-radius:6px;padding:4px 10px;font-size:11px">
+                    <span style="font-weight:600">${m.navn}</span>
+                    <span style="color:var(--muted-fg);font-size:10px">#${m.badgeNr}</span>
+                    <button onclick="removeFromFleet('${p.id}','${m.badgeNr}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);font-size:10px;padding:0 2px;opacity:0.5" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.5';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center justify-between">
+                <button onclick="openFleetNote('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:11px;color:${p.bemærkning || p.bemaerkning ? 'var(--primary)' : 'var(--muted-fg)'};opacity:${p.bemærkning || p.bemaerkning ? '1' : '0.5'};display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--hover-bg, rgba(128,128,128,0.08))'" onmouseout="this.style.background='none'">
+                  💬 ${p.bemærkning || p.bemaerkning || 'Tilføj note'}
+                </button>
+                <div class="flex gap-2">
+                  ${!isFull ? `<button class="btn btn-primary btn-sm" style="font-size:10px;height:26px;padding:0 10px;border-radius:6px" onclick="showFleetAddMember('${p.id}')">+ Tilføj</button>` : ''}
+                  ${isMyPatrol ? `<button class="btn btn-outline btn-sm" style="font-size:10px;height:26px;padding:0 10px;border-radius:6px;color:var(--destructive);border-color:var(--destructive)" onclick="leaveFleet('${p.id}')">Forlad</button>` : `<button class="btn btn-outline btn-sm" style="font-size:10px;height:26px;padding:0 10px;border-radius:6px" onclick="joinFleet('${p.id}')">Tilmeld</button>`}
+                  ${p.medlemmer.length === 0 ? `<button onclick="deleteFleetPatrol('${p.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);opacity:0.4;font-size:12px;padding:2px" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--muted-fg)'" title="Slet">🗑️</button>` : ''}
+                </div>
+              </div>
+              ${(p.bemærkning || p.bemaerkning) ? `<div style="margin-top:6px;font-size:10px;color:var(--muted-fg);font-style:italic;padding-left:2px">📝 ${p.bemærkning || p.bemaerkning}</div>` : ''}
+            </div>
+          `;
+        });
         html += '</div>';
       }
-      html += `</div>`;
-    });
-    container.innerHTML = html;
-  } catch (err) { container.innerHTML = `<p style="color:var(--destructive)">Fejl: ${err.message}</p>`; }
-}
 
-
-// ═══ AKTIV PATRULJE / KORT ═══
-async function renderKort(container) {
-  container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser patruljer...</span></div>';
-  try {
-    const patruljer = await patruljerApi.getAll();
-    const statusColors = {ledig:"dot-success",i_brug:"dot-primary",optaget:"dot-warning",ude_af_drift:"dot-destructive"};
-    let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3">${icons.radio}<h1 style="font-size:18px;font-weight:700">Aktive Patruljer</h1></div><button class="btn btn-primary btn-sm" onclick="showPatruljeForm()">${icons.plus} Opret patrulje</button></div>`;
-    html += `<div class="grid grid-4 mb-3"><div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono">${patruljer.length}</div><div class="stat-label">Total</div></div><div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value mono" style="color:var(--success)">${patruljer.filter(p=>p.status==="ledig").length}</div><div class="stat-label">Ledige</div></div><div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono" style="color:var(--primary)">${patruljer.filter(p=>p.status==="i_brug").length}</div><div class="stat-label">I brug</div></div><div class="stat-card"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value mono" style="color:var(--warning)">${patruljer.filter(p=>p.status==="optaget").length}</div><div class="stat-label">Optaget</div></div></div>`;
-    patruljer.forEach(p => {
-      html += `<div class="card card-sm mb-2"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="dot ${statusColors[p.status]||'dot-success'}"></div><span style="font-size:14px;font-weight:600">${p.navn}</span><span class="badge badge-muted">${p.kategori||"Standard"}</span></div><div class="flex items-center gap-3"><span style="font-size:11px;color:var(--muted-fg)">${p.medlemmer.length}/${p.pladser}</span><select class="select" style="height:28px;font-size:10px" onchange="updatePatruljeStatus('${p.id}',this.value)"><option value="ledig" ${p.status==="ledig"?"selected":""}>Ledig</option><option value="i_brug" ${p.status==="i_brug"?"selected":""}>I brug</option><option value="optaget" ${p.status==="optaget"?"selected":""}>Optaget</option><option value="ude_af_drift" ${p.status==="ude_af_drift"?"selected":""}>Ude af drift</option></select><button class="btn btn-ghost btn-sm" onclick="joinPatrulje('${p.id}')">Tilmeld</button><button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="leavePatrulje('${p.id}')">Forlad</button></div></div>`;
-      if (p.medlemmer.length>0) { html+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">'; p.medlemmer.forEach(m=>{html+=`<span class="badge badge-primary">🛡️ ${m.navn} (${m.badgeNr})</span>`;});html+='</div>'; }
-      if (p.bemaerkning) html+=`<div style="margin-top:6px;font-size:11px;color:var(--muted-fg);font-style:italic">📝 ${p.bemaerkning}</div>`;
       html += '</div>';
     });
-    if (patruljer.length===0) html+='<div class="loading-center" style="min-height:200px"><p>Ingen patruljer oprettet</p></div>';
+
+    if (filtered.length === 0 && patrols.length > 0) {
+      html += '<div style="text-align:center;padding:40px 0;color:var(--muted-fg)"><p style="font-size:13px">Ingen patruljer matcher din søgning</p><button class="btn btn-ghost btn-sm" onclick="window._fleetSearch=\'\';renderFlaade(document.getElementById(\'content-area\'))">Nulstil</button></div>';
+    }
+
+    if (patrols.length === 0) {
+      html += `<div style="text-align:center;padding:60px 0;color:var(--muted-fg)"><div style="font-size:32px;opacity:0.2;margin-bottom:12px">🚔</div><p style="font-size:14px;font-weight:600">Ingen patruljer oprettet</p><button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="showFleetCreateDialog()">Opret patrulje</button></div>`;
+    }
+
     container.innerHTML = html;
-    window._kortPatruljer = patruljer;
+
+    document.getElementById("fleet-search")?.addEventListener("input", (e) => {
+      window._fleetSearch = e.target.value;
+      renderFlaade(container);
+    });
   } catch (err) { container.innerHTML = `<p style="color:var(--destructive)">Fejl: ${err.message}</p>`; }
 }
 
-window.showPatruljeForm = function() {
-  const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
-  overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Opret patrulje</div><div class="label">Navn</div><input class="input mb-2" id="np2-navn" placeholder="F.eks. Patrulje Alpha"><div class="grid grid-2 gap-2 mb-2"><div><div class="label">Kategori</div><select class="select w-full" id="np2-kat"><option value="bil">Bil</option><option value="mc">MC</option><option value="fod">Fod</option><option value="civil">Civil</option></select></div><div><div class="label">Antal pladser</div><input class="input" id="np2-pladser" type="number" value="4" min="1"></div></div><div class="label">Bemærkning</div><textarea class="textarea mb-2" id="np2-bem" rows="2"></textarea><div class="flex gap-2"><button class="btn btn-primary" id="np2-submit">Opret</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+window.toggleFleetCategory = function(catId) {
+  window._fleetCollapsed[catId] = !window._fleetCollapsed[catId];
+  renderFlaade(document.getElementById("content-area"));
+};
+
+window.showFleetCreateDialog = function() {
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  let catHtml = FLEET_CATEGORIES.map(c => `
+    <button class="fleet-cat-btn" data-id="${c.id}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;border:2px solid var(--border);background:var(--card);cursor:pointer;text-align:left;transition:all 0.15s;width:100%" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="if(!this.classList.contains('selected'))this.style.borderColor='var(--border)'" onclick="selectFleetCat(this,'${c.id}')">
+      <span style="font-size:20px">${c.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700">${c.label}</div>
+        <div style="font-size:10px;color:var(--muted-fg)">${c.prefix} · ${c.pladser} pladser</div>
+      </div>
+    </button>
+  `).join('');
+
+  overlay.innerHTML = `<div class="dialog" style="max-width:480px">
+    <div class="dialog-title">Opret patrulje</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:300px;overflow-y:auto;padding-right:4px;margin-bottom:12px" id="fleet-cat-grid">${catHtml}</div>
+    <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15);cursor:pointer;margin-bottom:12px">
+      <input type="checkbox" id="fleet-auto-join" checked style="accent-color:var(--primary)">
+      <div><div style="font-size:12px;font-weight:600">Tilmeld mig automatisk</div><div style="font-size:10px;color:var(--muted-fg)">#${currentUser?.badgeNr} — ${currentUser?.fornavn} ${currentUser?.efternavn}</div></div>
+    </label>
+    <button class="btn btn-primary w-full" id="fleet-create-btn" disabled>Opret</button>
+    <button class="btn btn-outline w-full" style="margin-top:6px" onclick="this.closest('.dialog-overlay').remove()">Annuller</button>
+  </div>`;
   document.body.appendChild(overlay);
-  document.getElementById("np2-submit").addEventListener("click", async ()=>{
-    const p = {id:Date.now().toString(),navn:document.getElementById("np2-navn").value,kategori:document.getElementById("np2-kat").value,pladser:parseInt(document.getElementById("np2-pladser").value)||4,medlemmer:[],status:"ledig",bemaerkning:document.getElementById("np2-bem").value};
-    if(!p.navn){showToast("Udfyld navn");return;}
-    try{await patruljerApi.create(p);showToast("Patrulje oprettet");overlay.remove();renderPage(activeTabId);}catch(e){showToast("Fejl: "+e.message);}
+
+  window._selectedFleetCat = null;
+  document.getElementById("fleet-create-btn").addEventListener("click", async () => {
+    if (!window._selectedFleetCat) return;
+    const cat = FLEET_CATEGORIES.find(c => c.id === window._selectedFleetCat);
+    if (!cat) return;
+    const existing = (window._fleetPatrols || []).filter(p => p.navn?.startsWith(cat.prefix + " ")).map(p => parseInt(p.navn.replace(cat.prefix + " ", ""))).filter(n => !isNaN(n));
+    const num = existing.length === 0 ? 1 : Math.max(...existing) + 1;
+    const autoJoin = document.getElementById("fleet-auto-join")?.checked;
+    const medlemmer = autoJoin && currentUser ? [{ badgeNr: currentUser.badgeNr, navn: `${currentUser.fornavn} ${currentUser.efternavn}` }] : [];
+    const p = { id: Date.now().toString(), navn: `${cat.prefix} ${num}`, kategori: cat.id, pladser: cat.pladser, medlemmer, status: medlemmer.length > 0 ? "i_brug" : "ledig", bemaerkning: "" };
+    try { await patruljerApi.create(p); showToast(`${p.navn} oprettet`); overlay.remove(); renderFlaade(document.getElementById("content-area")); } catch (e) { showToast("Fejl: " + e.message); }
   });
 };
+
+window.selectFleetCat = function(btn, id) {
+  document.querySelectorAll(".fleet-cat-btn").forEach(b => { b.classList.remove("selected"); b.style.borderColor = "var(--border)"; });
+  btn.classList.add("selected");
+  btn.style.borderColor = "var(--primary)";
+  window._selectedFleetCat = id;
+  document.getElementById("fleet-create-btn").disabled = false;
+};
+
+window.showFleetAddMember = async function(patrolId) {
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  const patrol = (window._fleetPatrols || []).find(p => p.id === patrolId);
+  let betjente = [];
+  try { betjente = await betjenteApi.getAll(); } catch {}
+  betjente = betjente.filter(b => !patrol?.medlemmer.some(m => m.badgeNr === b.badgeNr));
+
+  overlay.innerHTML = `<div class="dialog" style="max-width:380px">
+    <div class="dialog-title">Tilføj til ${patrol?.navn || 'patrulje'}</div>
+    <input class="input mb-2" id="fleet-member-search" placeholder="Søg betjent...">
+    <div id="fleet-member-list" style="max-height:260px;overflow-y:auto"></div>
+    <button class="btn btn-outline w-full" style="margin-top:8px" onclick="this.closest('.dialog-overlay').remove()">Luk</button>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  function renderList(q) {
+    const f = betjente.filter(b => !q || `${b.badgeNr} ${b.fornavn} ${b.efternavn} ${b.rang}`.toLowerCase().includes(q.toLowerCase()));
+    const listEl = document.getElementById("fleet-member-list");
+    if (!listEl) return;
+    listEl.innerHTML = f.length === 0 ? '<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px">Ingen fundet</p>' :
+      f.map(b => `<button onclick="addFleetMember('${patrolId}','${b.badgeNr}','${b.fornavn} ${b.efternavn}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;border:none;background:none;cursor:pointer;text-align:left" onmouseover="this.style.background='var(--hover-bg, rgba(128,128,128,0.08))'" onmouseout="this.style.background='none'">
+        <div class="flex items-center gap-2"><div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.1);display:flex;align-items:center;justify-content:center;font-size:10px">🛡️</div><div><div style="font-size:11px;font-weight:600">${b.fornavn} ${b.efternavn}</div><div style="font-size:9px;color:var(--muted-fg)">#${b.badgeNr} · ${b.rang}</div></div></div>
+        <span style="font-size:12px;color:var(--primary)">+</span>
+      </button>`).join('');
+  }
+  renderList("");
+  document.getElementById("fleet-member-search")?.addEventListener("input", e => renderList(e.target.value));
+};
+
+window.addFleetMember = async function(patrolId, badgeNr, navn) {
+  try {
+    const patrols = await patruljerApi.getAll();
+    const p = patrols.find(pp => pp.id === patrolId);
+    if (!p) return;
+    if (p.medlemmer.length >= p.pladser) { showToast("Patruljen er fuld"); return; }
+    if (p.medlemmer.some(m => m.badgeNr === badgeNr)) { showToast("Allerede tilmeldt"); return; }
+    p.medlemmer.push({ badgeNr, navn });
+    p.status = "i_brug";
+    await patruljerApi.update(patrolId, p);
+    showToast(`${navn} tilmeldt`);
+    document.querySelector(".dialog-overlay")?.remove();
+    renderFlaade(document.getElementById("content-area"));
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.removeFromFleet = async function(patrolId, badgeNr) {
+  try {
+    const patrols = await patruljerApi.getAll();
+    const p = patrols.find(pp => pp.id === patrolId);
+    if (!p) return;
+    p.medlemmer = p.medlemmer.filter(m => m.badgeNr !== badgeNr);
+    if (p.medlemmer.length === 0) p.status = "ledig";
+    await patruljerApi.update(patrolId, p);
+    showToast("Fjernet");
+    renderFlaade(document.getElementById("content-area"));
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.joinFleet = async function(id) {
+  try {
+    const patrols = await patruljerApi.getAll();
+    const p = patrols.find(pp => pp.id === id);
+    if (!p) return;
+    if (p.medlemmer.find(m => m.badgeNr === currentUser.badgeNr)) { showToast("Allerede tilmeldt"); return; }
+    if (p.medlemmer.length >= p.pladser) { showToast("Fuld"); return; }
+    p.medlemmer.push({ badgeNr: currentUser.badgeNr, navn: `${currentUser.fornavn} ${currentUser.efternavn}` });
+    p.status = "i_brug";
+    await patruljerApi.update(id, p);
+    showToast("Tilmeldt");
+    renderFlaade(document.getElementById("content-area"));
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.leaveFleet = async function(id) {
+  try {
+    const patrols = await patruljerApi.getAll();
+    const p = patrols.find(pp => pp.id === id);
+    if (!p) return;
+    p.medlemmer = p.medlemmer.filter(m => m.badgeNr !== currentUser.badgeNr);
+    if (p.medlemmer.length === 0) p.status = "ledig";
+    await patruljerApi.update(id, p);
+    showToast("Forladt");
+    renderFlaade(document.getElementById("content-area"));
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.updateFleetStatus = async function(id, status) {
+  try {
+    const patrols = await patruljerApi.getAll();
+    const p = patrols.find(pp => pp.id === id);
+    if (!p) return;
+    p.status = status;
+    await patruljerApi.update(id, p);
+    showToast("Status opdateret");
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.deleteFleetPatrol = async function(id) {
+  try {
+    await patruljerApi.remove(id);
+    showToast("Patrulje slettet");
+    renderFlaade(document.getElementById("content-area"));
+  } catch (e) { showToast("Fejl: " + e.message); }
+};
+
+window.openFleetNote = function(patrolId) {
+  const p = (window._fleetPatrols || []).find(pp => pp.id === patrolId);
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog" style="max-width:380px">
+    <div class="dialog-title">Note — ${p?.navn || ''}</div>
+    <textarea class="textarea" id="fleet-note-input" rows="3" style="resize:none">${p?.bemærkning || p?.bemaerkning || ''}</textarea>
+    <div class="flex gap-2" style="margin-top:8px"><button class="btn btn-primary" id="fleet-note-save">Gem</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div>
+  </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("fleet-note-save")?.addEventListener("click", async () => {
+    const note = document.getElementById("fleet-note-input")?.value || "";
+    try {
+      await patruljerApi.update(patrolId, { bemærkning: note, bemaerkning: note });
+      showToast("Note gemt");
+      overlay.remove();
+      renderFlaade(document.getElementById("content-area"));
+    } catch (e) { showToast("Fejl: " + e.message); }
+  });
+};
+
+// Keep old functions working for "Aktiv Patrulje" page
 window.joinPatrulje = async function(id) {
   try { const ps = window._kortPatruljer||await patruljerApi.getAll(); const p=ps.find(pp=>pp.id===id); if(!p)return;
   if(p.medlemmer.find(m=>m.badgeNr===currentUser.badgeNr)){showToast("Allerede tilmeldt");return;}
