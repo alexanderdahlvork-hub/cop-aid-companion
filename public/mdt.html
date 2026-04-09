@@ -5887,6 +5887,7 @@ async function renderFlaade(container) {
         <input class="input" id="fleet-new-cat" placeholder="Ny kategori navn" style="max-width:180px;height:34px;font-size:12px;background:var(--card);border:1px solid var(--border)">
         <button class="btn btn-primary btn-sm" onclick="addFleetCategory()" style="height:34px;font-size:12px;padding:0 16px">Tilføj Kategori</button>
         <div style="flex:1"></div>
+        <button class="btn btn-outline btn-sm" onclick="showCreateFleetGroup()" style="height:34px;font-size:12px;padding:0 14px;display:flex;align-items:center;gap:6px">👥 Opret Opgavegruppe</button>
         <button class="btn btn-outline btn-sm" onclick="saveFleetData()" style="height:34px;font-size:12px;padding:0 14px;display:flex;align-items:center;gap:6px">💾 Gem</button>
       </div>
 
@@ -5931,6 +5932,13 @@ async function renderFlaade(container) {
     allCats.forEach(cat => {
       html += renderFleetCategory(cat, grouped[cat.id] || []);
     });
+
+    // Render task groups
+    const groupsHtml = renderFleetGroups();
+    if (groupsHtml) {
+      html += `<div style="margin-top:16px;margin-bottom:8px;font-size:14px;font-weight:700;color:var(--fg);display:flex;align-items:center;gap:8px">👥 Opgavegrupper</div>`;
+      html += groupsHtml;
+    }
 
     container.innerHTML = html;
 
@@ -6278,6 +6286,235 @@ window.openFleetNote = function(patrolId) {
       renderFlaade(document.getElementById("content-area"));
     } catch (e) { showToast("Fejl: " + e.message); }
   });
+};
+
+// ═══ OPGAVEGRUPPER ═══
+
+const FLEET_GROUP_ACTIONS = [
+  "Eftersættelse", "Ransagning", "Vejspærring", "Demonstration",
+  "Anholdelsesoperation", "Overvågning", "Eskorte", "Razzia",
+  "Trafikuheld", "Personeftersøgning", "Bevogtning", "Frihedsberøvelse",
+];
+
+window._fleetGroups = window._fleetGroups || JSON.parse(localStorage.getItem("fleet_grupper") || "[]");
+
+function saveFleetGroups() {
+  localStorage.setItem("fleet_grupper", JSON.stringify(window._fleetGroups));
+}
+
+function renderFleetGroups() {
+  const groups = window._fleetGroups || [];
+  const patrols = window._fleetPatrols || [];
+  if (groups.length === 0) return '';
+
+  return groups.map(g => {
+    const memberPatrols = g.patruljeIds.map(pid => patrols.find(p => p.id === pid)).filter(Boolean);
+    const totalOfficers = memberPatrols.reduce((s, p) => s + p.medlemmer.length, 0);
+
+    return `
+    <div style="margin-bottom:10px;border:2px solid rgba(59,130,246,0.25);border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(59,130,246,0.06) 0%, transparent 100%)">
+      <!-- Group Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(59,130,246,0.15)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">👥</div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:13px;font-weight:700;color:var(--fg)">${g.navn}</span>
+              <span style="font-size:9px;font-weight:600;background:rgba(59,130,246,0.12);color:var(--primary);padding:2px 8px;border-radius:10px;border:1px solid rgba(59,130,246,0.2)">${g.aktion}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+              <span style="font-size:9px;color:var(--primary);opacity:0.8;display:flex;align-items:center;gap:3px;background:rgba(59,130,246,0.06);padding:1px 6px;border-radius:8px;border:1px solid rgba(59,130,246,0.15)">📻 ${g.radioKanal}</span>
+              <span style="font-size:10px;color:var(--muted-fg)">${g.patruljeIds.length} enheder · ${totalOfficers} betjente</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button onclick="showAddPatrolToGroup('${g.id}')" style="padding:4px 6px;border-radius:6px;border:none;background:none;cursor:pointer;color:rgba(59,130,246,0.6);font-size:14px" title="Tilføj patrulje" onmouseover="this.style.background='rgba(59,130,246,0.1)';this.style.color='var(--primary)'" onmouseout="this.style.background='none';this.style.color='rgba(59,130,246,0.6)'">+</button>
+          <button onclick="deleteFleetGroup('${g.id}')" style="padding:4px 6px;border-radius:6px;border:none;background:none;cursor:pointer;color:var(--muted-fg);opacity:0.4;font-size:12px" title="Slet gruppe" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--muted-fg)'">🗑️</button>
+        </div>
+      </div>
+
+      <!-- Patrols in group -->
+      <div style="padding:4px 8px">
+        ${memberPatrols.length === 0 ? `<p style="font-size:11px;color:var(--muted-fg);opacity:0.5;font-style:italic;text-align:center;padding:10px">Ingen patruljer tilknyttet</p>` : ''}
+        ${memberPatrols.map(p => {
+          const isLeder = p.id === g.lederId;
+          const statusColors = { ledig: '#22c55e', i_brug: '#3b82f6', optaget: '#f59e0b', ude_af_drift: '#ef4444' };
+          const dotColor = statusColors[p.status] || '#888';
+          return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;margin:2px 0;${isLeder ? 'background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15)' : 'border:1px solid transparent'}" onmouseover="if(!${isLeder})this.style.background='rgba(128,128,128,0.04)'" onmouseout="if(!${isLeder})this.style.background='none'">
+            <div style="display:flex;align-items:center;gap:8px">
+              ${isLeder ? '<span style="font-size:12px" title="Gruppeleder">👑</span>' : ''}
+              <div style="width:7px;height:7px;border-radius:50%;background:${dotColor}"></div>
+              <div>
+                <span style="font-size:12px;font-weight:600;color:var(--fg)">${p.navn}</span>
+                <span style="font-size:10px;color:var(--muted-fg);margin-left:8px">${p.medlemmer.map(m => m.navn).join(', ') || 'Tom'}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              ${groups.length > 0 ? `<button onclick="movePatrolBetweenGroups('${p.id}','${g.id}')" style="padding:3px;border-radius:4px;border:none;background:none;cursor:pointer;color:var(--muted-fg);opacity:0.5;font-size:10px" title="Flyt til anden gruppe" onmouseover="this.style.opacity='1';this.style.color='var(--primary)'" onmouseout="this.style.opacity='0.5';this.style.color='var(--muted-fg)'">↔</button>` : ''}
+              <button onclick="removePatrolFromGroup('${p.id}','${g.id}')" style="padding:3px;border-radius:4px;border:none;background:none;cursor:pointer;color:var(--muted-fg);opacity:0.4;font-size:10px" title="Fjern fra gruppe" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--muted-fg)'">✕</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.showCreateFleetGroup = function() {
+  const patrols = window._fleetPatrols || [];
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog" style="max-width:420px">
+    <div class="dialog-title">Opret Opgavegruppe</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input class="input" id="grp-navn" placeholder="Gruppenavn (f.eks. Alpha Team)">
+      <select class="select" id="grp-aktion">
+        <option value="">Vælg aktion</option>
+        ${FLEET_GROUP_ACTIONS.map(a => `<option value="${a}">${a}</option>`).join('')}
+      </select>
+      <input class="input" id="grp-radio" placeholder="Radiokanal (f.eks. TAC-3)">
+      <select class="select" id="grp-leder">
+        <option value="">Vælg leder (patrulje)</option>
+        ${patrols.map(p => `<option value="${p.id}">${p.navn} (${p.medlemmer.map(m=>m.navn).join(', ')||'Tom'})</option>`).join('')}
+      </select>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--muted-fg);margin-bottom:4px;display:block">Tilføj patruljer</label>
+        <div id="grp-patrol-list" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
+          ${patrols.map(p => `
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(128,128,128,0.06)" onmouseover="this.style.background='rgba(128,128,128,0.04)'" onmouseout="this.style.background='none'">
+              <input type="checkbox" value="${p.id}" class="grp-patrol-cb" style="accent-color:var(--primary)">
+              <span style="font-size:12px;font-weight:500">${p.navn}</span>
+              <span style="font-size:10px;color:var(--muted-fg);margin-left:auto">${p.medlemmer.length}/${p.pladser}</span>
+            </label>
+          `).join('')}
+          ${patrols.length === 0 ? '<p style="font-size:11px;color:var(--muted-fg);text-align:center;padding:16px">Ingen patruljer oprettet endnu</p>' : ''}
+        </div>
+      </div>
+      <div class="flex gap-2" style="margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="createFleetGroup()">Opret Gruppe</button>
+        <button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+};
+
+window.createFleetGroup = function() {
+  const navn = document.getElementById("grp-navn")?.value?.trim();
+  const aktion = document.getElementById("grp-aktion")?.value;
+  const radio = document.getElementById("grp-radio")?.value?.trim();
+  const lederId = document.getElementById("grp-leder")?.value;
+  const checkboxes = document.querySelectorAll(".grp-patrol-cb:checked");
+  const patruljeIds = Array.from(checkboxes).map(cb => cb.value);
+
+  if (!navn) { showToast("Angiv et gruppenavn"); return; }
+  if (!aktion) { showToast("Vælg en aktion"); return; }
+  if (!radio) { showToast("Angiv en radiokanal"); return; }
+
+  const lederPatrol = (window._fleetPatrols || []).find(p => p.id === lederId);
+  const group = {
+    id: Date.now().toString(),
+    navn,
+    aktion,
+    radioKanal: radio,
+    lederId: lederId || '',
+    lederNavn: lederPatrol ? lederPatrol.navn : '',
+    patruljeIds: patruljeIds.length > 0 ? patruljeIds : (lederId ? [lederId] : [])
+  };
+
+  // Ensure leader is in patrol list
+  if (lederId && !group.patruljeIds.includes(lederId)) {
+    group.patruljeIds.unshift(lederId);
+  }
+
+  window._fleetGroups.push(group);
+  saveFleetGroups();
+  showToast(`Opgavegruppe "${navn}" oprettet`);
+  document.querySelector(".dialog-overlay")?.remove();
+  renderFlaade(document.getElementById("content-area"));
+};
+
+window.deleteFleetGroup = function(groupId) {
+  window._fleetGroups = window._fleetGroups.filter(g => g.id !== groupId);
+  saveFleetGroups();
+  showToast("Gruppe slettet");
+  renderFlaade(document.getElementById("content-area"));
+};
+
+window.showAddPatrolToGroup = function(groupId) {
+  const group = window._fleetGroups.find(g => g.id === groupId);
+  if (!group) return;
+  const patrols = (window._fleetPatrols || []).filter(p => !group.patruljeIds.includes(p.id));
+
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog" style="max-width:360px">
+    <div class="dialog-title">Tilføj patrulje til ${group.navn}</div>
+    <div style="max-height:300px;overflow-y:auto">
+      ${patrols.length === 0 ? '<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px">Alle patruljer er allerede tilføjet</p>' : ''}
+      ${patrols.map(p => `
+        <button onclick="addPatrolToGroup('${p.id}','${groupId}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:none;background:none;cursor:pointer;text-align:left;border-bottom:1px solid rgba(128,128,128,0.06);border-radius:6px" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='none'">
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--fg)">${p.navn}</div>
+            <div style="font-size:10px;color:var(--muted-fg)">${p.medlemmer.map(m=>m.navn).join(', ') || 'Tom'}</div>
+          </div>
+          <span style="font-size:16px;color:var(--primary)">+</span>
+        </button>
+      `).join('')}
+    </div>
+    <button class="btn btn-outline w-full" style="margin-top:8px" onclick="this.closest('.dialog-overlay').remove()">Luk</button>
+  </div>`;
+  document.body.appendChild(overlay);
+};
+
+window.addPatrolToGroup = function(patrolId, groupId) {
+  const group = window._fleetGroups.find(g => g.id === groupId);
+  if (!group) return;
+  if (!group.patruljeIds.includes(patrolId)) {
+    group.patruljeIds.push(patrolId);
+    saveFleetGroups();
+    showToast("Patrulje tilføjet til gruppe");
+    document.querySelector(".dialog-overlay")?.remove();
+    renderFlaade(document.getElementById("content-area"));
+  }
+};
+
+window.removePatrolFromGroup = function(patrolId, groupId) {
+  const group = window._fleetGroups.find(g => g.id === groupId);
+  if (!group) return;
+  group.patruljeIds = group.patruljeIds.filter(id => id !== patrolId);
+  if (group.lederId === patrolId) group.lederId = group.patruljeIds[0] || '';
+  saveFleetGroups();
+  showToast("Patrulje fjernet fra gruppe");
+  renderFlaade(document.getElementById("content-area"));
+};
+
+window.movePatrolBetweenGroups = function(patrolId, fromGroupId) {
+  const otherGroups = (window._fleetGroups || []).filter(g => g.id !== fromGroupId);
+  if (otherGroups.length === 0) { showToast("Ingen andre grupper"); return; }
+
+  if (otherGroups.length === 1) {
+    // Auto-move to the only other group
+    removePatrolFromGroup(patrolId, fromGroupId);
+    addPatrolToGroup(patrolId, otherGroups[0].id);
+    return;
+  }
+
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  overlay.innerHTML = `<div class="dialog" style="max-width:320px">
+    <div class="dialog-title">Flyt til gruppe</div>
+    ${otherGroups.map(g => `
+      <button onclick="removePatrolFromGroup('${patrolId}','${fromGroupId}');addPatrolToGroup('${patrolId}','${g.id}');this.closest('.dialog-overlay')?.remove()" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:none;background:none;cursor:pointer;text-align:left;border-radius:8px;border-bottom:1px solid rgba(128,128,128,0.06)" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='none'">
+        <span style="font-size:14px">👥</span>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--fg)">${g.navn}</div>
+          <div style="font-size:10px;color:var(--muted-fg)">${g.aktion} · ${g.radioKanal}</div>
+        </div>
+      </button>
+    `).join('')}
+    <button class="btn btn-outline w-full" style="margin-top:8px" onclick="this.closest('.dialog-overlay').remove()">Annuller</button>
+  </div>`;
+  document.body.appendChild(overlay);
 };
 
 // Keep old functions working
