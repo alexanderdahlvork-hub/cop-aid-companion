@@ -5933,6 +5933,13 @@ async function renderFlaade(container) {
       html += renderFleetCategory(cat, grouped[cat.id] || []);
     });
 
+    // Render task groups
+    const groupsHtml = renderFleetGroups();
+    if (groupsHtml) {
+      html += `<div style="margin-top:16px;margin-bottom:8px;font-size:14px;font-weight:700;color:var(--fg);display:flex;align-items:center;gap:8px">👥 Opgavegrupper</div>`;
+      html += groupsHtml;
+    }
+
     container.innerHTML = html;
 
     // Setup member picker after render
