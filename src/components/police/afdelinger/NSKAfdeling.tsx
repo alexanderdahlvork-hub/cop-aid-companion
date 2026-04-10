@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AfdelingLayout from "./AfdelingLayout";
+import NSKBander from "./NSKBander";
 import type { Betjent, Person } from "@/types/police";
 import { personerApi, tilhoersforholdApi, type TilhoersforholdDB } from "@/lib/api";
 
@@ -518,11 +519,13 @@ const NSKAfdeling = ({ currentUser, isAdmin }: NSKAfdelingProps) => {
       beskrivelse="Tilhørsforhold, bandesporing & efterretning"
       defaultTabs={[
         { id: "tavle", label: "Opslagstavle", removable: false },
+        { id: "bander", label: "Bander", removable: false },
         { id: "netvaerk", label: "Tilhørsforhold", removable: false },
       ]}
       currentUserNavn={userName}
       isLeder={isLeder}
       customTabContent={{
+        bander: <NSKBander userName={userName} />,
         netvaerk: <TilhoersforholdContent userName={userName} />,
       }}
     />
