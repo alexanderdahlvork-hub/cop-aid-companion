@@ -5977,18 +5977,21 @@ function renderFleetCategory(cat, patrols) {
           </div>
         </div>
         ${p.medlemmer.map(m => `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--primary)">${(m.navn || '').split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
-              <span style="font-size:13px;font-weight:500;color:var(--fg)">${m.navn}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:10px;font-weight:700;background:rgba(59,130,246,0.12);color:var(--primary);padding:3px 10px;border-radius:12px">${m.badgeNr ? 'PO-' + m.badgeNr : ''}</span>
-              <button onclick="removeFromFleet('${p.id}','${m.badgeNr}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);font-size:10px;opacity:0;padding:2px;transition:opacity 0.15s" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
-            </div>
-          </div>
-        `).join('')}
-        ${p.medlemmer.length === 0 ? `<div style="padding:8px 24px;font-size:11px;color:var(--muted-fg);opacity:0.4;font-style:italic">Tom patrulje</div>` : ''}
+           <div draggable="true" ondragstart="window._fleetDragStart(event,'${p.id}','${m.badgeNr}','${(m.navn||'').replace(/'/g,"\\'")}')" class="fleet-drag-member" style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px;cursor:grab;transition:background 0.15s,opacity 0.15s" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='transparent'">
+             <div style="display:flex;align-items:center;gap:10px">
+               <div style="width:6px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:2px;opacity:0.3;margin-right:2px"><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div></div>
+               <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--primary)">${(m.navn || '').split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+               <span style="font-size:13px;font-weight:500;color:var(--fg)">${m.navn}</span>
+             </div>
+             <div style="display:flex;align-items:center;gap:8px">
+               <span style="font-size:10px;font-weight:700;background:rgba(59,130,246,0.12);color:var(--primary);padding:3px 10px;border-radius:12px">${m.badgeNr ? 'PO-' + m.badgeNr : ''}</span>
+               <button onclick="event.stopPropagation();removeFromFleet('${p.id}','${m.badgeNr}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);font-size:10px;opacity:0;padding:2px;transition:opacity 0.15s" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
+             </div>
+           </div>
+         `).join('')}
+        <div class="fleet-drop-zone" data-patrol-id="${p.id}" ondragover="window._fleetDragOver(event)" ondragleave="window._fleetDragLeave(event)" ondrop="window._fleetDrop(event,'${p.id}')" style="min-height:${p.medlemmer.length === 0 ? '36' : '12'}px;padding:${p.medlemmer.length === 0 ? '8px 24px' : '2px 24px'};transition:background 0.15s,min-height 0.15s;border-radius:4px;margin:0 8px">
+          ${p.medlemmer.length === 0 ? `<span style="font-size:11px;color:var(--muted-fg);opacity:0.4;font-style:italic">Tom patrulje — træk en betjent hertil</span>` : ''}
+        </div>
       </div>
     `;
   });
