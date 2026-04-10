@@ -6078,10 +6078,9 @@ window._fleetDrop = async function(e, toPatrolId) {
 // Clean up drag highlights on dragend anywhere
 document.addEventListener('dragend', () => {
   document.querySelectorAll('.fleet-drag-member').forEach(el => el.style.opacity = '1');
-  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
-    z.style.border = 'none';
+  document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
+    z.style.boxShadow = 'none';
     z.style.background = 'transparent';
-    z.style.minHeight = '';
   });
   window._fleetDragData = null;
 });
