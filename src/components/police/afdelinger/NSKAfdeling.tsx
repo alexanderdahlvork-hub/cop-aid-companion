@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import AfdelingLayout from "./AfdelingLayout";
+import NSKBander from "./NSKBander";
 import type { Betjent, Person } from "@/types/police";
 import { personerApi, tilhoersforholdApi, type TilhoersforholdDB } from "@/lib/api";
 
