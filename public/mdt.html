@@ -3972,7 +3972,7 @@ const tabLabels = {
 };
 
 const afdelingDefaultTabs = {
-  nsk: [{id:"tilhoersforhold",label:"Tilhørsforhold",removable:false},{id:"tavle",label:"Opslagstavle",removable:false}],
+  nsk: [{id:"bander",label:"Bander",removable:false},{id:"tilhoersforhold",label:"Tilhørsforhold",removable:false},{id:"tavle",label:"Opslagstavle",removable:false}],
   lima: [{id:"tavle",label:"Opslagstavle",removable:false},{id:"planer",label:"Taktiske planer",removable:false},{id:"udstyr",label:"Udstyr",removable:false},{id:"traening",label:"Træning",removable:false}],
   faerdsel: [{id:"tavle",label:"Opslagstavle",removable:false},{id:"uheld",label:"Færdselsuheld",removable:false},{id:"kontrol",label:"Kontrol",removable:false}],
   efterforskning: [{id:"tavle",label:"Opslagstavle",removable:false},{id:"sager",label:"Sager",removable:false},{id:"bevis",label:"Bevismateriale",removable:false},{id:"afhoering",label:"Afhøringer",removable:false}],
@@ -4505,7 +4505,7 @@ async function renderPage(tabId) {
     case "profil": renderProfil(area); break;
     case "kort": renderKort(area); break;
     case "ansoegninger": renderAnsoegninger(area); break;
-    case "nsk": renderNSKRegister(area); break;
+    case "nsk": renderAfdeling(area, "nsk"); break;
     case "lima": case "faerdsel": case "efterforskning": case "sig": case "remeo":
       renderAfdeling(area, tab.type); break;
     default: area.innerHTML = `<div class="loading-center"><p>Siden "${tab.label}" kommer snart</p></div>`;
@@ -7015,8 +7015,8 @@ async function renderAfdeling(container, afdId) {
   }
   html += `</div>`;
 
-  // NSK special: tilhørsforhold tab
-  if (afdId === "nsk" && activeSubTab === "tilhoersforhold") {
+  // NSK special: bander + tilhørsforhold tabs
+  if (afdId === "nsk" && (activeSubTab === "bander" || activeSubTab === "tilhoersforhold")) {
     html += await renderNSKContent();
   } else {
     // Generic tab content with CRUD
@@ -7026,7 +7026,7 @@ async function renderAfdeling(container, afdId) {
   container.innerHTML = html;
 
   // Load content for generic tabs
-  if (!(afdId === "nsk" && activeSubTab === "tilhoersforhold")) {
+  if (!(afdId === "nsk" && (activeSubTab === "bander" || activeSubTab === "tilhoersforhold"))) {
     const contentId = `${afdId}_${activeSubTab}`;
     const contentDiv = document.getElementById("afd-tab-content");
     if (contentDiv) await renderAfdelingsIndhold(contentDiv, contentId, isLeder);
@@ -7086,7 +7086,7 @@ async function renderNSKContent() {
 
     // Default: show all grupperinger
     html += `<div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-3">${icons.target}<h2 style="font-size:16px;font-weight:600">Alle grupperinger</h2></div>
+      <div class="flex items-center gap-3">${icons.target}<h2 style="font-size:16px;font-weight:600">NSK Bande Oversigt</h2></div>
       <button class="btn btn-primary btn-sm" onclick="showTilhoersforholdForm()" style="display:flex;align-items:center;gap:6px">${icons.plus} Tilføj tilhørsforhold</button>
     </div>`;
 
