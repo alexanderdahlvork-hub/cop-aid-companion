@@ -6372,6 +6372,40 @@ window.updateFleetStatus = async function(id, status) {
   } catch (e) { showToast("Fejl: " + e.message); }
 };
 
+window.setFleetStatus = async function(id, status) {
+  const patrols = window._fleetPatrols || [];
+  const p = patrols.find(x => x.id === id);
+  if (!p) return;
+  p.status = status;
+  try { await patruljerApi.update(id, patruljeToRow({ status })); } catch(e) { console.error(e); }
+  renderFlaade(document.getElementById("content-area"));
+};
+
+window.editFleetNote = function(id) {
+  const patrols = window._fleetPatrols || [];
+  const p = patrols.find(x => x.id === id);
+  if (!p) return;
+  const current = p.bemaerkning || p.bemærkning || '';
+  showModal("Rediger note", `
+    <textarea id="fleet-note-input" class="input" rows="3" style="width:100%;resize:vertical">${current.replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuller</button>
+      <button class="btn btn-primary" onclick="window.saveFleetNote('${id}')">Gem</button>
+    </div>
+  `);
+};
+
+window.saveFleetNote = async function(id) {
+  const note = document.getElementById('fleet-note-input')?.value || '';
+  const patrols = window._fleetPatrols || [];
+  const p = patrols.find(x => x.id === id);
+  if (!p) return;
+  p.bemaerkning = note;
+  try { await patruljerApi.update(id, patruljeToRow({ bemaerkning: note })); } catch(e) { console.error(e); }
+  closeModal();
+  renderFlaade(document.getElementById("content-area"));
+};
+
 window.deleteFleetPatrol = async function(id) {
   try {
     await patruljerApi.remove(id);
