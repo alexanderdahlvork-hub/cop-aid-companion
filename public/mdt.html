@@ -6006,13 +6006,12 @@ window._fleetDragStart = function(e, patrolId, badgeNr, navn) {
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', badgeNr);
   setTimeout(() => { if(e.target) e.target.style.opacity = '0.4'; }, 0);
-  // Highlight all drop zones
-  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
+  // Highlight all other patrol cards as drop targets
+  document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
     if (z.dataset.patrolId !== patrolId) {
-      z.style.border = '2px dashed var(--primary)';
-      z.style.opacity = '1';
-      z.style.minHeight = '36px';
+      z.style.boxShadow = 'inset 0 0 0 2px var(--primary)';
       z.style.background = 'rgba(59,130,246,0.04)';
+      z.style.borderRadius = '6px';
     }
   });
 };
@@ -6020,16 +6019,20 @@ window._fleetDragStart = function(e, patrolId, badgeNr, navn) {
 window._fleetDragOver = function(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
-  e.currentTarget.style.background = 'rgba(59,130,246,0.12)';
-  e.currentTarget.style.border = '2px dashed var(--primary)';
+  const target = e.currentTarget;
+  if (window._fleetDragData && target.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
+    target.style.background = 'rgba(59,130,246,0.12)';
+    target.style.boxShadow = 'inset 0 0 0 2px var(--primary)';
+  }
 };
 
 window._fleetDragLeave = function(e) {
-  e.currentTarget.style.background = 'transparent';
-  if (window._fleetDragData && e.currentTarget.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
-    e.currentTarget.style.border = '2px dashed var(--primary)';
+  const target = e.currentTarget;
+  if (window._fleetDragData && target.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
+    target.style.background = 'rgba(59,130,246,0.04)';
   } else {
-    e.currentTarget.style.border = 'none';
+    target.style.background = 'transparent';
+    target.style.boxShadow = 'none';
   }
 };
 
