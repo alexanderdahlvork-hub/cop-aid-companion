@@ -128,7 +128,7 @@ const TilhoersforholdContent = ({ userName }: { userName: string }) => {
     if (!formNavn.trim() || !formBande.trim()) return;
     const now = new Date().toISOString();
     if (editId) {
-      const updated = { personNavn: formNavn, personCpr: formCpr, bande: formBande, rolle: formRolle, status: formStatus, noter: formNoter };
+      const updated = { personNavn: formNavn, personCpr: formCpr, bande: formBande, rolle: formRolle, status: formStatus as BandeTilhoer["status"], noter: formNoter };
       try { await tilhoersforholdApi.update(editId, updated as unknown as Partial<TilhoersforholdDB>); } catch {}
       save(tilhoer.map(t => t.id === editId ? { ...t, ...updated } : t));
     } else {
