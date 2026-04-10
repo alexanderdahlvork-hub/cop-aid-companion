@@ -5967,33 +5967,31 @@ function renderFleetCategory(cat, patrols) {
 
   patrols.forEach(p => {
     const callsign = p.koeretojsId || p.callsign || '';
-    html += `
-      <div style="border-bottom:1px solid rgba(128,128,128,0.08)">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 14px 2px 14px">
-          <span style="font-size:11px;color:var(--muted-fg)">${callsign ? 'Køretøj nummer: ' + callsign : 'Patrulje nummer: ' + (p.navn || '')}</span>
-          <div style="display:flex;align-items:center;gap:6px">
-            <button onclick="showFleetPatrolMenu('${p.id}',this)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted-fg);padding:2px 4px" title="Mere">⋮</button>
-            <button onclick="deleteFleetPatrol('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted-fg);opacity:0.5;padding:2px" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.5';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
-          </div>
-        </div>
-        ${p.medlemmer.map(m => `
-           <div draggable="true" ondragstart="window._fleetDragStart(event,'${p.id}','${m.badgeNr}','${(m.navn||'').replace(/'/g,"\\'")}')" class="fleet-drag-member" style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px;cursor:grab;transition:background 0.15s,opacity 0.15s" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='transparent'">
-             <div style="display:flex;align-items:center;gap:10px">
-               <div style="width:6px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:2px;opacity:0.3;margin-right:2px"><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div></div>
-               <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--primary)">${(m.navn || '').split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
-               <span style="font-size:13px;font-weight:500;color:var(--fg)">${m.navn}</span>
-             </div>
-             <div style="display:flex;align-items:center;gap:8px">
-               <span style="font-size:10px;font-weight:700;background:rgba(59,130,246,0.12);color:var(--primary);padding:3px 10px;border-radius:12px">${m.badgeNr ? 'PO-' + m.badgeNr : ''}</span>
-               <button onclick="event.stopPropagation();removeFromFleet('${p.id}','${m.badgeNr}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);font-size:10px;opacity:0;padding:2px;transition:opacity 0.15s" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
-             </div>
+     html += `
+       <div class="fleet-patrol-drop" data-patrol-id="${p.id}" ondragover="window._fleetDragOver(event)" ondragleave="window._fleetDragLeave(event)" ondrop="window._fleetDrop(event,'${p.id}')" style="border-bottom:1px solid rgba(128,128,128,0.08);transition:background 0.15s,box-shadow 0.15s">
+         <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 14px 2px 14px">
+           <span style="font-size:11px;color:var(--muted-fg)">${callsign ? 'Køretøj nummer: ' + callsign : 'Patrulje nummer: ' + (p.navn || '')}</span>
+           <div style="display:flex;align-items:center;gap:6px">
+             <button onclick="showFleetPatrolMenu('${p.id}',this)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted-fg);padding:2px 4px" title="Mere">⋮</button>
+             <button onclick="deleteFleetPatrol('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted-fg);opacity:0.5;padding:2px" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.5';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
            </div>
-         `).join('')}
-        <div class="fleet-drop-zone" data-patrol-id="${p.id}" ondragover="window._fleetDragOver(event)" ondragleave="window._fleetDragLeave(event)" ondrop="window._fleetDrop(event,'${p.id}')" style="min-height:${p.medlemmer.length === 0 ? '36' : '12'}px;padding:${p.medlemmer.length === 0 ? '8px 24px' : '2px 24px'};transition:background 0.15s,min-height 0.15s;border-radius:4px;margin:0 8px">
-          ${p.medlemmer.length === 0 ? `<span style="font-size:11px;color:var(--muted-fg);opacity:0.4;font-style:italic">Tom patrulje — træk en betjent hertil</span>` : ''}
-        </div>
-      </div>
-    `;
+         </div>
+         ${p.medlemmer.map(m => `
+            <div draggable="true" ondragstart="window._fleetDragStart(event,'${p.id}','${m.badgeNr}','${(m.navn||'').replace(/'/g,"\\'")}')" class="fleet-drag-member" style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px;cursor:grab;transition:background 0.15s,opacity 0.15s" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='transparent'">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:6px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:2px;opacity:0.3;margin-right:2px"><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div></div>
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--primary)">${(m.navn || '').split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+                <span style="font-size:13px;font-weight:500;color:var(--fg)">${m.navn}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:10px;font-weight:700;background:rgba(59,130,246,0.12);color:var(--primary);padding:3px 10px;border-radius:12px">${m.badgeNr ? 'PO-' + m.badgeNr : ''}</span>
+                <button onclick="event.stopPropagation();removeFromFleet('${p.id}','${m.badgeNr}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);font-size:10px;opacity:0;padding:2px;transition:opacity 0.15s" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
+              </div>
+            </div>
+          `).join('')}
+         ${p.medlemmer.length === 0 ? `<div style="padding:8px 24px;font-size:11px;color:var(--muted-fg);opacity:0.4;font-style:italic">Tom patrulje — træk en betjent hertil</div>` : ''}
+       </div>
+     `;
   });
 
   html += '</div>';
@@ -6008,13 +6006,12 @@ window._fleetDragStart = function(e, patrolId, badgeNr, navn) {
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', badgeNr);
   setTimeout(() => { if(e.target) e.target.style.opacity = '0.4'; }, 0);
-  // Highlight all drop zones
-  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
+  // Highlight all other patrol cards as drop targets
+  document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
     if (z.dataset.patrolId !== patrolId) {
-      z.style.border = '2px dashed var(--primary)';
-      z.style.opacity = '1';
-      z.style.minHeight = '36px';
+      z.style.boxShadow = 'inset 0 0 0 2px var(--primary)';
       z.style.background = 'rgba(59,130,246,0.04)';
+      z.style.borderRadius = '6px';
     }
   });
 };
@@ -6022,24 +6019,28 @@ window._fleetDragStart = function(e, patrolId, badgeNr, navn) {
 window._fleetDragOver = function(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
-  e.currentTarget.style.background = 'rgba(59,130,246,0.12)';
-  e.currentTarget.style.border = '2px dashed var(--primary)';
+  const target = e.currentTarget;
+  if (window._fleetDragData && target.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
+    target.style.background = 'rgba(59,130,246,0.12)';
+    target.style.boxShadow = 'inset 0 0 0 2px var(--primary)';
+  }
 };
 
 window._fleetDragLeave = function(e) {
-  e.currentTarget.style.background = 'transparent';
-  if (window._fleetDragData && e.currentTarget.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
-    e.currentTarget.style.border = '2px dashed var(--primary)';
+  const target = e.currentTarget;
+  if (window._fleetDragData && target.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
+    target.style.background = 'rgba(59,130,246,0.04)';
   } else {
-    e.currentTarget.style.border = 'none';
+    target.style.background = 'transparent';
+    target.style.boxShadow = 'none';
   }
 };
 
 window._fleetDrop = async function(e, toPatrolId) {
   e.preventDefault();
-  // Clean up all drop zone highlights
-  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
-    z.style.border = 'none';
+  // Clean up all patrol card highlights
+  document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
+    z.style.boxShadow = 'none';
     z.style.background = 'transparent';
   });
   const d = window._fleetDragData;
@@ -6077,10 +6078,9 @@ window._fleetDrop = async function(e, toPatrolId) {
 // Clean up drag highlights on dragend anywhere
 document.addEventListener('dragend', () => {
   document.querySelectorAll('.fleet-drag-member').forEach(el => el.style.opacity = '1');
-  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
-    z.style.border = 'none';
+  document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
+    z.style.boxShadow = 'none';
     z.style.background = 'transparent';
-    z.style.minHeight = '';
   });
   window._fleetDragData = null;
 });
