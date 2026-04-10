@@ -6038,9 +6038,9 @@ window._fleetDragLeave = function(e) {
 
 window._fleetDrop = async function(e, toPatrolId) {
   e.preventDefault();
-  // Clean up all drop zone highlights
-  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
-    z.style.border = 'none';
+  // Clean up all patrol card highlights
+  document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
+    z.style.boxShadow = 'none';
     z.style.background = 'transparent';
   });
   const d = window._fleetDragData;
