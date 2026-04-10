@@ -5965,17 +5965,41 @@ function renderFleetCategory(cat, patrols) {
     html += `<div style="height:4px;background:linear-gradient(90deg, transparent, rgba(128,128,128,0.08), rgba(128,128,128,0.15), rgba(128,128,128,0.08), transparent)"></div>`;
   }
 
+  const _statusColors = {
+    ledig: { dot: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.25)', label: 'Ledig', text: '#22c55e' },
+    i_brug: { dot: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.25)', label: 'I brug', text: '#3b82f6' },
+    optaget: { dot: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', label: 'Optaget', text: '#f59e0b' },
+    ude_af_drift: { dot: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)', label: 'Ude af drift', text: '#ef4444' },
+  };
+
   patrols.forEach(p => {
     const callsign = p.koeretojsId || p.callsign || '';
+    const sc = _statusColors[p.status] || _statusColors.ledig;
+    const note = p.bemaerkning || p.bemærkning || '';
      html += `
-       <div class="fleet-patrol-drop" data-patrol-id="${p.id}" ondragover="window._fleetDragOver(event)" ondragleave="window._fleetDragLeave(event)" ondrop="window._fleetDrop(event,'${p.id}')" style="border-bottom:1px solid rgba(128,128,128,0.08);transition:background 0.15s,box-shadow 0.15s">
+       <div class="fleet-patrol-drop" data-patrol-id="${p.id}" ondragover="window._fleetDragOver(event)" ondragleave="window._fleetDragLeave(event)" ondrop="window._fleetDrop(event,'${p.id}')" style="border-bottom:1px solid rgba(128,128,128,0.08);transition:background 0.15s,box-shadow 0.15s;border-left:3px solid ${sc.dot}">
          <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 14px 2px 14px">
-           <span style="font-size:11px;color:var(--muted-fg)">${callsign ? 'Køretøj nummer: ' + callsign : 'Patrulje nummer: ' + (p.navn || '')}</span>
+           <div style="display:flex;align-items:center;gap:8px">
+             <span style="font-size:11px;color:var(--muted-fg)">${callsign ? 'Køretøj nummer: ' + callsign : 'Patrulje nummer: ' + (p.navn || '')}</span>
+             <select onchange="window.setFleetStatus('${p.id}',this.value)" style="font-size:9px;padding:1px 6px;border-radius:10px;border:1px solid ${sc.border};background:${sc.bg};color:${sc.text};font-weight:600;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none">
+               ${Object.entries(_statusColors).map(([k,v]) => `<option value="${k}" ${k===p.status?'selected':''} style="color:#fff;background:#1a1a2e">${v.label}</option>`).join('')}
+             </select>
+           </div>
            <div style="display:flex;align-items:center;gap:6px">
              <button onclick="showFleetPatrolMenu('${p.id}',this)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted-fg);padding:2px 4px" title="Mere">⋮</button>
              <button onclick="deleteFleetPatrol('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted-fg);opacity:0.5;padding:2px" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.5';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
            </div>
          </div>
+         ${note ? `
+           <div style="padding:2px 14px 2px 14px;display:flex;align-items:center;gap:6px">
+             <span style="font-size:10px;color:var(--muted-fg);opacity:0.7">📝</span>
+             <span onclick="window.editFleetNote('${p.id}')" style="font-size:10px;color:var(--muted-fg);opacity:0.7;cursor:pointer;border-bottom:1px dashed rgba(128,128,128,0.2);max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${note.replace(/"/g,'&quot;')}">${note}</span>
+           </div>
+         ` : `
+           <div style="padding:2px 14px 0px 14px">
+             <span onclick="window.editFleetNote('${p.id}')" style="font-size:10px;color:var(--muted-fg);opacity:0.3;cursor:pointer" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='0.3'">+ Tilføj note</span>
+           </div>
+         `}
          ${p.medlemmer.map(m => `
             <div draggable="true" ondragstart="window._fleetDragStart(event,'${p.id}','${m.badgeNr}','${(m.navn||'').replace(/'/g,"\\'")}')" class="fleet-drag-member" style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px;cursor:grab;transition:background 0.15s,opacity 0.15s" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='transparent'">
               <div style="display:flex;align-items:center;gap:10px">
