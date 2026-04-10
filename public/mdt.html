@@ -6000,6 +6000,91 @@ function renderFleetCategory(cat, patrols) {
   return html;
 }
 
+// ---- Drag & Drop for fleet members ----
+window._fleetDragData = null;
+
+window._fleetDragStart = function(e, patrolId, badgeNr, navn) {
+  window._fleetDragData = { fromPatrolId: patrolId, badgeNr, navn };
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', badgeNr);
+  setTimeout(() => { if(e.target) e.target.style.opacity = '0.4'; }, 0);
+  // Highlight all drop zones
+  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
+    if (z.dataset.patrolId !== patrolId) {
+      z.style.border = '2px dashed var(--primary)';
+      z.style.opacity = '1';
+      z.style.minHeight = '36px';
+      z.style.background = 'rgba(59,130,246,0.04)';
+    }
+  });
+};
+
+window._fleetDragOver = function(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.style.background = 'rgba(59,130,246,0.12)';
+  e.currentTarget.style.border = '2px dashed var(--primary)';
+};
+
+window._fleetDragLeave = function(e) {
+  e.currentTarget.style.background = 'transparent';
+  if (window._fleetDragData && e.currentTarget.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
+    e.currentTarget.style.border = '2px dashed var(--primary)';
+  } else {
+    e.currentTarget.style.border = 'none';
+  }
+};
+
+window._fleetDrop = async function(e, toPatrolId) {
+  e.preventDefault();
+  // Clean up all drop zone highlights
+  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
+    z.style.border = 'none';
+    z.style.background = 'transparent';
+  });
+  const d = window._fleetDragData;
+  if (!d || d.fromPatrolId === toPatrolId) { window._fleetDragData = null; return; }
+
+  const patrols = window._fleetPatrols || [];
+  const from = patrols.find(p => p.id === d.fromPatrolId);
+  const to = patrols.find(p => p.id === toPatrolId);
+  if (!from || !to) { window._fleetDragData = null; return; }
+  if (to.medlemmer.length >= to.pladser) { showToast("Patruljen er fuld"); window._fleetDragData = null; return; }
+  if (to.medlemmer.some(m => m.badgeNr === d.badgeNr)) { showToast("Allerede i patruljen"); window._fleetDragData = null; return; }
+
+  // Move member
+  const member = from.medlemmer.find(m => m.badgeNr === d.badgeNr);
+  if (!member) { window._fleetDragData = null; return; }
+  from.medlemmer = from.medlemmer.filter(m => m.badgeNr !== d.badgeNr);
+  if (from.medlemmer.length === 0) from.status = "ledig";
+  to.medlemmer.push(member);
+
+  // Persist
+  if (window._useRemoteFleet) {
+    try {
+      await fetch(window._fleetApiBase + '/' + from.id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patruljeToRow(from)) });
+      await fetch(window._fleetApiBase + '/' + to.id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patruljeToRow(to)) });
+    } catch(e) { console.error(e); }
+  } else {
+    localStorage.setItem("fleet_patruljer", JSON.stringify(patrols));
+  }
+
+  window._fleetDragData = null;
+  showToast(`${member.navn} flyttet til ${to.navn}`);
+  renderFlaade(document.getElementById("content-area"));
+};
+
+// Clean up drag highlights on dragend anywhere
+document.addEventListener('dragend', () => {
+  document.querySelectorAll('.fleet-drag-member').forEach(el => el.style.opacity = '1');
+  document.querySelectorAll('.fleet-drop-zone').forEach(z => {
+    z.style.border = 'none';
+    z.style.background = 'transparent';
+    z.style.minHeight = '';
+  });
+  window._fleetDragData = null;
+});
+
 window.toggleFleetCreate = function() {
   window._fleetShowCreate = !window._fleetShowCreate;
   renderFlaade(document.getElementById("content-area"));
