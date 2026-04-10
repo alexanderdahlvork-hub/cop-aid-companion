@@ -519,11 +519,13 @@ const NSKAfdeling = ({ currentUser, isAdmin }: NSKAfdelingProps) => {
       beskrivelse="Tilhørsforhold, bandesporing & efterretning"
       defaultTabs={[
         { id: "tavle", label: "Opslagstavle", removable: false },
+        { id: "bander", label: "Bander", removable: false },
         { id: "netvaerk", label: "Tilhørsforhold", removable: false },
       ]}
       currentUserNavn={userName}
       isLeder={isLeder}
       customTabContent={{
+        bander: <NSKBander userName={userName} />,
         netvaerk: <TilhoersforholdContent userName={userName} />,
       }}
     />
