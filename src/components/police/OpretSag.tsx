@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { Search, Users, FileText, Loader2, AlertTriangle, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { personerApi } from "@/lib/api";
-import type { Person, Sigtelse } from "@/types/police";
+import { personerApi, sigtelserApi } from "@/lib/api";
+import { sagerApi } from "@/lib/sagerApi";
+import type { Person, Sigtelse, Sag, SagMistaenkt } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
 import { toast } from "@/components/ui/sonner";
-import { sigtelserApi } from "@/lib/api";
 
 interface OpretSagProps {
   currentUser: { badgeNr: string; fornavn: string; efternavn: string };
