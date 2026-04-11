@@ -9548,8 +9548,7 @@ window.selectCase = async function(id) {
 
             <div class="case-panel" style="margin-top:14px">
               <div class="case-panel-title">Sagsnoter</div>
-              <div style="font-size:13px;color:var(--muted-fg);line-height:1.7">${escCase(r.notes || "Ingen noter skrevet endnu.").replace(/
-/g, "<br>")}</div>
+              <div style="font-size:13px;color:var(--muted-fg);line-height:1.7">${escCase(r.notes || "Ingen noter skrevet endnu.").replace(/\n/g, "<br>")}</div>
             </div>
           </div>
         </div>
