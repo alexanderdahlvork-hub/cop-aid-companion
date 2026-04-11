@@ -7015,8 +7015,10 @@ async function renderAfdeling(container, afdId) {
   }
   html += `</div>`;
 
-  // NSK special: bander + tilhørsforhold tabs
-  if (afdId === "nsk" && (activeSubTab === "bander" || activeSubTab === "tilhoersforhold")) {
+  // NSK special tabs
+  if (afdId === "nsk" && activeSubTab === "bander") {
+    html += await renderNSKBander();
+  } else if (afdId === "nsk" && activeSubTab === "tilhoersforhold") {
     html += await renderNSKContent();
   } else {
     // Generic tab content with CRUD
@@ -7033,7 +7035,335 @@ async function renderAfdeling(container, afdId) {
   }
 }
 
-async function renderNSKContent() {
+// ═══ NSK BANDER SYSTEM ═══
+function getNSKBander() {
+  try { return JSON.parse(localStorage.getItem('nsk_bander_html') || '[]'); } catch { return []; }
+}
+function saveNSKBander(bander) {
+  localStorage.setItem('nsk_bander_html', JSON.stringify(bander));
+}
+
+async function renderNSKBander() {
+  const bander = getNSKBander();
+  const viewingBande = window._nskViewBande || null;
+  
+  if (viewingBande) {
+    const bande = bander.find(b => b.id === viewingBande);
+    if (bande) return renderNSKBandeDetaljer(bande);
+    window._nskViewBande = null;
+  }
+  
+  let html = '';
+  
+  // Header bar
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px;text-align:center">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+      ${icons.target}
+      <h2 style="font-size:18px;font-weight:700;color:var(--fg)">NSK Bande Oversigt</h2>
+    </div>
+    <p style="font-size:11px;color:var(--muted-fg);margin-top:4px">${bander.length} registrerede bander</p>
+  </div>`;
+  
+  // Create button
+  html += `<div style="margin-bottom:16px;text-align:right">
+    <button class="btn btn-sm" style="background:var(--success);color:#fff;display:inline-flex;align-items:center;gap:6px" onclick="window._nskShowCreateBande()">${icons.plus} Opret Ny Bande</button>
+  </div>`;
+  
+  // Create form placeholder
+  html += `<div id="nsk-create-bande-form" style="display:none"></div>`;
+  
+  // Bande cards grid
+  if (bander.length === 0) {
+    html += `<div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">🎯</div>
+      <p style="font-size:15px;font-weight:600;margin-bottom:6px;color:var(--fg)">Ingen bander registreret</p>
+      <p style="font-size:12px;color:var(--muted-fg);margin-bottom:20px">Opret den første bande for at komme i gang</p>
+      <button class="btn" style="background:var(--success);color:#fff" onclick="window._nskShowCreateBande()">${icons.plus} Opret Ny Bande</button>
+    </div>`;
+  } else {
+    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">`;
+    bander.forEach(b => {
+      const threatColors = {Høj:'var(--destructive)',Middel:'var(--warning)',Lav:'var(--success)'};
+      const threatBg = {Høj:'rgba(214,54,75,0.1)',Middel:'rgba(224,100,42,0.1)',Lav:'rgba(51,160,106,0.1)'};
+      const threatBadge = {Høj:'badge-destructive',Middel:'badge-warning',Lav:'badge-success'};
+      const color = threatColors[b.trusselsniveau] || 'var(--muted-fg)';
+      const bg = threatBg[b.trusselsniveau] || 'transparent';
+      const badge = threatBadge[b.trusselsniveau] || 'badge-muted';
+      
+      html += `<div class="card" style="padding:0;overflow:hidden;border-left:3px solid ${color}">
+        <div style="padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:15px;font-weight:700;color:var(--fg)">${esc(b.navn)}</span>
+            <span class="badge ${badge}">${b.trusselsniveau || 'Ukendt'}</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted-fg);margin-bottom:10px" class="mono">ID: ${b.id.substring(0,8)}</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:6px">
+              ${icons.users}
+              <span style="font-size:12px;color:var(--fg)">${(b.medlemmer||[]).length} medlemmer</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;background:${bg}">
+              <span style="font-size:11px;color:${color};font-weight:600">${b.trusselsniveau || 'Ukendt'} trussel</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" style="flex:1" onclick="window._nskViewBandeDetaljer('${b.id}')">Se Detaljer</button>
+            <button class="btn btn-sm" style="background:var(--destructive);color:#fff;padding:4px 10px" onclick="window._nskDeleteBande('${b.id}')">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  
+  return html;
+}
+
+function renderNSKBandeDetaljer(bande) {
+  const threatColors = {Høj:'var(--destructive)',Middel:'var(--warning)',Lav:'var(--success)'};
+  const color = threatColors[bande.trusselsniveau] || 'var(--muted-fg)';
+  const totalSigtelser = (bande.medlemmer||[]).reduce((sum, m) => sum + (m.sigtelser || 0), 0);
+  
+  let html = '';
+  
+  // Back link
+  html += `<div style="margin-bottom:12px">
+    <button class="btn btn-ghost btn-sm" onclick="window._nskBackToOversigt()" style="color:var(--primary);display:flex;align-items:center;gap:4px">← Tilbage til oversigt</button>
+  </div>`;
+  
+  // Header
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px;text-align:center">
+    <h2 style="font-size:18px;font-weight:700;color:var(--fg)">${esc(bande.navn)} — Detaljer</h2>
+    <p style="font-size:10px;color:var(--muted-fg);margin-top:4px" class="mono">ID: ${bande.id}</p>
+  </div>`;
+  
+  // Threat level bar
+  html += `<div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;font-weight:600">Trusselsniveau:</span>
+      <span style="color:${color};font-weight:700;font-size:14px">${bande.trusselsniveau || 'Ukendt'}</span>
+    </div>
+    <select class="select" style="width:140px;font-size:12px" onchange="window._nskChangeTrussel('${bande.id}', this.value)">
+      <option value="Høj" ${bande.trusselsniveau==='Høj'?'selected':''}>Høj</option>
+      <option value="Middel" ${bande.trusselsniveau==='Middel'?'selected':''}>Middel</option>
+      <option value="Lav" ${bande.trusselsniveau==='Lav'?'selected':''}>Lav</option>
+    </select>
+  </div>`;
+  
+  // Two column layout
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">`;
+  
+  // Left: Members
+  html += `<div class="card" style="padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-size:14px;font-weight:700">Medlemmer (${(bande.medlemmer||[]).length})</span>
+    </div>
+    <div style="margin-bottom:12px">
+      <input class="input" id="nsk-add-member-search" placeholder="Søg person (navn/CPR)..." style="font-size:12px;margin-bottom:6px">
+      <div id="nsk-member-search-results" style="max-height:100px;overflow-y:auto"></div>
+    </div>`;
+  
+  if ((bande.medlemmer||[]).length === 0) {
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:16px">Ingen medlemmer tilføjet endnu</p>`;
+  } else {
+    (bande.medlemmer||[]).forEach((m, i) => {
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border)">
+        <div>
+          <div style="font-size:13px;font-weight:500">${esc(m.navn)}</div>
+          <div style="font-size:10px;color:var(--muted-fg)" class="mono">${m.cpr || ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;color:var(--muted-fg)">Sigtelser: ${m.sigtelser || 0}</span>
+          <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px;font-size:10px" onclick="window._nskRemoveMember('${bande.id}',${i})">Fjern</button>
+        </div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  
+  // Right: Stats
+  html += `<div class="card" style="padding:16px">
+    <span style="font-size:14px;font-weight:700;display:block;margin-bottom:12px">Bande Statistik</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="card card-sm" style="text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:700;color:var(--primary)">${(bande.medlemmer||[]).length}</div>
+        <div style="font-size:10px;color:var(--muted-fg)">Medlemmer</div>
+      </div>
+      <div class="card card-sm" style="text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:700;color:var(--destructive)">${totalSigtelser}</div>
+        <div style="font-size:10px;color:var(--muted-fg)">Samlede sigtelser</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">Seneste aktivitet</div>
+    <div style="font-size:11px;color:var(--muted-fg)">Oprettet: ${bande.oprettetDato || '—'}</div>
+    <div style="font-size:11px;color:var(--muted-fg)">Af: ${bande.oprettetAf || '—'}</div>
+  </div>`;
+  
+  html += `</div>`;
+  
+  // Evidence section
+  html += `<div class="card" style="padding:16px;margin-bottom:16px">
+    <span style="font-size:14px;font-weight:700;display:block;margin-bottom:12px">Beviser</span>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input class="input" id="nsk-bevis-desc" placeholder="Bevis beskrivelse..." style="flex:1;font-size:12px">
+      <button class="btn btn-primary btn-sm" onclick="window._nskAddBevis('${bande.id}')">Tilføj</button>
+    </div>`;
+  
+  if ((bande.beviser||[]).length === 0) {
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:12px">Ingen beviser registreret</p>`;
+  } else {
+    (bande.beviser||[]).forEach((b2, i) => {
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border)">
+        <div>
+          <div style="font-size:12px">${esc(b2.beskrivelse)}</div>
+          <div style="font-size:9px;color:var(--muted-fg)">${b2.dato || '—'} — ${b2.forfatter || '—'}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="color:var(--destructive);font-size:9px" onclick="window._nskRemoveBevis('${bande.id}',${i})">✕</button>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  
+  // Information section
+  html += `<div class="card" style="padding:16px">
+    <span style="font-size:14px;font-weight:700;display:block;margin-bottom:12px">Information</span>
+    <textarea class="textarea" id="nsk-bande-info" rows="4" style="font-size:12px;margin-bottom:10px" placeholder="Generel information om banden...">${esc(bande.information || '')}</textarea>
+    <button class="btn btn-primary btn-sm" onclick="window._nskSaveInfo('${bande.id}')">Gem Information</button>
+  </div>`;
+  
+  return html;
+}
+
+// ── NSK Bander event handlers ──
+window._nskShowCreateBande = function() {
+  const form = document.getElementById('nsk-create-bande-form');
+  if (!form) return;
+  if (form.style.display !== 'none') { form.style.display = 'none'; return; }
+  form.style.display = 'block';
+  form.innerHTML = `<div class="card" style="padding:16px;margin-bottom:16px">
+    <span style="font-size:14px;font-weight:600;display:block;margin-bottom:12px">Opret ny bande</span>
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div style="flex:1"><div class="label">Bande Navn</div><input class="input" id="nsk-new-bande-navn" placeholder="Indtast bande navn..."></div>
+      <div style="width:160px"><div class="label">Trusselsniveau</div><select class="select w-full" id="nsk-new-bande-trussel"><option value="Høj">Høj</option><option value="Middel" selected>Middel</option><option value="Lav">Lav</option></select></div>
+      <button class="btn btn-sm" style="background:var(--success);color:#fff" onclick="window._nskCreateBande()">Opret</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('nsk-create-bande-form').style.display='none'">Annuller</button>
+    </div>
+  </div>`;
+};
+
+window._nskCreateBande = function() {
+  const navn = document.getElementById('nsk-new-bande-navn')?.value?.trim();
+  const trussel = document.getElementById('nsk-new-bande-trussel')?.value || 'Middel';
+  if (!navn) { showToast('Indtast et bande navn'); return; }
+  const bander = getNSKBander();
+  bander.push({
+    id: Date.now().toString() + Math.random().toString(36).substr(2,4),
+    navn, trusselsniveau: trussel,
+    medlemmer: [], beviser: [], information: '',
+    oprettetAf: `${currentUser.fornavn} ${currentUser.efternavn}`,
+    oprettetDato: new Date().toISOString().split('T')[0]
+  });
+  saveNSKBander(bander);
+  showToast('Bande oprettet: ' + navn);
+  renderPage(activeTabId);
+};
+
+window._nskDeleteBande = function(id) {
+  if (!confirm('Er du sikker på du vil slette denne bande?')) return;
+  const bander = getNSKBander().filter(b => b.id !== id);
+  saveNSKBander(bander);
+  showToast('Bande slettet');
+  renderPage(activeTabId);
+};
+
+window._nskViewBandeDetaljer = function(id) {
+  window._nskViewBande = id;
+  renderPage(activeTabId);
+};
+
+window._nskBackToOversigt = function() {
+  window._nskViewBande = null;
+  renderPage(activeTabId);
+};
+
+window._nskChangeTrussel = function(id, value) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === id);
+  if (b) { b.trusselsniveau = value; saveNSKBander(bander); showToast('Trusselsniveau ændret'); renderPage(activeTabId); }
+};
+
+window._nskRemoveMember = function(bandeId, index) {
+  if (!confirm('Fjern dette medlem?')) return;
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b && b.medlemmer) { b.medlemmer.splice(index, 1); saveNSKBander(bander); renderPage(activeTabId); }
+};
+
+window._nskAddBevis = function(bandeId) {
+  const desc = document.getElementById('nsk-bevis-desc')?.value?.trim();
+  if (!desc) { showToast('Indtast en bevis beskrivelse'); return; }
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b) {
+    if (!b.beviser) b.beviser = [];
+    b.beviser.push({ beskrivelse: desc, dato: new Date().toISOString().split('T')[0], forfatter: `${currentUser.fornavn} ${currentUser.efternavn}` });
+    saveNSKBander(bander);
+    showToast('Bevis tilføjet');
+    renderPage(activeTabId);
+  }
+};
+
+window._nskRemoveBevis = function(bandeId, index) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b && b.beviser) { b.beviser.splice(index, 1); saveNSKBander(bander); renderPage(activeTabId); }
+};
+
+window._nskSaveInfo = function(bandeId) {
+  const info = document.getElementById('nsk-bande-info')?.value || '';
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b) { b.information = info; saveNSKBander(bander); showToast('Information gemt'); }
+};
+
+// Member search in detail view
+document.addEventListener('input', e => {
+  if (e.target.id !== 'nsk-add-member-search') return;
+  const q = e.target.value.toLowerCase();
+  const results = document.getElementById('nsk-member-search-results');
+  if (!results) return;
+  if (q.length < 2) { results.innerHTML = ''; return; }
+  (async () => {
+    try {
+      const personer = window._nskPersoner || await personerApi.getAll();
+      window._nskPersoner = personer;
+      const bandeId = window._nskViewBande;
+      const bander = getNSKBander();
+      const bande = bander.find(x => x.id === bandeId);
+      const existingIds = (bande?.medlemmer||[]).map(m => m.id);
+      const matches = personer.filter(p => !existingIds.includes(p.id) && `${p.fornavn} ${p.efternavn} ${p.cpr}`.toLowerCase().includes(q)).slice(0, 6);
+      results.innerHTML = matches.map(p => `<div class="list-item" style="padding:6px 10px;cursor:pointer;font-size:12px" onclick="window._nskAddMember('${bandeId}','${p.id}','${esc(p.fornavn+' '+p.efternavn)}','${p.cpr}')">
+        <span>${p.fornavn} ${p.efternavn}</span> <span class="mono" style="font-size:10px;color:var(--muted-fg)">${p.cpr}</span>
+      </div>`).join('');
+      if (matches.length === 0) results.innerHTML = '<div style="padding:6px 10px;font-size:11px;color:var(--muted-fg)">Ingen resultater</div>';
+    } catch {}
+  })();
+});
+
+window._nskAddMember = function(bandeId, personId, navn, cpr) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b) {
+    if (!b.medlemmer) b.medlemmer = [];
+    if (b.medlemmer.find(m => m.id === personId)) { showToast('Personen er allerede medlem'); return; }
+    b.medlemmer.push({ id: personId, navn, cpr, sigtelser: 0, tilfojetDato: new Date().toISOString().split('T')[0] });
+    saveNSKBander(bander);
+    showToast(navn + ' tilføjet som medlem');
+    renderPage(activeTabId);
+  }
+};
+
+
   let html = '';
   try {
     const [tilhoersforhold, personer] = await Promise.all([tilhoersforholdApi.getAll(), personerApi.getAll()]);
