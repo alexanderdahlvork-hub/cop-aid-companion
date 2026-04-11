@@ -132,6 +132,11 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [magtInput, setMagtInput] = useState("");
   const [magtmidler, setMagtmidler] = useState<string[]>([]);
 
+  // Track which person we last initialized for, to avoid re-resetting on re-opens
+  const [lastInitPersonId, setLastInitPersonId] = useState<string | null>(null);
+
+  const [frakendelsesType, setFrakendelsesType] = useState("");
+
   const boeder = standardBoeder;
 
   useEffect(() => {
