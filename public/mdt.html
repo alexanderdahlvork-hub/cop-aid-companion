@@ -7415,6 +7415,119 @@ window._nskAddMember = function(bandeId, personId, navn, cpr) {
   }
 };
 
+// ── Sigtelse dialog for band members ──
+window._nskShowSigtelseDialog = function(bandeId, memberIndex) {
+  const bander = getNSKBander();
+  const bande = bander.find(x => x.id === bandeId);
+  if (!bande || !bande.medlemmer[memberIndex]) return;
+  const medlem = bande.medlemmer[memberIndex];
+  
+  const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  overlay.innerHTML = `<div class="dialog" style="max-width:480px">
+    <div class="dialog-title">Tilføj sigtelse — ${esc(medlem.navn)}</div>
+    <div style="font-size:11px;color:var(--muted-fg);margin-bottom:14px" class="mono">${medlem.cpr || ''} · ${esc(bande.navn)}</div>
+    <div class="label">Sigtelse / Lovovertrædelse</div>
+    <input class="input mb-2" id="nsk-sigt-desc" placeholder="F.eks. Besiddelse af narko, Hærværk, Trusler...">
+    <div class="grid grid-2 gap-2 mb-2">
+      <div><div class="label">Bøde (kr.)</div><input class="input" id="nsk-sigt-boede" type="number" placeholder="0" value="0"></div>
+      <div><div class="label">Fængsel (mdr.)</div><input class="input" id="nsk-sigt-faengsel" type="number" placeholder="0" value="0"></div>
+    </div>
+    <div class="label">Noter (valgfrit)</div>
+    <textarea class="textarea mb-2" id="nsk-sigt-noter" rows="2" placeholder="Yderligere detaljer..."></textarea>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" id="nsk-sigt-submit">Tilføj sigtelse</button>
+      <button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("nsk-sigt-submit").addEventListener("click", () => {
+    const desc = document.getElementById("nsk-sigt-desc").value.trim();
+    if (!desc) { showToast("Indtast en sigtelse"); return; }
+    const freshBander = getNSKBander();
+    const fb = freshBander.find(x => x.id === bandeId);
+    if (!fb || !fb.medlemmer[memberIndex]) return;
+    if (!fb.medlemmer[memberIndex].sigtelserListe) fb.medlemmer[memberIndex].sigtelserListe = [];
+    fb.medlemmer[memberIndex].sigtelserListe.push({
+      beskrivelse: desc,
+      boede: parseInt(document.getElementById("nsk-sigt-boede").value) || 0,
+      faengsel: parseInt(document.getElementById("nsk-sigt-faengsel").value) || 0,
+      noter: document.getElementById("nsk-sigt-noter").value || '',
+      dato: new Date().toISOString().split('T')[0],
+      registreretAf: currentUser.fornavn + ' ' + currentUser.efternavn
+    });
+    fb.medlemmer[memberIndex].sigtelser = fb.medlemmer[memberIndex].sigtelserListe.length;
+    saveNSKBander(freshBander);
+    showToast("Sigtelse tilføjet til " + fb.medlemmer[memberIndex].navn);
+    overlay.remove();
+    renderPage(activeTabId);
+  });
+};
+
+window._nskRemoveSigtelse = function(bandeId, memberIndex, sigtelseIndex) {
+  if (!confirm("Fjern denne sigtelse?")) return;
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b && b.medlemmer[memberIndex] && b.medlemmer[memberIndex].sigtelserListe) {
+    b.medlemmer[memberIndex].sigtelserListe.splice(sigtelseIndex, 1);
+    b.medlemmer[memberIndex].sigtelser = b.medlemmer[memberIndex].sigtelserListe.length;
+    saveNSKBander(bander);
+    renderPage(activeTabId);
+  }
+};
+
+// ── Better add-member dialog ──
+window._nskShowAddMemberDialog = async function(bandeId) {
+  if (!window._nskPersoner || window._nskPersoner.length === 0) {
+    try { window._nskPersoner = await personerApi.getAll(); } catch {}
+  }
+  const personer = window._nskPersoner || [];
+  const bander = getNSKBander();
+  const bande = bander.find(x => x.id === bandeId);
+  const existingIds = (bande?.medlemmer||[]).map(m => m.id);
+  const available = personer.filter(p => !existingIds.includes(p.id));
+  
+  const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  let listHtml = '';
+  if (available.length === 0) {
+    listHtml = '<div style="text-align:center;padding:20px;color:var(--muted-fg);font-size:12px">Ingen tilgængelige personer i registeret</div>';
+  } else {
+    available.forEach(p => {
+      const safeName = (p.fornavn + ' ' + p.efternavn).replace(/'/g, "\\'");
+      listHtml += `<div class="list-item nsk-dlg-person" data-search="${(p.fornavn+' '+p.efternavn+' '+p.cpr).toLowerCase()}" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}');this.closest('.dialog-overlay').remove()">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <div>
+            <div style="font-size:13px;font-weight:600">${p.fornavn} ${p.efternavn}</div>
+            <div style="font-size:10px;color:var(--muted-fg)" class="mono">${p.cpr}</div>
+          </div>
+          <span style="font-size:10px;color:var(--success);font-weight:600">+ Tilføj</span>
+        </div>
+      </div>`;
+    });
+  }
+  
+  overlay.innerHTML = `<div class="dialog" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column">
+    <div class="dialog-title">Tilføj medlem til ${esc(bande?.navn || '')}</div>
+    <div style="margin-bottom:12px;position:relative">
+      <input class="input" id="nsk-dlg-search" placeholder="Søg efter person (navn/CPR)..." style="font-size:12px">
+    </div>
+    <div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:8px;max-height:350px">
+      ${listHtml}
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Luk</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  
+  // Search filter within dialog
+  document.getElementById("nsk-dlg-search").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    overlay.querySelectorAll(".nsk-dlg-person").forEach(item => {
+      item.style.display = item.dataset.search.includes(q) ? '' : 'none';
+    });
+  });
+};
+
 
 async function renderNSKContent() {
   let html = '';
