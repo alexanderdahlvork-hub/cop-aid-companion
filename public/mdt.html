@@ -7332,11 +7332,23 @@ window._nskChangeTrussel = function(id, value) {
   if (b) { b.trusselsniveau = value; saveNSKBander(bander); showToast('Trusselsniveau ændret'); renderPage(activeTabId); }
 };
 
-window._nskRemoveMember = function(bandeId, index) {
+window._nskRemoveMember = async function(bandeId, index) {
   if (!confirm('Fjern dette medlem?')) return;
   const bander = getNSKBander();
   const b = bander.find(x => x.id === bandeId);
-  if (b && b.medlemmer) { b.medlemmer.splice(index, 1); saveNSKBander(bander); renderPage(activeTabId); }
+  if (b && b.medlemmer) {
+    const member = b.medlemmer[index];
+    b.medlemmer.splice(index, 1);
+    saveNSKBander(bander);
+    // Sync: remove matching tilhørsforhold from person registry
+    if (member) {
+      try {
+        const tilhId = 'bande_' + bandeId + '_' + member.id;
+        await tilhoersforholdApi.remove(tilhId);
+      } catch(e) { console.error('Tilhørsforhold remove sync fejl:', e); }
+    }
+    renderPage(activeTabId);
+  }
 };
 
 window._nskAddBevis = function(bandeId) {
@@ -7402,7 +7414,7 @@ document.addEventListener('input', e => {
   })();
 });
 
-window._nskAddMember = function(bandeId, personId, navn, cpr) {
+window._nskAddMember = async function(bandeId, personId, navn, cpr) {
   const bander = getNSKBander();
   const b = bander.find(x => x.id === bandeId);
   if (b) {
@@ -7410,6 +7422,11 @@ window._nskAddMember = function(bandeId, personId, navn, cpr) {
     if (b.medlemmer.find(m => m.id === personId)) { showToast('Personen er allerede medlem'); return; }
     b.medlemmer.push({ id: personId, navn, cpr, sigtelser: 0, sigtelserListe: [], tilfojetDato: new Date().toISOString().split('T')[0] });
     saveNSKBander(bander);
+    // Sync: also create tilhørsforhold so it shows in person registry
+    try {
+      const t = { id: 'bande_' + bandeId + '_' + personId, personId, personCpr: cpr, personNavn: navn, bande: b.navn, rolle: 'Medlem', status: 'aktiv', oprettetAf: currentUser.fornavn + ' ' + currentUser.efternavn, oprettetDato: new Date().toISOString().split('T')[0] };
+      await tilhoersforholdApi.create(t);
+    } catch(e) { console.error('Tilhørsforhold sync fejl:', e); }
     showToast(navn + ' tilføjet som medlem');
     renderPage(activeTabId);
   }
