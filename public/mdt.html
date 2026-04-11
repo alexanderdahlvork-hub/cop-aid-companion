@@ -7364,6 +7364,7 @@ window._nskAddMember = function(bandeId, personId, navn, cpr) {
 };
 
 
+async function renderNSKContent() {
   let html = '';
   try {
     const [tilhoersforhold, personer] = await Promise.all([tilhoersforholdApi.getAll(), personerApi.getAll()]);
@@ -9449,8 +9450,7 @@ window.selectCase = async function(id) {
                 </div>
                 <div class="case-field full">
                   <div class="case-field-label">Beskrivelse</div>
-                  <div class="case-field-value">${escCase(r.resume || "Ingen beskrivelse skrevet endnu.").replace(/
-/g, "<br>")}</div>
+                  <div class="case-field-value">${escCase(r.resume || "Ingen beskrivelse skrevet endnu.").replace(/\n/g, "<br>")}</div>
                 </div>
                 <div class="case-field">
                   <div class="case-field-label">Betjente</div>
@@ -9548,8 +9548,7 @@ window.selectCase = async function(id) {
 
             <div class="case-panel" style="margin-top:14px">
               <div class="case-panel-title">Sagsnoter</div>
-              <div style="font-size:13px;color:var(--muted-fg);line-height:1.7">${escCase(r.notes || "Ingen noter skrevet endnu.").replace(/
-/g, "<br>")}</div>
+              <div style="font-size:13px;color:var(--muted-fg);line-height:1.7">${escCase(r.notes || "Ingen noter skrevet endnu.").replace(/\n/g, "<br>")}</div>
             </div>
           </div>
         </div>
