@@ -7127,7 +7127,8 @@ async function renderNSKBander() {
 function renderNSKBandeDetaljer(bande) {
   const threatColors = {Høj:'#d6364b',Middel:'#e0642a',Lav:'#33a06a'};
   const color = threatColors[bande.trusselsniveau] || '#6b7585';
-  const totalSigtelser = (bande.medlemmer||[]).reduce((sum, m) => sum + (m.sigtelser || 0), 0);
+  const allSigtelser = (bande.medlemmer||[]).flatMap(m => (m.sigtelserListe || []).map(s => ({...s, medlemNavn: m.navn})));
+  const totalSigtelser = allSigtelser.length;
   
   let html = '';
   
@@ -7169,26 +7170,47 @@ function renderNSKBandeDetaljer(bande) {
         ${icons.users}
         <span style="font-size:15px;font-weight:700;color:var(--fg)">Medlemmer</span>
       </div>
-      <span style="color:var(--success)">${icons.plus}</span>
+      <button style="background:var(--success);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" onclick="window._nskShowAddMemberDialog('${bande.id}')">${icons.plus} Tilføj</button>
     </div>
     <div style="font-size:11px;color:var(--muted-fg);margin-bottom:14px">Antal medlemmer: ${(bande.medlemmer||[]).length}</div>
     <div style="margin-bottom:14px;position:relative">
       <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg)">🔍</div>
-      <input class="input" id="nsk-add-member-search" placeholder="Søg efter medlem..." style="font-size:12px;padding-left:32px;background:var(--input);border-radius:8px">
-      <div id="nsk-member-search-results" style="max-height:100px;overflow-y:auto;margin-top:4px"></div>
+      <input class="input" id="nsk-add-member-search" placeholder="Søg og tilføj medlem..." style="font-size:12px;padding-left:32px;background:var(--input);border-radius:8px">
+      <div id="nsk-member-search-results" style="max-height:120px;overflow-y:auto;margin-top:4px;border-radius:8px"></div>
     </div>`;
   
   if ((bande.medlemmer||[]).length === 0) {
-    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px 0">Ingen medlemmer tilføjet endnu</p>`;
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px 0">Ingen medlemmer tilføjet endnu.<br><span style="font-size:11px">Brug søgefeltet ovenfor eller klik "Tilføj"</span></p>`;
   } else {
     (bande.medlemmer||[]).forEach((m, i) => {
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(42,47,58,0.6);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--fg)">${esc(m.navn)}</div>
-          <div style="font-size:10px;color:var(--muted-fg)">Antal sigtelser: ${m.sigtelser || 0}</div>
-        </div>
-        <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px 8px;font-size:14px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" onclick="window._nskRemoveMember('${bande.id}',${i})">🗑</button>
-      </div>`;
+      const memberSigtelser = m.sigtelserListe || [];
+      html += `<div style="padding:10px 0;border-top:1px solid rgba(42,47,58,0.6)">
+        <div style="display:flex;align-items:center;justify-content:space-between;transition:background 0.15s">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--fg)">${esc(m.navn)}</div>
+            <div style="font-size:10px;color:var(--muted-fg)" class="mono">${m.cpr || ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="badge ${memberSigtelser.length > 0 ? 'badge-destructive' : 'badge-muted'}" style="font-size:9px">${memberSigtelser.length} sigtelser</span>
+            <button style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);color:var(--primary);border-radius:6px;cursor:pointer;padding:3px 8px;font-size:10px;transition:all 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'" onclick="window._nskShowSigtelseDialog('${bande.id}',${i})">+ Sigtelse</button>
+            <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px 6px;font-size:13px;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'" onclick="window._nskRemoveMember('${bande.id}',${i})">🗑</button>
+          </div>
+        </div>`;
+      // Show sigtelser list inline
+      if (memberSigtelser.length > 0) {
+        html += `<div style="margin-top:6px;margin-left:12px">`;
+        memberSigtelser.forEach((s, si) => {
+          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(214,54,75,0.05);border-radius:6px;border-left:2px solid var(--destructive)">
+            <div>
+              <span style="font-size:11px;color:var(--fg)">${esc(s.beskrivelse)}</span>
+              <span style="font-size:9px;color:var(--muted-fg);margin-left:6px">${s.dato || ''}</span>
+            </div>
+            <button style="background:none;border:none;color:var(--destructive);cursor:pointer;font-size:10px;opacity:0.5" onclick="window._nskRemoveSigtelse('${bande.id}',${i},${si})">✕</button>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
     });
   }
   html += `</div>`;
@@ -7198,17 +7220,16 @@ function renderNSKBandeDetaljer(bande) {
     <span style="font-size:15px;font-weight:700;display:block;margin-bottom:16px;color:var(--fg)">Bande Statistik</span>
     <div style="font-size:13px;color:var(--fg);margin-bottom:16px"><strong>Samlet antal sigtelser:</strong> ${totalSigtelser}</div>
     <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--fg)">Seneste Sigtelser</div>
-    <div style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:80px">`;
+    <div style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:80px;max-height:200px;overflow-y:auto">`;
   
-  if ((bande.medlemmer||[]).length > 0) {
-    const sigtelser = (bande.medlemmer||[]).filter(m => (m.sigtelser||0) > 0);
-    if (sigtelser.length > 0) {
-      sigtelser.forEach(m => {
-        html += `<div style="font-size:12px;color:var(--muted-fg);padding:2px 0">${esc(m.navn)} — ${m.sigtelser} sigtelse(r)</div>`;
-      });
-    } else {
-      html += `<div style="font-size:12px;color:var(--muted-fg)">Ingen sigtelser registreret</div>`;
-    }
+  if (allSigtelser.length > 0) {
+    const sorted = [...allSigtelser].sort((a,b) => (b.dato||'').localeCompare(a.dato||''));
+    sorted.slice(0, 10).forEach(s => {
+      html += `<div style="font-size:11px;padding:4px 0;border-bottom:1px solid rgba(42,47,58,0.3)">
+        <span style="color:var(--fg);font-weight:500">${esc(s.beskrivelse)}</span>
+        <div style="font-size:9px;color:var(--muted-fg)">${esc(s.medlemNavn)} — ${s.dato || '—'}</div>
+      </div>`;
+    });
   } else {
     html += `<div style="font-size:12px;color:var(--muted-fg)">Ingen sigtelser registreret</div>`;
   }
@@ -7387,11 +7408,124 @@ window._nskAddMember = function(bandeId, personId, navn, cpr) {
   if (b) {
     if (!b.medlemmer) b.medlemmer = [];
     if (b.medlemmer.find(m => m.id === personId)) { showToast('Personen er allerede medlem'); return; }
-    b.medlemmer.push({ id: personId, navn, cpr, sigtelser: 0, tilfojetDato: new Date().toISOString().split('T')[0] });
+    b.medlemmer.push({ id: personId, navn, cpr, sigtelser: 0, sigtelserListe: [], tilfojetDato: new Date().toISOString().split('T')[0] });
     saveNSKBander(bander);
     showToast(navn + ' tilføjet som medlem');
     renderPage(activeTabId);
   }
+};
+
+// ── Sigtelse dialog for band members ──
+window._nskShowSigtelseDialog = function(bandeId, memberIndex) {
+  const bander = getNSKBander();
+  const bande = bander.find(x => x.id === bandeId);
+  if (!bande || !bande.medlemmer[memberIndex]) return;
+  const medlem = bande.medlemmer[memberIndex];
+  
+  const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  overlay.innerHTML = `<div class="dialog" style="max-width:480px">
+    <div class="dialog-title">Tilføj sigtelse — ${esc(medlem.navn)}</div>
+    <div style="font-size:11px;color:var(--muted-fg);margin-bottom:14px" class="mono">${medlem.cpr || ''} · ${esc(bande.navn)}</div>
+    <div class="label">Sigtelse / Lovovertrædelse</div>
+    <input class="input mb-2" id="nsk-sigt-desc" placeholder="F.eks. Besiddelse af narko, Hærværk, Trusler...">
+    <div class="grid grid-2 gap-2 mb-2">
+      <div><div class="label">Bøde (kr.)</div><input class="input" id="nsk-sigt-boede" type="number" placeholder="0" value="0"></div>
+      <div><div class="label">Fængsel (mdr.)</div><input class="input" id="nsk-sigt-faengsel" type="number" placeholder="0" value="0"></div>
+    </div>
+    <div class="label">Noter (valgfrit)</div>
+    <textarea class="textarea mb-2" id="nsk-sigt-noter" rows="2" placeholder="Yderligere detaljer..."></textarea>
+    <div class="flex gap-2">
+      <button class="btn btn-primary" id="nsk-sigt-submit">Tilføj sigtelse</button>
+      <button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("nsk-sigt-submit").addEventListener("click", () => {
+    const desc = document.getElementById("nsk-sigt-desc").value.trim();
+    if (!desc) { showToast("Indtast en sigtelse"); return; }
+    const freshBander = getNSKBander();
+    const fb = freshBander.find(x => x.id === bandeId);
+    if (!fb || !fb.medlemmer[memberIndex]) return;
+    if (!fb.medlemmer[memberIndex].sigtelserListe) fb.medlemmer[memberIndex].sigtelserListe = [];
+    fb.medlemmer[memberIndex].sigtelserListe.push({
+      beskrivelse: desc,
+      boede: parseInt(document.getElementById("nsk-sigt-boede").value) || 0,
+      faengsel: parseInt(document.getElementById("nsk-sigt-faengsel").value) || 0,
+      noter: document.getElementById("nsk-sigt-noter").value || '',
+      dato: new Date().toISOString().split('T')[0],
+      registreretAf: currentUser.fornavn + ' ' + currentUser.efternavn
+    });
+    fb.medlemmer[memberIndex].sigtelser = fb.medlemmer[memberIndex].sigtelserListe.length;
+    saveNSKBander(freshBander);
+    showToast("Sigtelse tilføjet til " + fb.medlemmer[memberIndex].navn);
+    overlay.remove();
+    renderPage(activeTabId);
+  });
+};
+
+window._nskRemoveSigtelse = function(bandeId, memberIndex, sigtelseIndex) {
+  if (!confirm("Fjern denne sigtelse?")) return;
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (b && b.medlemmer[memberIndex] && b.medlemmer[memberIndex].sigtelserListe) {
+    b.medlemmer[memberIndex].sigtelserListe.splice(sigtelseIndex, 1);
+    b.medlemmer[memberIndex].sigtelser = b.medlemmer[memberIndex].sigtelserListe.length;
+    saveNSKBander(bander);
+    renderPage(activeTabId);
+  }
+};
+
+// ── Better add-member dialog ──
+window._nskShowAddMemberDialog = async function(bandeId) {
+  if (!window._nskPersoner || window._nskPersoner.length === 0) {
+    try { window._nskPersoner = await personerApi.getAll(); } catch {}
+  }
+  const personer = window._nskPersoner || [];
+  const bander = getNSKBander();
+  const bande = bander.find(x => x.id === bandeId);
+  const existingIds = (bande?.medlemmer||[]).map(m => m.id);
+  const available = personer.filter(p => !existingIds.includes(p.id));
+  
+  const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  let listHtml = '';
+  if (available.length === 0) {
+    listHtml = '<div style="text-align:center;padding:20px;color:var(--muted-fg);font-size:12px">Ingen tilgængelige personer i registeret</div>';
+  } else {
+    available.forEach(p => {
+      const safeName = (p.fornavn + ' ' + p.efternavn).replace(/'/g, "\\'");
+      listHtml += `<div class="list-item nsk-dlg-person" data-search="${(p.fornavn+' '+p.efternavn+' '+p.cpr).toLowerCase()}" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}');this.closest('.dialog-overlay').remove()">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <div>
+            <div style="font-size:13px;font-weight:600">${p.fornavn} ${p.efternavn}</div>
+            <div style="font-size:10px;color:var(--muted-fg)" class="mono">${p.cpr}</div>
+          </div>
+          <span style="font-size:10px;color:var(--success);font-weight:600">+ Tilføj</span>
+        </div>
+      </div>`;
+    });
+  }
+  
+  overlay.innerHTML = `<div class="dialog" style="max-width:440px;max-height:80vh;display:flex;flex-direction:column">
+    <div class="dialog-title">Tilføj medlem til ${esc(bande?.navn || '')}</div>
+    <div style="margin-bottom:12px;position:relative">
+      <input class="input" id="nsk-dlg-search" placeholder="Søg efter person (navn/CPR)..." style="font-size:12px">
+    </div>
+    <div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:8px;max-height:350px">
+      ${listHtml}
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Luk</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  
+  // Search filter within dialog
+  document.getElementById("nsk-dlg-search").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    overlay.querySelectorAll(".nsk-dlg-person").forEach(item => {
+      item.style.display = item.dataset.search.includes(q) ? '' : 'none';
+    });
+  });
 };
 
 
