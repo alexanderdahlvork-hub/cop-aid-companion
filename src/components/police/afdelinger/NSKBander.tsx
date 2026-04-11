@@ -1,15 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
 import {
   Search, Plus, X, Check, ChevronLeft, Users, AlertTriangle,
-  FileText, Trash2, UserPlus, Shield, Info
+  FileText, Trash2, UserPlus, Shield, Info, Gavel
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { personerApi } from "@/lib/api";
-import type { Person } from "@/types/police";
+import { personerApi, sigtelserApi } from "@/lib/api";
+import type { Person, Sigtelse } from "@/types/police";
 
 interface BandeMedlem {
   personId: string;
@@ -29,7 +29,7 @@ interface Bevis {
 interface Bande {
   id: string;
   navn: string;
-  trpivsselsniveau: string; // Høj, Middel, Lav
+  trpivsselsniveau: string;
   medlemmer: BandeMedlem[];
   beviser: Bevis[];
   information: string;
@@ -51,6 +51,7 @@ interface NSKBanderProps {
 const NSKBander = ({ userName }: NSKBanderProps) => {
   const [bander, setBander] = useState<Bande[]>([]);
   const [personer, setPersoner] = useState<Person[]>([]);
+  const [sigtelser, setSigtelser] = useState<Sigtelse[]>([]);
   const [selectedBandeId, setSelectedBandeId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newBandeNavn, setNewBandeNavn] = useState("");
@@ -66,7 +67,15 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
       try { setBander(JSON.parse(saved)); } catch { /* empty */ }
     }
     personerApi.getAll().then(p => setPersoner(p as Person[])).catch(() => {});
+    sigtelserApi.getAll().then(s => setSigtelser(s)).catch(() => {});
   }, []);
+
+  // Refresh sigtelser when returning to detail view
+  useEffect(() => {
+    if (selectedBandeId) {
+      sigtelserApi.getAll().then(s => setSigtelser(s)).catch(() => {});
+    }
+  }, [selectedBandeId]);
 
   const save = (updated: Bande[]) => {
     setBander(updated);
@@ -74,6 +83,24 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
   };
 
   const selectedBande = bander.find(b => b.id === selectedBandeId);
+
+  // Get sigtelser for all members of a bande
+  const bandeSigtelser = useMemo(() => {
+    if (!selectedBande) return [];
+    const memberIds = new Set(selectedBande.medlemmer.map(m => m.personId));
+    const memberCprs = new Set(selectedBande.medlemmer.map(m => m.cpr));
+    return sigtelser.filter(s => memberIds.has(s.personId) || memberCprs.has(s.personCpr));
+  }, [selectedBande, sigtelser]);
+
+  // Count sigtelser per member
+  const sigtelserPerMember = useMemo(() => {
+    const map: Record<string, Sigtelse[]> = {};
+    if (!selectedBande) return map;
+    for (const m of selectedBande.medlemmer) {
+      map[m.personId] = sigtelser.filter(s => s.personId === m.personId || s.personCpr === m.cpr);
+    }
+    return map;
+  }, [selectedBande, sigtelser]);
 
   const opretBande = () => {
     if (!newBandeNavn.trim()) return;
@@ -155,7 +182,7 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
       .slice(0, 8);
   }, [memberSearch, personer, selectedBande]);
 
-  // Detail view for a selected bande
+  // Detail view
   if (selectedBande) {
     const trussel = trusselsfarver[selectedBande.trpivsselsniveau] || trusselsfarver["Lav"];
     return (
@@ -168,12 +195,9 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
           >
             <ChevronLeft className="w-3 h-3" /> Tilbage til oversigt
           </button>
-
           <div className="text-center mb-3">
             <h2 className="text-base font-bold">{selectedBande.navn} - Detaljer</h2>
           </div>
-
-          {/* Trusselsniveau */}
           <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-muted-foreground" />
@@ -212,7 +236,6 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
               Antal medlemmer: {selectedBande.medlemmer.length}
             </div>
 
-            {/* Search to add member */}
             {showMemberDropdown && (
               <div className="mb-3 relative">
                 <div className="relative">
@@ -242,19 +265,23 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
               </div>
             )}
 
-            {/* Member list */}
             <div className="space-y-1">
-              {selectedBande.medlemmer.map(m => (
-                <div key={m.personId} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-muted/30">
-                  <div>
-                    <div className="text-[11px] font-medium">{m.navn}</div>
-                    <div className="text-[9px] text-muted-foreground">Antal sigtelser: 0</div>
+              {selectedBande.medlemmer.map(m => {
+                const memberSigtelser = sigtelserPerMember[m.personId] || [];
+                return (
+                  <div key={m.personId} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-muted/30">
+                    <div>
+                      <div className="text-[11px] font-medium">{m.navn}</div>
+                      <div className="text-[9px] text-muted-foreground">
+                        Antal sigtelser: {memberSigtelser.length}
+                      </div>
+                    </div>
+                    <button onClick={() => fjernMedlem(m.personId)} className="p-1 rounded hover:bg-muted">
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </button>
                   </div>
-                  <button onClick={() => fjernMedlem(m.personId)} className="p-1 rounded hover:bg-muted">
-                    <Trash2 className="w-3 h-3 text-destructive" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
               {selectedBande.medlemmer.length === 0 && (
                 <div className="text-[11px] text-muted-foreground text-center py-4">Ingen medlemmer endnu</div>
               )}
@@ -265,15 +292,79 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
           <div className="rounded-lg border bg-card p-4">
             <h3 className="text-sm font-bold mb-3">Bande Statistik</h3>
             <div className="text-[11px] text-muted-foreground mb-2">
-              Samlet antal sigtelser: {selectedBande.medlemmer.length > 0 ? 0 : 0}
+              Samlet antal sigtelser: {bandeSigtelser.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mb-2">
+              Samlet bødebeløb: {bandeSigtelser.reduce((sum, s) => sum + (s.totalBoede || 0), 0).toLocaleString("da-DK")} kr.
+            </div>
+            <div className="text-[11px] text-muted-foreground mb-3">
+              Samlet fængsel: {bandeSigtelser.reduce((sum, s) => sum + (s.faengselMaaneder || 0), 0)} mdr.
             </div>
             <div>
               <div className="text-xs font-semibold mb-2">Seneste Sigtelser</div>
-              <div className="rounded-lg border bg-muted/20 p-3 min-h-[80px]">
-                <span className="text-[11px] text-muted-foreground">Ingen sigtelser endnu</span>
+              <div className="rounded-lg border bg-muted/20 p-2 min-h-[60px] max-h-[120px] overflow-y-auto space-y-1">
+                {bandeSigtelser.length > 0 ? (
+                  bandeSigtelser.slice(0, 5).map(s => (
+                    <div key={s.id} className="text-[10px] px-1.5 py-1 rounded bg-muted/30">
+                      <span className="font-medium">{s.personNavn}</span>
+                      <span className="text-muted-foreground"> — {s.dato}</span>
+                      {s.sigtelseBoeder?.length > 0 && (
+                        <span className="text-muted-foreground"> — {s.sigtelseBoeder[0].beskrivelse}</span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">Ingen sigtelser endnu</span>
+                )}
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Bandesigtelser - full list */}
+        <div className="rounded-lg border bg-card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Gavel className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold">Bandesigtelser</h3>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+              {bandeSigtelser.length}
+            </Badge>
+          </div>
+          {bandeSigtelser.length > 0 ? (
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {bandeSigtelser.map(s => (
+                <div key={s.id} className="rounded-lg border bg-muted/20 p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold">{s.personNavn}</span>
+                    <span className="text-[10px] text-muted-foreground">{s.dato}</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {s.sigtelseBoeder?.map((b, i) => (
+                      <div key={i} className="text-[10px] text-muted-foreground flex items-center gap-2">
+                        <span className="font-mono">{b.paragraf}</span>
+                        <span>—</span>
+                        <span>{b.beskrivelse}</span>
+                        {b.beloeb > 0 && <Badge variant="outline" className="text-[9px] px-1 py-0">{b.beloeb.toLocaleString("da-DK")} kr.</Badge>}
+                        {b.faengselMaaneder > 0 && <Badge variant="outline" className="text-[9px] px-1 py-0">{b.faengselMaaneder} mdr.</Badge>}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-border/50">
+                    <span className="text-[9px] text-muted-foreground">Bøde: {(s.totalBoede || 0).toLocaleString("da-DK")} kr.</span>
+                    <span className="text-[9px] text-muted-foreground">Fængsel: {s.faengselMaaneder || 0} mdr.</span>
+                    <span className="text-[9px] text-muted-foreground">Erkender: {s.erkender === true ? "Ja" : s.erkender === false ? "Nej" : "—"}</span>
+                    <Badge variant={s.sagsStatus === "lukket" ? "secondary" : "default"} className="text-[9px] px-1 py-0 ml-auto">
+                      {s.sagsStatus}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-[11px] text-muted-foreground text-center py-6">
+              Ingen sigtelser registreret på bandemedlemmer endnu
+            </div>
+          )}
         </div>
 
         {/* Evidence */}
@@ -352,7 +443,7 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
     );
   }
 
-  // Overview: all bander as cards
+  // Overview
   return (
     <div className="space-y-4">
       <div className="rounded-lg border bg-card p-4 text-center">
@@ -393,7 +484,6 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
         )}
       </div>
 
-      {/* Bande cards */}
       <div className="grid grid-cols-2 gap-4">
         {bander.map(b => {
           const trussel = trusselsfarver[b.trpivsselsniveau] || trusselsfarver["Lav"];
@@ -413,20 +503,10 @@ const NSKBander = ({ userName }: NSKBanderProps) => {
                 <AlertTriangle className="w-3 h-3" /> Trusselsniveau: {b.trpivsselsniveau}
               </div>
               <div className="flex gap-2 pt-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-[11px] flex-1"
-                  onClick={() => setSelectedBandeId(b.id)}
-                >
+                <Button size="sm" variant="outline" className="h-7 text-[11px] flex-1" onClick={() => setSelectedBandeId(b.id)}>
                   Se Detaljer
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-[11px] text-destructive hover:text-destructive"
-                  onClick={() => sletBande(b.id)}
-                >
+                <Button size="sm" variant="ghost" className="h-7 text-[11px] text-destructive hover:text-destructive" onClick={() => sletBande(b.id)}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
