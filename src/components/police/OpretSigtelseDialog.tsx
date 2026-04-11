@@ -207,7 +207,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
       })
       .catch(console.error)
       .finally(() => setLoadingData(false));
-  }, [open, currentUser, initialSigtelser]);
+  }, [open, person.id, currentUser, initialSigtelser, lastInitPersonId]);
 
   const totalBoede = valgteBoeder.reduce((s, b) => s + b.beloeb, 0);
   const totalKlip = valgteBoeder.reduce((s, b) => {
