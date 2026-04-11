@@ -63,8 +63,66 @@ const OpretSag = ({ currentUser, initialPersonId, initialSigtelser }: OpretSagPr
 
   const handleSigtelseOprettet = async (sigtelse: Sigtelse) => {
     try {
+      // 1. Save the sigtelse
       await sigtelserApi.create(sigtelse);
-      toast("Sag oprettet succesfuldt");
+
+      // 2. Create a Sag (case) in the sagsarkiv
+      const sagsnummer = `SAG-${Date.now().toString().slice(-6)}`;
+      const now = new Date().toISOString();
+      const mistaenkt: SagMistaenkt = {
+        id: crypto.randomUUID(),
+        personId: sigtelse.personId,
+        personNavn: sigtelse.personNavn,
+        personCpr: sigtelse.personCpr,
+        sigtelser: sigtelse.sigtelseBoeder,
+        totalBoede: sigtelse.totalBoede,
+        totalFaengsel: sigtelse.faengselMaaneder,
+        erkender: sigtelse.erkender,
+        behandlet: false,
+        tilkendegivelseAfgivet: false,
+        fratagKoerekort: sigtelse.fratagKoerekort,
+      };
+
+      const nySag: Sag = {
+        id: crypto.randomUUID(),
+        sagsnummer,
+        titel: sigtelse.sigtelseBoeder.length > 0
+          ? `${sigtelse.personNavn} — ${sigtelse.sigtelseBoeder[0].beskrivelse}`
+          : `Sag mod ${sigtelse.personNavn}`,
+        oprettet: now,
+        opdateret: now,
+        status: sigtelse.sagsStatus || "aaben",
+        oprettetAf: `${currentUser.fornavn} ${currentUser.efternavn}`,
+        mistaenkte: [mistaenkt],
+        involveretBetjente: sigtelse.involveretBetjente || [],
+        involveretBorgere: [],
+        koeretoejer: [],
+        referencer: [],
+        tags: [],
+        beviser: [],
+        rapport: {
+          haendelsesforloeb: sigtelse.rapport?.haendelsesforloeb || "",
+          konfiskeredeGenstande: sigtelse.rapport?.konfiskeredeGenstande
+            ? sigtelse.rapport.konfiskeredeGenstande.split(", ").filter(Boolean)
+            : [],
+          magtanvendelse: sigtelse.rapport?.magtanvendelse
+            ? sigtelse.rapport.magtanvendelse.split(", ").filter(Boolean)
+            : [],
+          skabelonType: sigtelse.skabelonType,
+          skabelonSvar: sigtelse.rapport?.skabelonSvar,
+        },
+        noter: [],
+        aktivitetslog: [{
+          id: crypto.randomUUID(),
+          type: "oprettet",
+          beskrivelse: `Sag oprettet med sigtelse mod ${sigtelse.personNavn}`,
+          bruger: `${currentUser.fornavn} ${currentUser.efternavn}`,
+          tidspunkt: now,
+        }],
+      };
+
+      await sagerApi.create(nySag);
+      toast(`Sag ${sagsnummer} oprettet og gemt i sagsarkivet`);
     } catch (err) {
       console.error("Fejl ved oprettelse:", err);
       toast("Fejl ved oprettelse af sag");
