@@ -7946,9 +7946,11 @@ window.markEftersoegt = async function(id) {
     const sager = await sagerApi.getAll().catch(() => []);
     const koeretoejer = await koeretoejerApi.getAll().catch(() => []);
     const ejendomme = await ejendommeApi.getAll().catch(() => []);
+    const tilhoersforhold = await tilhoersforholdApi.getAll().catch(() => []);
     const relSager = (sager || []).filter(s => JSON.stringify(s).toLowerCase().includes(String(p.cpr || "").toLowerCase()) || JSON.stringify(s).toLowerCase().includes(`${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`));
     const relKoeretoejer = (koeretoejer || []).filter(k => String(k.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
     const relEjendomme = (ejendomme || []).filter(e => String(e.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
+    const relTilhoersforhold = (tilhoersforhold || []).filter(t => t.personId === id || t.personCpr === p.cpr);
 
     const foto = p.mugshotUrl || p.mugshot || p.billede || "";
     const fodselsdato = p.fodselsdato || (p.cpr && p.cpr.length >= 6 ? `${p.cpr.slice(0,2)}/${p.cpr.slice(2,4)}/19${p.cpr.slice(4,6)}` : "Ukendt");
@@ -7957,7 +7959,7 @@ window.markEftersoegt = async function(id) {
       {id:"sager", label:`Sager (${relSager.length})`},
       {id:"koeretoejer", label:`Køretøjer (${relKoeretoejer.length})`},
       {id:"ejendomme", label:`Ejendomme (${relEjendomme.length})`},
-      {id:"tilhoersforhold", label:"Tilhørsforhold"},
+      {id:"tilhoersforhold", label:`Tilhørsforhold (${relTilhoersforhold.length})`},
       {id:"frakendelser", label:"Frakendelser (0)"}
     ];
     const activeTab = window._krDetailTab || "personlig";
@@ -8024,6 +8026,30 @@ window.markEftersoegt = async function(id) {
           <div style="font-size:12px;color:var(--muted-fg)">${escLocal(p.noter || "Ingen synlige noter fundet..")}</div>
         </div>
       ` : `
+        ${activeTab === "tilhoersforhold" ? `
+        <div style="padding:20px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tilhørsforhold (${relTilhoersforhold.length})</div>
+          ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(t => `
+            <div style="padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;border-left:3px solid var(--destructive);background:rgba(239,68,68,0.03)">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span style="font-size:14px;font-weight:600">${escLocal(t.bande)}</span>
+                  <span class="badge badge-muted" style="margin-left:8px">${escLocal(t.rolle||"Medlem")}</span>
+                  <span class="badge ${t.status==="aktiv"?"badge-success":"badge-muted"}" style="margin-left:4px">${escLocal(t.status||"aktiv")}</span>
+                </div>
+                <div style="font-size:10px;color:var(--muted-fg)">${escLocal(t.oprettetDato||"")}</div>
+              </div>
+              ${t.noter ? `<div style="font-size:11px;color:var(--muted-fg);margin-top:6px">${escLocal(t.noter)}</div>` : ""}
+              <div style="font-size:10px;color:var(--muted-fg);margin-top:4px">Registreret af: ${escLocal(t.oprettetAf||"Ukendt")}</div>
+            </div>
+          `).join("") : `
+            <div class="card" style="text-align:center;padding:32px">
+              <div style="font-size:13px;color:var(--muted-fg)">Ingen tilhørsforhold registreret for denne person</div>
+              <div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Tilhørsforhold tilføjes via NSK → Bander</div>
+            </div>
+          `}
+        </div>
+        ` : `
         <div class="card">
           <div style="font-size:14px;font-weight:700;margin-bottom:10px">${topTabs.find(t=>t.id===activeTab)?.label || ""}</div>
           <div style="font-size:12px;color:var(--muted-fg)">Denne fane kan udbygges videre i samme stil.</div>
@@ -8448,14 +8474,16 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     const container = document.getElementById("content-area");
     if (!p || !container) return;
 
-    let sager = [], koeretoejer = [], ejendomme = [];
+    let sager = [], koeretoejer = [], ejendomme = [], tilhoersforhold = [];
     try { sager = await sagerApi.getAll(); } catch {}
     try { koeretoejer = await koeretoejerApi.getAll(); } catch {}
     try { ejendomme = await ejendommeApi.getAll(); } catch {}
+    try { tilhoersforhold = await tilhoersforholdApi.getAll(); } catch {}
 
     const relSager = (sager || []).filter(s => JSON.stringify(s).toLowerCase().includes(String(p.cpr || "").toLowerCase()) || JSON.stringify(s).toLowerCase().includes(`${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`));
     const relKoeretoejer = (koeretoejer || []).filter(k => String(k.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
     const relEjendomme = (ejendomme || []).filter(e => String(e.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
+    const relTilhoersforhold = (tilhoersforhold || []).filter(t => t.personId === id || t.personCpr === p.cpr);
 
     const foto = p.mugshotUrl || p.mugshot || p.billede || "";
     const fodselsdato = p.fodselsdato || (p.cpr && p.cpr.length >= 6 ? `${p.cpr.slice(0,2)}/${p.cpr.slice(2,4)}/19${p.cpr.slice(4,6)}` : "Ukendt");
@@ -8464,7 +8492,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       {id:"sager", label:`Sager (${relSager.length})`},
       {id:"koeretoejer", label:`Køretøjer (${relKoeretoejer.length})`},
       {id:"ejendomme", label:`Ejendomme (${relEjendomme.length})`},
-      {id:"tilhoersforhold", label:"Tilhørsforhold"},
+      {id:"tilhoersforhold", label:`Tilhørsforhold (${relTilhoersforhold.length})`},
       {id:"frakendelser", label:"Frakendelser (0)"}
     ];
     const activeTab = window._krDetailTab || "personlig";
@@ -8537,6 +8565,32 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
               <div class="pr-notes-text">${escLocal(p.noter || "Ingen synlige noter fundet..")}</div>
             </div>
           ` : `
+            ${activeTab === "tilhoersforhold" ? `
+            <div style="padding:20px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tilhørsforhold (${relTilhoersforhold.length})</div>
+              ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(t => `
+                <div style="padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;border-left:3px solid var(--destructive);background:rgba(239,68,68,0.03)">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span style="font-size:14px;font-weight:600">${escLocal(t.bande)}</span>
+                      <span class="badge badge-muted" style="margin-left:8px">${escLocal(t.rolle||"Medlem")}</span>
+                      <span class="badge ${t.status==="aktiv"?"badge-success":"badge-muted"}" style="margin-left:4px">${escLocal(t.status||"aktiv")}</span>
+                    </div>
+                    <div style="font-size:10px;color:var(--muted-fg)">${escLocal(t.oprettetDato||"")}</div>
+                  </div>
+                  ${t.noter ? `<div style="font-size:11px;color:var(--muted-fg);margin-top:6px">${escLocal(t.noter)}</div>` : ""}
+                  <div style="font-size:10px;color:var(--muted-fg);margin-top:4px">Registreret af: ${escLocal(t.oprettetAf||"Ukendt")}</div>
+                </div>
+              `).join("") : `
+                <div class="pr-empty-state" style="min-height:200px">
+                  <div class="pr-empty-card">
+                    <div style="font-size:13px;color:var(--muted-fg)">Ingen tilhørsforhold registreret</div>
+                    <div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Tilhørsforhold tilføjes via NSK → Bander</div>
+                  </div>
+                </div>
+              `}
+            </div>
+            ` : `
             <div class="pr-empty-state" style="min-height:360px">
               <div class="pr-empty-card">
                 <div class="pr-empty-title">${topTabs.find(t=>t.id===activeTab)?.label || ""}</div>
