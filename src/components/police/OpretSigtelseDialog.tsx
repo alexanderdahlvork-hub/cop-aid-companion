@@ -132,16 +132,18 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
   const [magtInput, setMagtInput] = useState("");
   const [magtmidler, setMagtmidler] = useState<string[]>([]);
 
-  // Track which person we last initialized for, to avoid re-resetting on re-opens
+  // Track which person we last initialized for, to avoid re-resetting on close/reopen
   const [lastInitPersonId, setLastInitPersonId] = useState<string | null>(null);
-
-  const [frakendelsesType, setFrakendelsesType] = useState("");
 
   const boeder = standardBoeder;
 
   useEffect(() => {
     if (!open) return;
-    // Reset all fields first
+    // Only reset when opening for a different person
+    if (lastInitPersonId === person.id) return;
+    setLastInitPersonId(person.id);
+
+    // Reset all fields
     setValgteBoeder([]); setFratagKoerekort(false); setErkender(null);
     setValgteBetjente([]); setHaendelse(""); setKonfiskeret(""); setMagt("");
     setValgtSkabelon(null); setSkabelonSvar({}); setShowKlipPopup(false);
