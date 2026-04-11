@@ -4983,9 +4983,11 @@ window.showPersonForm = function() {
   });
 };
 
-window.selectPerson = function(id) {
+window.selectPerson = async function(id) {
   const p = window._krPersoner.find(pp=>pp.id===id);
   if (!p) return;
+  // Reload tilhørsforhold fresh to catch synced bande memberships
+  try { window._krTilhoersforhold = await tilhoersforholdApi.getAll(); } catch(e) {}
   const sigtelser = (window._krSigtelser||[]).filter(s=>s.personId===id);
   const tilhoersforhold = (window._krTilhoersforhold||[]).filter(t=>t.personId===id || t.personCpr===p.cpr);
   const ejendomme = (window._krEjendomme||[]).filter(e=>e.ejer && (e.ejer.toLowerCase().includes(p.fornavn.toLowerCase()) || e.ejer.toLowerCase().includes(p.efternavn.toLowerCase())));
