@@ -7015,8 +7015,10 @@ async function renderAfdeling(container, afdId) {
   }
   html += `</div>`;
 
-  // NSK special: bander + tilhørsforhold tabs
-  if (afdId === "nsk" && (activeSubTab === "bander" || activeSubTab === "tilhoersforhold")) {
+  // NSK special tabs
+  if (afdId === "nsk" && activeSubTab === "bander") {
+    html += await renderNSKBander();
+  } else if (afdId === "nsk" && activeSubTab === "tilhoersforhold") {
     html += await renderNSKContent();
   } else {
     // Generic tab content with CRUD
