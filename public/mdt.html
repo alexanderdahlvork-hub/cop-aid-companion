@@ -11380,4 +11380,167 @@ Andre relevante oplysninger:`
 })();
 </script>
 
+<script>
+/* ==== Final KR tilhørsforhold sync patch ==== */
+(function () {
+  function escTilhoer(v) {
+    return String(v ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function buildTilhoerMarkup(items) {
+    if (!items.length) {
+      return `
+        <div style="font-size:14px;font-weight:700;margin-bottom:12px">Tilhørsforhold (0)</div>
+        <div style="font-size:12px;color:var(--muted-fg)">Ingen tilhørsforhold registreret for denne person.</div>
+      `;
+    }
+
+    return `
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px">Tilhørsforhold (${items.length})</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${items.map(t => `
+          <div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:rgba(59,130,246,.04);border-left:3px solid var(--destructive)">
+            <div class="flex items-center justify-between" style="gap:12px">
+              <div class="flex items-center gap-2" style="flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:600">${escTilhoer(t.bande || "Ukendt")}</span>
+                <span class="badge badge-muted">${escTilhoer(t.rolle || "Medlem")}</span>
+                <span class="${(t.status || "aktiv") === "aktiv" ? "badge badge-success" : "badge badge-muted"}">${escTilhoer(t.status || "aktiv")}</span>
+              </div>
+              <div style="font-size:10px;color:var(--muted-fg)">${escTilhoer(t.oprettetDato || t.tilfojetDato || "")}</div>
+            </div>
+            ${t.noter ? `<div style="font-size:11px;color:var(--muted-fg);margin-top:6px">${escTilhoer(t.noter)}</div>` : ""}
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  async function getPersonTilhoersforhold(personId) {
+    const personer = Array.isArray(window._krPersoner) ? window._krPersoner : [];
+    const person = personer.find(p => String(p.id) === String(personId));
+    if (!person) return [];
+
+    let all = [];
+    try {
+      all = await tilhoersforholdApi.getAll();
+    } catch {
+      all = [];
+    }
+
+    const navn = `${person.fornavn || ""} ${person.efternavn || ""}`.trim().toLowerCase();
+    return (all || []).filter(t =>
+      String(t.personId || "") === String(personId) ||
+      (person.cpr && String(t.personCpr || "") === String(person.cpr)) ||
+      String(t.personNavn || "").trim().toLowerCase() === navn
+    );
+  }
+
+  function updateTabLabel(container, count) {
+    container.querySelectorAll('.pr-tab').forEach(tab => {
+      const txt = (tab.textContent || '').trim();
+      if (txt.startsWith('Tilhørsforhold')) {
+        tab.textContent = `Tilhørsforhold (${count})`;
+      }
+    });
+  }
+
+  function updateQuickInfoCount(container, count) {
+    const labels = Array.from(container.querySelectorAll('.info-label, .pr-stat-label, p, div'));
+    labels.forEach(label => {
+      if ((label.textContent || '').trim() !== 'Tilhørsforhold') return;
+      const card = label.closest('.card, .card-sm, .pr-stat-card, .rounded-lg');
+      if (!card) return;
+      const values = Array.from(card.querySelectorAll('.mono, .pr-stat-value, .text-sm.font-semibold, .text-lg.font-semibold, div'));
+      const valueEl = values.find(el => /^\d+$/.test((el.textContent || '').trim()));
+      if (valueEl) valueEl.textContent = String(count);
+    });
+  }
+
+  function injectTabbedContent(container, items) {
+    const activeTab = Array.from(container.querySelectorAll('.pr-tab.active')).find(tab => (tab.textContent || '').includes('Tilhørsforhold'));
+    if (!activeTab) return false;
+
+    const emptyState = container.querySelector('.pr-empty-state');
+    if (emptyState) {
+      emptyState.innerHTML = `
+        <div class="pr-empty-card" style="max-width:860px;width:100%;text-align:left">
+          ${buildTilhoerMarkup(items)}
+        </div>
+      `;
+      return true;
+    }
+
+    const placeholder = Array.from(container.querySelectorAll('.card, .pr-empty-card')).find(el =>
+      (el.textContent || '').includes('Denne fane kan udbygges')
+    );
+    if (placeholder) {
+      placeholder.innerHTML = buildTilhoerMarkup(items);
+      return true;
+    }
+
+    return false;
+  }
+
+  function injectInlineSection(container, items) {
+    container.querySelectorAll('[data-kr-tilhoer-injected="1"]').forEach(el => el.remove());
+    if (!items.length) return;
+
+    const alreadyVisible = Array.from(container.querySelectorAll('h3, .pr-empty-title, .pr-side-title, .text-xs.font-semibold')).some(el =>
+      (el.textContent || '').trim().startsWith('Tilhørsforhold')
+    ) && (container.textContent || '').includes(items[0].bande || '');
+    if (alreadyVisible) return;
+
+    const anchor =
+      Array.from(container.querySelectorAll('div')).find(el => (el.textContent || '').includes('Opret efterlysning')) ||
+      Array.from(container.querySelectorAll('div')).find(el => {
+        const text = el.textContent || '';
+        return text.includes('Adresse') && text.includes('Telefon') && text.includes('Sigtelser');
+      });
+
+    if (!anchor || !anchor.parentElement) return;
+
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-kr-tilhoer-injected', '1');
+    wrap.className = 'card';
+    wrap.style.marginTop = '12px';
+    wrap.innerHTML = buildTilhoerMarkup(items);
+    anchor.insertAdjacentElement('afterend', wrap);
+  }
+
+  async function applyTilhoersforholdToView(personId) {
+    if (!personId) return;
+    const container = document.getElementById('content-area');
+    if (!container) return;
+
+    const items = await getPersonTilhoersforhold(personId);
+    updateTabLabel(container, items.length);
+    updateQuickInfoCount(container, items.length);
+    if (!injectTabbedContent(container, items)) {
+      injectInlineSection(container, items);
+    }
+  }
+
+  const originalSelectPerson = window.selectPerson;
+  window.selectPerson = async function(id) {
+    const result = typeof originalSelectPerson === 'function' ? await originalSelectPerson(id) : undefined;
+    try { await applyTilhoersforholdToView(id); } catch (err) { console.error('KR tilhørsforhold patch fejl', err); }
+    return result;
+  };
+
+  const originalRenderPersonregister = window.renderPersonregister;
+  window.renderPersonregister = async function(container) {
+    const result = typeof originalRenderPersonregister === 'function' ? await originalRenderPersonregister(container) : undefined;
+    if (window._krSelectedId) {
+      try { await applyTilhoersforholdToView(window._krSelectedId); } catch (err) { console.error('KR render patch fejl', err); }
+    }
+    return result;
+  };
+})();
+</script>
+
 </html>
