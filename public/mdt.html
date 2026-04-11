@@ -7408,7 +7408,7 @@ window._nskAddMember = function(bandeId, personId, navn, cpr) {
   if (b) {
     if (!b.medlemmer) b.medlemmer = [];
     if (b.medlemmer.find(m => m.id === personId)) { showToast('Personen er allerede medlem'); return; }
-    b.medlemmer.push({ id: personId, navn, cpr, sigtelser: 0, tilfojetDato: new Date().toISOString().split('T')[0] });
+    b.medlemmer.push({ id: personId, navn, cpr, sigtelser: 0, sigtelserListe: [], tilfojetDato: new Date().toISOString().split('T')[0] });
     saveNSKBander(bander);
     showToast(navn + ' tilføjet som medlem');
     renderPage(activeTabId);
