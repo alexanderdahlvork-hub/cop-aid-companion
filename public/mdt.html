@@ -7946,9 +7946,11 @@ window.markEftersoegt = async function(id) {
     const sager = await sagerApi.getAll().catch(() => []);
     const koeretoejer = await koeretoejerApi.getAll().catch(() => []);
     const ejendomme = await ejendommeApi.getAll().catch(() => []);
+    const tilhoersforhold = await tilhoersforholdApi.getAll().catch(() => []);
     const relSager = (sager || []).filter(s => JSON.stringify(s).toLowerCase().includes(String(p.cpr || "").toLowerCase()) || JSON.stringify(s).toLowerCase().includes(`${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`));
     const relKoeretoejer = (koeretoejer || []).filter(k => String(k.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
     const relEjendomme = (ejendomme || []).filter(e => String(e.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
+    const relTilhoersforhold = (tilhoersforhold || []).filter(t => t.personId === id || t.personCpr === p.cpr);
 
     const foto = p.mugshotUrl || p.mugshot || p.billede || "";
     const fodselsdato = p.fodselsdato || (p.cpr && p.cpr.length >= 6 ? `${p.cpr.slice(0,2)}/${p.cpr.slice(2,4)}/19${p.cpr.slice(4,6)}` : "Ukendt");
@@ -7957,7 +7959,7 @@ window.markEftersoegt = async function(id) {
       {id:"sager", label:`Sager (${relSager.length})`},
       {id:"koeretoejer", label:`Køretøjer (${relKoeretoejer.length})`},
       {id:"ejendomme", label:`Ejendomme (${relEjendomme.length})`},
-      {id:"tilhoersforhold", label:"Tilhørsforhold"},
+      {id:"tilhoersforhold", label:`Tilhørsforhold (${relTilhoersforhold.length})`},
       {id:"frakendelser", label:"Frakendelser (0)"}
     ];
     const activeTab = window._krDetailTab || "personlig";
