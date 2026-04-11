@@ -17,11 +17,16 @@ const SagsArkiv = ({ onOpenSag, onNewSag }: SagsArkivProps) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
+  const loadSager = () => {
+    setLoading(true);
     sagerApi.getAll()
       .then(setSager)
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadSager();
   }, []);
 
   const filtered = sager.filter(s => {
