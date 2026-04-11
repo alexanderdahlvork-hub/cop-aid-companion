@@ -7049,7 +7049,13 @@ async function renderNSKBander() {
   
   if (viewingBande) {
     const bande = bander.find(b => b.id === viewingBande);
-    if (bande) return renderNSKBandeDetaljer(bande);
+    if (bande) {
+      // Preload persons for member search
+      if (!window._nskPersoner || window._nskPersoner.length === 0) {
+        try { window._nskPersoner = await personerApi.getAll(); } catch(e) { console.error('Failed to load personer:', e); }
+      }
+      return renderNSKBandeDetaljer(bande);
+    }
     window._nskViewBande = null;
   }
   
