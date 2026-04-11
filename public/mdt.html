@@ -7348,18 +7348,30 @@ document.addEventListener('input', e => {
   if (q.length < 2) { results.innerHTML = ''; return; }
   (async () => {
     try {
-      const personer = window._nskPersoner || await personerApi.getAll();
-      window._nskPersoner = personer;
+      let personer = window._nskPersoner;
+      if (!personer || personer.length === 0) {
+        personer = await personerApi.getAll();
+        window._nskPersoner = personer;
+      }
       const bandeId = window._nskViewBande;
       const bander = getNSKBander();
       const bande = bander.find(x => x.id === bandeId);
       const existingIds = (bande?.medlemmer||[]).map(m => m.id);
       const matches = personer.filter(p => !existingIds.includes(p.id) && `${p.fornavn} ${p.efternavn} ${p.cpr}`.toLowerCase().includes(q)).slice(0, 6);
-      results.innerHTML = matches.map(p => `<div class="list-item" style="padding:6px 10px;cursor:pointer;font-size:12px" onclick="window._nskAddMember('${bandeId}','${p.id}','${esc(p.fornavn+' '+p.efternavn)}','${p.cpr}')">
-        <span>${p.fornavn} ${p.efternavn}</span> <span class="mono" style="font-size:10px;color:var(--muted-fg)">${p.cpr}</span>
-      </div>`).join('');
-      if (matches.length === 0) results.innerHTML = '<div style="padding:6px 10px;font-size:11px;color:var(--muted-fg)">Ingen resultater</div>';
-    } catch {}
+      if (matches.length === 0) {
+        results.innerHTML = '<div style="padding:6px 10px;font-size:11px;color:var(--muted-fg)">Ingen resultater fundet</div>';
+      } else {
+        results.innerHTML = matches.map(p => {
+          const safeName = (p.fornavn + ' ' + p.efternavn).replace(/'/g, "\\'");
+          return `<div class="list-item" style="padding:8px 12px;cursor:pointer;font-size:12px;border-radius:6px;transition:background 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.1)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}')">
+          <span style="font-weight:500">${p.fornavn} ${p.efternavn}</span> <span class="mono" style="font-size:10px;color:var(--muted-fg)">${p.cpr}</span>
+        </div>`;
+        }).join('');
+      }
+    } catch (err) {
+      console.error('NSK member search error:', err);
+      results.innerHTML = '<div style="padding:6px 10px;font-size:11px;color:var(--destructive)">Fejl ved søgning</div>';
+    }
   })();
 });
 
