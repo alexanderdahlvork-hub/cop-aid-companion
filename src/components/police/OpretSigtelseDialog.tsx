@@ -292,6 +292,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
     }
     onSigtelseOprettet(buildSigtelse());
     setSaving(false);
+    setLastInitPersonId(null);
     onOpenChange(false);
   };
 
