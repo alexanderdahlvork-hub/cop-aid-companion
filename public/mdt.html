@@ -7055,18 +7055,15 @@ async function renderNSKBander() {
   
   let html = '';
   
-  // Header bar
-  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px;text-align:center">
-    <div style="display:flex;align-items:center;justify-content:center;gap:10px">
-      ${icons.target}
-      <h2 style="font-size:18px;font-weight:700;color:var(--fg)">NSK Bande Oversigt</h2>
-    </div>
-    <p style="font-size:11px;color:var(--muted-fg);margin-top:4px">${bander.length} registrerede bander</p>
+  // Header bar — full-width dark banner like reference
+  html += `<div style="background:linear-gradient(135deg,rgba(20,22,32,0.95),rgba(28,32,41,0.98));border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:20px 24px;margin-bottom:20px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
+    <h2 style="font-size:20px;font-weight:800;color:#fff;letter-spacing:0.02em">NSK Bande Oversigt</h2>
+    <p style="font-size:11px;color:var(--muted-fg);margin-top:6px">${bander.length} registrerede bander</p>
   </div>`;
   
-  // Create button
-  html += `<div style="margin-bottom:16px;text-align:right">
-    <button class="btn btn-sm" style="background:var(--success);color:#fff;display:inline-flex;align-items:center;gap:6px" onclick="window._nskShowCreateBande()">${icons.plus} Opret Ny Bande</button>
+  // Create button — green like reference
+  html += `<div style="margin-bottom:20px;display:flex;justify-content:flex-start">
+    <button class="btn" style="background:var(--success);color:#fff;display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(51,160,106,0.3);transition:all 0.2s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(51,160,106,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(51,160,106,0.3)'" onclick="window._nskShowCreateBande()">${icons.plus} Opret Ny Bande</button>
   </div>`;
   
   // Create form placeholder
@@ -7078,37 +7075,39 @@ async function renderNSKBander() {
       <div style="font-size:48px;margin-bottom:16px">🎯</div>
       <p style="font-size:15px;font-weight:600;margin-bottom:6px;color:var(--fg)">Ingen bander registreret</p>
       <p style="font-size:12px;color:var(--muted-fg);margin-bottom:20px">Opret den første bande for at komme i gang</p>
-      <button class="btn" style="background:var(--success);color:#fff" onclick="window._nskShowCreateBande()">${icons.plus} Opret Ny Bande</button>
+      <button class="btn" style="background:var(--success);color:#fff;padding:10px 24px;border-radius:8px;font-weight:600" onclick="window._nskShowCreateBande()">${icons.plus} Opret Ny Bande</button>
     </div>`;
   } else {
-    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">`;
+    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">`;
     bander.forEach(b => {
-      const threatColors = {Høj:'var(--destructive)',Middel:'var(--warning)',Lav:'var(--success)'};
-      const threatBg = {Høj:'rgba(214,54,75,0.1)',Middel:'rgba(224,100,42,0.1)',Lav:'rgba(51,160,106,0.1)'};
+      const threatColors = {Høj:'#d6364b',Middel:'#e0642a',Lav:'#33a06a'};
+      const threatBg = {Høj:'rgba(214,54,75,0.08)',Middel:'rgba(224,100,42,0.08)',Lav:'rgba(51,160,106,0.08)'};
       const threatBadge = {Høj:'badge-destructive',Middel:'badge-warning',Lav:'badge-success'};
-      const color = threatColors[b.trusselsniveau] || 'var(--muted-fg)';
+      const color = threatColors[b.trusselsniveau] || '#6b7585';
       const bg = threatBg[b.trusselsniveau] || 'transparent';
       const badge = threatBadge[b.trusselsniveau] || 'badge-muted';
       
-      html += `<div class="card" style="padding:0;overflow:hidden;border-left:3px solid ${color}">
-        <div style="padding:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <span style="font-size:15px;font-weight:700;color:var(--fg)">${esc(b.navn)}</span>
-            <span class="badge ${badge}">${b.trusselsniveau || 'Ukendt'}</span>
+      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.25s ease;cursor:default;position:relative" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
+        <div style="height:3px;background:linear-gradient(90deg,${color},${color}88,transparent);border-radius:12px 12px 0 0"></div>
+        <div style="padding:18px 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:16px;font-weight:700;color:var(--fg)">${esc(b.navn)}</span>
+            <span class="badge ${badge}" style="font-size:10px;padding:3px 10px">${b.trusselsniveau || 'Ukendt'}</span>
           </div>
-          <div style="font-size:10px;color:var(--muted-fg);margin-bottom:10px" class="mono">ID: ${b.id.substring(0,8)}</div>
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <div style="font-size:10px;color:var(--muted-fg);margin-bottom:14px" class="mono">ID: ${b.id.substring(0,8)}</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
             <div style="display:flex;align-items:center;gap:6px">
               ${icons.users}
-              <span style="font-size:12px;color:var(--fg)">${(b.medlemmer||[]).length} medlemmer</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;background:${bg}">
-              <span style="font-size:11px;color:${color};font-weight:600">${b.trusselsniveau || 'Ukendt'} trussel</span>
+              <span style="font-size:12px;color:var(--fg);font-weight:500">${(b.medlemmer||[]).length} medlemmer</span>
             </div>
           </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <span style="font-size:11px;color:var(--muted-fg)">⚠ Trusselsniveau:</span>
+            <span style="font-size:12px;color:${color};font-weight:700">${b.trusselsniveau || 'Ukendt'}</span>
+          </div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-primary btn-sm" style="flex:1" onclick="window._nskViewBandeDetaljer('${b.id}')">Se Detaljer</button>
-            <button class="btn btn-sm" style="background:var(--destructive);color:#fff;padding:4px 10px" onclick="window._nskDeleteBande('${b.id}')">🗑</button>
+            <button class="btn" style="flex:1;background:rgba(255,255,255,0.06);color:var(--fg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 0;font-size:12px;font-weight:600;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='rgba(255,255,255,0.1)'" onclick="window._nskViewBandeDetaljer('${b.id}')">Se Detaljer</button>
+            <button class="btn" style="background:rgba(214,54,75,0.1);color:var(--destructive);border:1px solid rgba(214,54,75,0.2);border-radius:8px;padding:8px 12px;font-size:12px;transition:all 0.2s" onmouseover="this.style.background='rgba(214,54,75,0.2)'" onmouseout="this.style.background='rgba(214,54,75,0.1)'" onclick="window._nskDeleteBande('${b.id}')">🗑</button>
           </div>
         </div>
       </div>`;
@@ -7120,115 +7119,129 @@ async function renderNSKBander() {
 }
 
 function renderNSKBandeDetaljer(bande) {
-  const threatColors = {Høj:'var(--destructive)',Middel:'var(--warning)',Lav:'var(--success)'};
-  const color = threatColors[bande.trusselsniveau] || 'var(--muted-fg)';
+  const threatColors = {Høj:'#d6364b',Middel:'#e0642a',Lav:'#33a06a'};
+  const color = threatColors[bande.trusselsniveau] || '#6b7585';
   const totalSigtelser = (bande.medlemmer||[]).reduce((sum, m) => sum + (m.sigtelser || 0), 0);
   
   let html = '';
   
-  // Back link
-  html += `<div style="margin-bottom:12px">
-    <button class="btn btn-ghost btn-sm" onclick="window._nskBackToOversigt()" style="color:var(--primary);display:flex;align-items:center;gap:4px">← Tilbage til oversigt</button>
+  // Top banner — NSK Bande Oversigt
+  html += `<div style="background:linear-gradient(135deg,rgba(20,22,32,0.95),rgba(28,32,41,0.98));border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:18px 24px;margin-bottom:12px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
+    <h2 style="font-size:18px;font-weight:800;color:#fff">NSK Bande Oversigt</h2>
   </div>`;
   
-  // Header
-  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px;text-align:center">
-    <h2 style="font-size:18px;font-weight:700;color:var(--fg)">${esc(bande.navn)} — Detaljer</h2>
-    <p style="font-size:10px;color:var(--muted-fg);margin-top:4px" class="mono">ID: ${bande.id}</p>
+  // Back link
+  html += `<div style="margin-bottom:12px">
+    <button class="btn btn-ghost btn-sm" onclick="window._nskBackToOversigt()" style="color:var(--success);display:flex;align-items:center;gap:6px;font-size:12px;transition:all 0.15s" onmouseover="this.style.color='#4ae68a'" onmouseout="this.style.color='var(--success)'">← Tilbage til oversigt</button>
+  </div>`;
+  
+  // Detail header — dark banner with bande name
+  html += `<div style="background:linear-gradient(135deg,rgba(28,32,41,0.98),rgba(20,22,32,0.95));border:1px solid var(--border);border-radius:12px;padding:18px 24px;margin-bottom:16px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,0.2)">
+    <h2 style="font-size:18px;font-weight:800;color:#fff">${esc(bande.navn)} - Detaljer</h2>
   </div>`;
   
   // Threat level bar
-  html += `<div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:13px;font-weight:600">Trusselsniveau:</span>
-      <span style="color:${color};font-weight:700;font-size:14px">${bande.trusselsniveau || 'Ukendt'}</span>
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">⚠</span>
+      <span style="font-size:14px;font-weight:700;color:var(--fg)">Trusselsniveau:</span>
     </div>
-    <select class="select" style="width:140px;font-size:12px" onchange="window._nskChangeTrussel('${bande.id}', this.value)">
+    <select class="select" style="width:140px;font-size:12px;background:var(--input);border-radius:8px" onchange="window._nskChangeTrussel('${bande.id}', this.value)">
       <option value="Høj" ${bande.trusselsniveau==='Høj'?'selected':''}>Høj</option>
       <option value="Middel" ${bande.trusselsniveau==='Middel'?'selected':''}>Middel</option>
       <option value="Lav" ${bande.trusselsniveau==='Lav'?'selected':''}>Lav</option>
     </select>
   </div>`;
   
-  // Two column layout
+  // Two column layout — Members + Stats
   html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">`;
   
-  // Left: Members
-  html += `<div class="card" style="padding:16px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <span style="font-size:14px;font-weight:700">Medlemmer (${(bande.medlemmer||[]).length})</span>
+  // Left: Members panel
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        ${icons.users}
+        <span style="font-size:15px;font-weight:700;color:var(--fg)">Medlemmer</span>
+      </div>
+      <span style="color:var(--success)">${icons.plus}</span>
     </div>
-    <div style="margin-bottom:12px">
-      <input class="input" id="nsk-add-member-search" placeholder="Søg person (navn/CPR)..." style="font-size:12px;margin-bottom:6px">
-      <div id="nsk-member-search-results" style="max-height:100px;overflow-y:auto"></div>
+    <div style="font-size:11px;color:var(--muted-fg);margin-bottom:14px">Antal medlemmer: ${(bande.medlemmer||[]).length}</div>
+    <div style="margin-bottom:14px;position:relative">
+      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg)">🔍</div>
+      <input class="input" id="nsk-add-member-search" placeholder="Søg efter medlem..." style="font-size:12px;padding-left:32px;background:var(--input);border-radius:8px">
+      <div id="nsk-member-search-results" style="max-height:100px;overflow-y:auto;margin-top:4px"></div>
     </div>`;
   
   if ((bande.medlemmer||[]).length === 0) {
-    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:16px">Ingen medlemmer tilføjet endnu</p>`;
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px 0">Ingen medlemmer tilføjet endnu</p>`;
   } else {
     (bande.medlemmer||[]).forEach((m, i) => {
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border)">
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(42,47,58,0.6);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
         <div>
-          <div style="font-size:13px;font-weight:500">${esc(m.navn)}</div>
-          <div style="font-size:10px;color:var(--muted-fg)" class="mono">${m.cpr || ''}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--fg)">${esc(m.navn)}</div>
+          <div style="font-size:10px;color:var(--muted-fg)">Antal sigtelser: ${m.sigtelser || 0}</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:10px;color:var(--muted-fg)">Sigtelser: ${m.sigtelser || 0}</span>
-          <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px;font-size:10px" onclick="window._nskRemoveMember('${bande.id}',${i})">Fjern</button>
-        </div>
+        <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px 8px;font-size:14px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" onclick="window._nskRemoveMember('${bande.id}',${i})">🗑</button>
       </div>`;
     });
   }
   html += `</div>`;
   
-  // Right: Stats
-  html += `<div class="card" style="padding:16px">
-    <span style="font-size:14px;font-weight:700;display:block;margin-bottom:12px">Bande Statistik</span>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div class="card card-sm" style="text-align:center;padding:12px">
-        <div style="font-size:22px;font-weight:700;color:var(--primary)">${(bande.medlemmer||[]).length}</div>
-        <div style="font-size:10px;color:var(--muted-fg)">Medlemmer</div>
-      </div>
-      <div class="card card-sm" style="text-align:center;padding:12px">
-        <div style="font-size:22px;font-weight:700;color:var(--destructive)">${totalSigtelser}</div>
-        <div style="font-size:10px;color:var(--muted-fg)">Samlede sigtelser</div>
-      </div>
-    </div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px">Seneste aktivitet</div>
-    <div style="font-size:11px;color:var(--muted-fg)">Oprettet: ${bande.oprettetDato || '—'}</div>
+  // Right: Stats panel
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:16px;color:var(--fg)">Bande Statistik</span>
+    <div style="font-size:13px;color:var(--fg);margin-bottom:16px"><strong>Samlet antal sigtelser:</strong> ${totalSigtelser}</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--fg)">Seneste Sigtelser</div>
+    <div style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:80px">`;
+  
+  if ((bande.medlemmer||[]).length > 0) {
+    const sigtelser = (bande.medlemmer||[]).filter(m => (m.sigtelser||0) > 0);
+    if (sigtelser.length > 0) {
+      sigtelser.forEach(m => {
+        html += `<div style="font-size:12px;color:var(--muted-fg);padding:2px 0">${esc(m.navn)} — ${m.sigtelser} sigtelse(r)</div>`;
+      });
+    } else {
+      html += `<div style="font-size:12px;color:var(--muted-fg)">Ingen sigtelser registreret</div>`;
+    }
+  } else {
+    html += `<div style="font-size:12px;color:var(--muted-fg)">Ingen sigtelser registreret</div>`;
+  }
+  
+  html += `</div>
+    <div style="font-size:11px;color:var(--muted-fg);margin-top:14px">Oprettet: ${bande.oprettetDato || '—'}</div>
     <div style="font-size:11px;color:var(--muted-fg)">Af: ${bande.oprettetAf || '—'}</div>
   </div>`;
   
   html += `</div>`;
   
   // Evidence section
-  html += `<div class="card" style="padding:16px;margin-bottom:16px">
-    <span style="font-size:14px;font-weight:700;display:block;margin-bottom:12px">Beviser</span>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <input class="input" id="nsk-bevis-desc" placeholder="Bevis beskrivelse..." style="flex:1;font-size:12px">
-      <button class="btn btn-primary btn-sm" onclick="window._nskAddBevis('${bande.id}')">Tilføj</button>
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">Beviser</span>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input class="input" id="nsk-bevis-desc" placeholder="Bevis beskrivelse..." style="flex:1;font-size:12px;background:var(--input);border-radius:8px">
+      <button class="btn" style="background:rgba(255,255,255,0.06);color:var(--fg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;gap:6px" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'" onclick="window._nskAddBevis('${bande.id}')">${icons.plus} Tilføj Bevis</button>
     </div>`;
   
   if ((bande.beviser||[]).length === 0) {
-    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:12px">Ingen beviser registreret</p>`;
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:16px">Ingen beviser registreret</p>`;
   } else {
     (bande.beviser||[]).forEach((b2, i) => {
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border)">
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(42,47,58,0.6);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
         <div>
-          <div style="font-size:12px">${esc(b2.beskrivelse)}</div>
+          <div style="font-size:12px;color:var(--fg)">${esc(b2.beskrivelse)}</div>
           <div style="font-size:9px;color:var(--muted-fg)">${b2.dato || '—'} — ${b2.forfatter || '—'}</div>
         </div>
-        <button class="btn btn-ghost btn-sm" style="color:var(--destructive);font-size:9px" onclick="window._nskRemoveBevis('${bande.id}',${i})">✕</button>
+        <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px;font-size:12px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" onclick="window._nskRemoveBevis('${bande.id}',${i})">✕</button>
       </div>`;
     });
   }
   html += `</div>`;
   
   // Information section
-  html += `<div class="card" style="padding:16px">
-    <span style="font-size:14px;font-weight:700;display:block;margin-bottom:12px">Information</span>
-    <textarea class="textarea" id="nsk-bande-info" rows="4" style="font-size:12px;margin-bottom:10px" placeholder="Generel information om banden...">${esc(bande.information || '')}</textarea>
-    <button class="btn btn-primary btn-sm" onclick="window._nskSaveInfo('${bande.id}')">Gem Information</button>
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">Information</span>
+    <textarea class="textarea" id="nsk-bande-info" rows="4" style="font-size:12px;margin-bottom:12px;background:var(--input);border-radius:8px" placeholder="Generel information om banden...">${esc(bande.information || '')}</textarea>
+    <button class="btn btn-primary btn-sm" style="border-radius:8px;font-weight:600" onclick="window._nskSaveInfo('${bande.id}')">Gem Information</button>
   </div>`;
   
   return html;
@@ -7240,13 +7253,13 @@ window._nskShowCreateBande = function() {
   if (!form) return;
   if (form.style.display !== 'none') { form.style.display = 'none'; return; }
   form.style.display = 'block';
-  form.innerHTML = `<div class="card" style="padding:16px;margin-bottom:16px">
-    <span style="font-size:14px;font-weight:600;display:block;margin-bottom:12px">Opret ny bande</span>
-    <div style="display:flex;gap:10px;align-items:flex-end">
-      <div style="flex:1"><div class="label">Bande Navn</div><input class="input" id="nsk-new-bande-navn" placeholder="Indtast bande navn..."></div>
-      <div style="width:160px"><div class="label">Trusselsniveau</div><select class="select w-full" id="nsk-new-bande-trussel"><option value="Høj">Høj</option><option value="Middel" selected>Middel</option><option value="Lav">Lav</option></select></div>
-      <button class="btn btn-sm" style="background:var(--success);color:#fff" onclick="window._nskCreateBande()">Opret</button>
-      <button class="btn btn-outline btn-sm" onclick="document.getElementById('nsk-create-bande-form').style.display='none'">Annuller</button>
+  form.innerHTML = `<div style="background:var(--card);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">Opret ny bande</span>
+    <div style="display:flex;gap:12px;align-items:flex-end">
+      <div style="flex:1"><div class="label">Bande Navn</div><input class="input" id="nsk-new-bande-navn" placeholder="Indtast bande navn..." style="border-radius:8px"></div>
+      <div style="width:160px"><div class="label">Trusselsniveau</div><select class="select w-full" id="nsk-new-bande-trussel" style="border-radius:8px"><option value="Høj">Høj</option><option value="Middel" selected>Middel</option><option value="Lav">Lav</option></select></div>
+      <button class="btn" style="background:var(--success);color:#fff;border-radius:8px;padding:8px 18px;font-weight:600" onclick="window._nskCreateBande()">Opret</button>
+      <button class="btn btn-outline" style="border-radius:8px" onclick="document.getElementById('nsk-create-bande-form').style.display='none'">Annuller</button>
     </div>
   </div>`;
 };
