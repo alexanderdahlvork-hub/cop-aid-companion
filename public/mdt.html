@@ -7127,7 +7127,8 @@ async function renderNSKBander() {
 function renderNSKBandeDetaljer(bande) {
   const threatColors = {Høj:'#d6364b',Middel:'#e0642a',Lav:'#33a06a'};
   const color = threatColors[bande.trusselsniveau] || '#6b7585';
-  const totalSigtelser = (bande.medlemmer||[]).reduce((sum, m) => sum + (m.sigtelser || 0), 0);
+  const allSigtelser = (bande.medlemmer||[]).flatMap(m => (m.sigtelserListe || []).map(s => ({...s, medlemNavn: m.navn})));
+  const totalSigtelser = allSigtelser.length;
   
   let html = '';
   
