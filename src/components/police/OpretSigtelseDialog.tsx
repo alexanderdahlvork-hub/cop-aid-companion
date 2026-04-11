@@ -298,6 +298,7 @@ const OpretSigtelseDialog = ({ open, onOpenChange, person, onSigtelseOprettet, t
 
   const confirmAndSubmit = () => {
     onSigtelseOprettet(buildSigtelse());
+    setLastInitPersonId(null);
     onOpenChange(false);
   };
 
