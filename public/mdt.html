@@ -7169,26 +7169,47 @@ function renderNSKBandeDetaljer(bande) {
         ${icons.users}
         <span style="font-size:15px;font-weight:700;color:var(--fg)">Medlemmer</span>
       </div>
-      <span style="color:var(--success)">${icons.plus}</span>
+      <button style="background:var(--success);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" onclick="window._nskShowAddMemberDialog('${bande.id}')">${icons.plus} Tilføj</button>
     </div>
     <div style="font-size:11px;color:var(--muted-fg);margin-bottom:14px">Antal medlemmer: ${(bande.medlemmer||[]).length}</div>
     <div style="margin-bottom:14px;position:relative">
       <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg)">🔍</div>
-      <input class="input" id="nsk-add-member-search" placeholder="Søg efter medlem..." style="font-size:12px;padding-left:32px;background:var(--input);border-radius:8px">
-      <div id="nsk-member-search-results" style="max-height:100px;overflow-y:auto;margin-top:4px"></div>
+      <input class="input" id="nsk-add-member-search" placeholder="Søg og tilføj medlem..." style="font-size:12px;padding-left:32px;background:var(--input);border-radius:8px">
+      <div id="nsk-member-search-results" style="max-height:120px;overflow-y:auto;margin-top:4px;border-radius:8px"></div>
     </div>`;
   
   if ((bande.medlemmer||[]).length === 0) {
-    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px 0">Ingen medlemmer tilføjet endnu</p>`;
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px 0">Ingen medlemmer tilføjet endnu.<br><span style="font-size:11px">Brug søgefeltet ovenfor eller klik "Tilføj"</span></p>`;
   } else {
     (bande.medlemmer||[]).forEach((m, i) => {
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid rgba(42,47,58,0.6);transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--fg)">${esc(m.navn)}</div>
-          <div style="font-size:10px;color:var(--muted-fg)">Antal sigtelser: ${m.sigtelser || 0}</div>
-        </div>
-        <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px 8px;font-size:14px;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" onclick="window._nskRemoveMember('${bande.id}',${i})">🗑</button>
-      </div>`;
+      const memberSigtelser = m.sigtelserListe || [];
+      html += `<div style="padding:10px 0;border-top:1px solid rgba(42,47,58,0.6)">
+        <div style="display:flex;align-items:center;justify-content:space-between;transition:background 0.15s">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--fg)">${esc(m.navn)}</div>
+            <div style="font-size:10px;color:var(--muted-fg)" class="mono">${m.cpr || ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="badge ${memberSigtelser.length > 0 ? 'badge-destructive' : 'badge-muted'}" style="font-size:9px">${memberSigtelser.length} sigtelser</span>
+            <button style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);color:var(--primary);border-radius:6px;cursor:pointer;padding:3px 8px;font-size:10px;transition:all 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'" onclick="window._nskShowSigtelseDialog('${bande.id}',${i})">+ Sigtelse</button>
+            <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px 6px;font-size:13px;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'" onclick="window._nskRemoveMember('${bande.id}',${i})">🗑</button>
+          </div>
+        </div>`;
+      // Show sigtelser list inline
+      if (memberSigtelser.length > 0) {
+        html += `<div style="margin-top:6px;margin-left:12px">`;
+        memberSigtelser.forEach((s, si) => {
+          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;margin-bottom:3px;background:rgba(214,54,75,0.05);border-radius:6px;border-left:2px solid var(--destructive)">
+            <div>
+              <span style="font-size:11px;color:var(--fg)">${esc(s.beskrivelse)}</span>
+              <span style="font-size:9px;color:var(--muted-fg);margin-left:6px">${s.dato || ''}</span>
+            </div>
+            <button style="background:none;border:none;color:var(--destructive);cursor:pointer;font-size:10px;opacity:0.5" onclick="window._nskRemoveSigtelse('${bande.id}',${i},${si})">✕</button>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
     });
   }
   html += `</div>`;
