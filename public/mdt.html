@@ -5660,8 +5660,13 @@ async function renderSagsarkiv(container) {
         var count = key === "alle" ? sager.length : sager.filter(function(s){return s.status===key;}).length;
         html += '<button class="sa-filter-pill" data-filter="' + key + '" style="font-size:11px;font-weight:600;padding:5px 14px;border-radius:999px;border:1px solid ' + (isActive ? 'rgba(96,165,250,.35)' : 'rgba(255,255,255,.06)') + ';background:' + (isActive ? 'rgba(59,130,246,.15)' : 'transparent') + ';color:' + (isActive ? '#f8fbff' : 'var(--muted-fg)') + ';cursor:pointer;transition:all .15s">' + statusFilterLabels[key] + ' (' + count + ')</button>';
       });
+      html += '<div style="margin-left:auto;display:flex;gap:6px">';
+      html += '<button class="btn btn-outline btn-sm" id="sa-export-csv" style="font-size:11px;padding:5px 12px;border-radius:999px">📄 CSV</button>';
+      html += '<button class="btn btn-outline btn-sm" id="sa-export-pdf" style="font-size:11px;padding:5px 12px;border-radius:999px">📋 PDF</button>';
+      html += '</div>';
       html += '</div>';
 
+      window._saFiltered = filtered;
       // Sager list
       if (filtered.length > 0) {
         filtered.forEach(function(s) {
