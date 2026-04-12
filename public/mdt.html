@@ -5583,6 +5583,103 @@ window.showOpretSigtelseDialog = function(personId) {
   renderDialog();
 };
 
+// ═══ EKSPORT FUNKTIONER ═══
+function exportSagerCSV(sager) {
+  var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
+  var header = ["Sagsnummer","Titel","Status","Oprettet","Oprettet af","Antal mistænkte","Mistænkte"];
+  var rows = [header.join(";")];
+  sager.forEach(function(s) {
+    var mistaenkte = (s.mistaenkte||[]).map(function(m){ return (m.fornavn||"")+" "+(m.efternavn||""); }).join(", ");
+    var dato = s.oprettet ? new Date(s.oprettet).toLocaleDateString("da-DK") : "";
+    rows.push([
+      s.sagsnummer||"",
+      '"'+(s.titel||"").replace(/"/g,'""')+'"',
+      sLabels[s.status]||s.status||"",
+      dato,
+      '"'+(s.oprettetAf||"")+'"',
+      (s.mistaenkte||[]).length,
+      '"'+mistaenkte+'"'
+    ].join(";"));
+  });
+  var csv = "\uFEFF" + rows.join("\n");
+  var blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "sagsarkiv_eksport_" + new Date().toISOString().slice(0,10) + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast("CSV eksporteret (" + sager.length + " sager)");
+}
+
+function exportSagerPDF(sager) {
+  var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
+  var sColors = {aaben:"#22c55e",under_efterforskning:"#3b82f6",afventer_retten:"#eab308",lukket:"#6b7280"};
+  var now = new Date();
+  var datoStr = now.toLocaleDateString("da-DK") + " " + now.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
+
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sagsarkiv Rapport</title><style>';
+  html += '@page{size:A4;margin:20mm}';
+  html += 'body{font-family:Arial,sans-serif;font-size:11px;color:#1a1a2e;margin:0;padding:0}';
+  html += '.header{text-align:center;border-bottom:2px solid #3b82f6;padding-bottom:14px;margin-bottom:20px}';
+  html += '.header h1{font-size:20px;margin:0 0 4px;color:#0f172a}';
+  html += '.header .sub{font-size:11px;color:#64748b}';
+  html += '.stats{display:flex;gap:16px;margin-bottom:18px;justify-content:center}';
+  html += '.stat{background:#f1f5f9;border-radius:8px;padding:8px 18px;text-align:center}';
+  html += '.stat-val{font-size:22px;font-weight:800;color:#0f172a}';
+  html += '.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748b}';
+  html += 'table{width:100%;border-collapse:collapse;margin-top:12px}';
+  html += 'th{background:#1e293b;color:#f8fafc;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em}';
+  html += 'td{padding:7px 10px;border-bottom:1px solid #e2e8f0;font-size:11px;vertical-align:top}';
+  html += 'tr:nth-child(even){background:#f8fafc}';
+  html += '.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:600;color:#fff}';
+  html += '.footer{margin-top:24px;text-align:center;font-size:9px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px}';
+  html += '</style></head><body>';
+
+  html += '<div class="header"><h1>📋 Sagsarkiv Rapport</h1><div class="sub">Genereret: ' + datoStr + ' · ' + sager.length + ' sager</div></div>';
+
+  // Stats
+  var aaben = sager.filter(function(s){return s.status==="aaben"}).length;
+  var eft = sager.filter(function(s){return s.status==="under_efterforskning"}).length;
+  var afv = sager.filter(function(s){return s.status==="afventer_retten"}).length;
+  var luk = sager.filter(function(s){return s.status==="lukket"}).length;
+  html += '<div class="stats">';
+  html += '<div class="stat"><div class="stat-val">' + sager.length + '</div><div class="stat-lbl">Total</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#22c55e">' + aaben + '</div><div class="stat-lbl">Åbne</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#3b82f6">' + eft + '</div><div class="stat-lbl">Efterforskning</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#eab308">' + afv + '</div><div class="stat-lbl">Afventer ret</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#6b7280">' + luk + '</div><div class="stat-lbl">Lukkede</div></div>';
+  html += '</div>';
+
+  // Table
+  html += '<table><thead><tr><th>Sagsnr.</th><th>Titel</th><th>Status</th><th>Dato</th><th>Oprettet af</th><th>Mistænkte</th></tr></thead><tbody>';
+  sager.forEach(function(s) {
+    var dato = s.oprettet ? new Date(s.oprettet).toLocaleDateString("da-DK") : "";
+    var mist = (s.mistaenkte||[]).map(function(m){ return ((m.fornavn||"")+" "+(m.efternavn||"")).trim(); }).filter(Boolean).join(", ") || "—";
+    var col = sColors[s.status] || "#6b7280";
+    html += '<tr>';
+    html += '<td style="font-family:monospace;font-weight:600;white-space:nowrap">' + (s.sagsnummer||"") + '</td>';
+    html += '<td>' + (s.titel||"Unavngivet") + '</td>';
+    html += '<td><span class="badge" style="background:' + col + '">' + (sLabels[s.status]||s.status||"") + '</span></td>';
+    html += '<td style="white-space:nowrap">' + dato + '</td>';
+    html += '<td>' + (s.oprettetAf||"—") + '</td>';
+    html += '<td>' + mist + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  html += '<div class="footer">Sagsarkiv · MDT System · ' + datoStr + '</div>';
+  html += '</body></html>';
+
+  var win = window.open("", "_blank");
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+    setTimeout(function(){ win.print(); }, 400);
+  } else {
+    showToast("Pop-up blokeret — tillad pop-ups for denne side");
+  }
+  showToast("PDF rapport genereret (" + sager.length + " sager)");
+}
+
 // ═══ SAGSARKIV ═══
 async function renderSagsarkiv(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser sager...</span></div>';
