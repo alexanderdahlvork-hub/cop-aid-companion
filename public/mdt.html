@@ -5518,7 +5518,51 @@ window.showOpretSigtelseDialog = function(personId) {
     const totalBoede = valgteBoeder.reduce((s,b)=>s+b.beloeb,0);
     const totalFaengsel = valgteBoeder.reduce((s,b)=>s+b.faengselMaaneder,0);
     const sigtelse = { id:Date.now().toString(), personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr, dato:new Date().toISOString().split("T")[0], sigtelseBoeder:valgteBoeder, totalBoede, faengselMaaneder:totalFaengsel, fratagKoerekort, erkender, involveretBetjente:[currentUser.id], rapport:{haendelsesforloeb:haendelse,konfiskeredeGenstande:"",magtanvendelse:""}, skabelonType:"", sagsStatus:"aaben" };
-    try { await sigtelserApi.create(sigtelse); showToast("Sigtelse oprettet"); overlay.remove(); renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
+    try {
+      await sigtelserApi.create(sigtelse);
+      // Auto-create a sag for the sigtelse
+      const sagId = (Date.now()+1).toString();
+      const sagTitel = valgteBoeder.map(b => b.beskrivelse || b.paragraf || "").filter(Boolean).join(", ") || "Sigtelse";
+      const newSag = {
+        id: sagId,
+        sagsnummer: "SAG-" + sagId.slice(-6),
+        titel: sagTitel + " — " + p.fornavn + " " + p.efternavn,
+        oprettet: new Date().toISOString(),
+        opdateret: new Date().toISOString(),
+        status: "aaben",
+        oprettetAf: currentUser ? (currentUser.fornavn + " " + currentUser.efternavn) : "System",
+        mistaenkte: [{
+          personId: p.id,
+          fornavn: p.fornavn,
+          efternavn: p.efternavn,
+          personCpr: p.cpr,
+          sigtelser: valgteBoeder,
+          totalBoede: totalBoede,
+          totalFaengsel: totalFaengsel,
+          fratagKoerekort: fratagKoerekort,
+          erkender: erkender,
+          behandlet: false,
+          tilkendegivelseAfgivet: false
+        }],
+        involveretBetjente: [currentUser ? (currentUser.fornavn + " " + currentUser.efternavn) : ""],
+        involveretBorgere: [],
+        koeretoejer: [],
+        referencer: [],
+        tags: [],
+        beviser: [],
+        haendelser: [],
+        rapporter: [],
+        bevisSkab: [],
+        telefonAktivitet: [],
+        rapport: { haendelsesforloeb: haendelse || "", resume: "", konfiskeredeGenstande: [], magtanvendelse: [] },
+        noter: [],
+        aktivitetslog: [{ tid: new Date().toISOString(), tekst: "Sag auto-oprettet fra sigtelse" }]
+      };
+      await sagerApi.create(newSag);
+      showToast("Sigtelse og sag oprettet");
+      overlay.remove();
+      renderPage(activeTabId);
+    } catch(e) { showToast("Fejl: "+e.message); }
   };
 
   document.body.appendChild(overlay);
