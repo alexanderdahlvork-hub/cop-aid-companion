@@ -5680,6 +5680,155 @@ function exportSagerPDF(sager) {
   showToast("PDF rapport genereret (" + sager.length + " sager)");
 }
 
+window.exportEnkeltSagPDF = function() {
+  var sag = window._currentSag;
+  if (!sag) { showToast("Ingen sag åben"); return; }
+  var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
+  var sColors = {aaben:"#22c55e",under_efterforskning:"#3b82f6",afventer_retten:"#eab308",lukket:"#6b7280"};
+  var now = new Date();
+  var datoStr = now.toLocaleDateString("da-DK") + " " + now.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
+  var sagDato = sag.oprettet ? new Date(sag.oprettet).toLocaleDateString("da-DK") : "";
+  var col = sColors[sag.status] || "#6b7280";
+
+  var h = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (sag.sagsnummer||"Sag") + '</title><style>';
+  h += '@page{size:A4;margin:18mm}';
+  h += 'body{font-family:Arial,sans-serif;font-size:11px;color:#1a1a2e;margin:0;padding:0}';
+  h += '.hdr{border-bottom:3px solid #3b82f6;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}';
+  h += '.hdr-left h1{font-size:18px;margin:0 0 2px;color:#0f172a}';
+  h += '.hdr-left .nr{font-size:13px;font-family:monospace;color:#3b82f6;font-weight:700}';
+  h += '.hdr-left .meta{font-size:10px;color:#64748b;margin-top:4px}';
+  h += '.hdr-right{text-align:right}';
+  h += '.status{display:inline-block;padding:4px 14px;border-radius:999px;font-size:10px;font-weight:700;color:#fff}';
+  h += '.section{margin-bottom:18px}';
+  h += '.section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#1e293b;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin-bottom:10px}';
+  h += '.field-row{display:flex;gap:24px;margin-bottom:6px}';
+  h += '.field{flex:1}';
+  h += '.field-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:2px}';
+  h += '.field-val{font-size:11px;font-weight:600}';
+  h += '.rapport-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;font-size:11px;line-height:1.7;white-space:pre-wrap;min-height:60px}';
+  h += 'table{width:100%;border-collapse:collapse}';
+  h += 'th{background:#1e293b;color:#f8fafc;padding:6px 10px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.06em}';
+  h += 'td{padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:10px;vertical-align:top}';
+  h += 'tr:nth-child(even){background:#f8fafc}';
+  h += '.badge-sm{display:inline-block;padding:2px 6px;border-radius:4px;font-size:8px;font-weight:600}';
+  h += '.footer{margin-top:28px;text-align:center;font-size:8px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px}';
+  h += '.page-break{page-break-before:always}';
+  h += '</style></head><body>';
+
+  // Header
+  h += '<div class="hdr"><div class="hdr-left"><div class="nr">' + (sag.sagsnummer||"") + '</div><h1>' + (sag.titel||"Unavngivet sag") + '</h1>';
+  h += '<div class="meta">Oprettet: ' + sagDato + ' · Af: ' + (sag.oprettetAf||"Ukendt") + '</div></div>';
+  h += '<div class="hdr-right"><span class="status" style="background:' + col + '">' + (sLabels[sag.status]||sag.status) + '</span></div></div>';
+
+  // Involverede betjente
+  if (sag.involveretBetjente && sag.involveretBetjente.length > 0) {
+    h += '<div class="section"><div class="section-title">Involverede betjente</div>';
+    h += '<div style="font-size:11px">' + sag.involveretBetjente.map(function(b){ return typeof b === "string" ? b : (b.fornavn||"")+" "+(b.efternavn||""); }).join(", ") + '</div></div>';
+  }
+
+  // Mistænkte + sigtelser
+  if (sag.mistaenkte && sag.mistaenkte.length > 0) {
+    h += '<div class="section"><div class="section-title">Mistænkte (' + sag.mistaenkte.length + ')</div>';
+    sag.mistaenkte.forEach(function(m, mi) {
+      var navn = ((m.fornavn||"") + " " + (m.efternavn||"")).trim() || "Ukendt";
+      h += '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:10px;border-left:3px solid #ef4444">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      h += '<div><span style="font-size:13px;font-weight:700">' + navn + '</span>';
+      if (m.personCpr) h += ' <span style="font-family:monospace;font-size:10px;color:#64748b;margin-left:6px">' + m.personCpr + '</span>';
+      h += '</div>';
+      var erkColor = m.erkender===true?"#22c55e":m.erkender===false?"#ef4444":"#64748b";
+      var erkText = m.erkender===true?"Erkender":m.erkender===false?"Nægter":"Uafklaret";
+      h += '<span class="badge-sm" style="background:' + erkColor + ';color:#fff">' + erkText + '</span></div>';
+
+      // Totaler
+      h += '<div class="field-row">';
+      h += '<div class="field"><div class="field-lbl">Samlet bøde</div><div class="field-val" style="color:#eab308">' + Number(m.totalBoede||0).toLocaleString("da-DK") + ' kr</div></div>';
+      h += '<div class="field"><div class="field-lbl">Fængsel</div><div class="field-val" style="color:#ef4444">' + (m.totalFaengsel||0) + ' måneder</div></div>';
+      h += '<div class="field"><div class="field-lbl">Kørekort frataget</div><div class="field-val">' + (m.fratagKoerekort?"Ja":"Nej") + '</div></div>';
+      h += '</div>';
+
+      // Sigtelser tabel
+      var sigtelser = m.sigtelser || [];
+      if (sigtelser.length > 0) {
+        h += '<table style="margin-top:8px"><thead><tr><th>Paragraf</th><th>Beskrivelse</th><th>Bøde</th><th>Fængsel</th></tr></thead><tbody>';
+        sigtelser.forEach(function(si) {
+          h += '<tr><td style="font-family:monospace">' + (si.paragraf||"—") + '</td><td>' + (si.beskrivelse||"—") + '</td>';
+          h += '<td style="text-align:right;font-family:monospace">' + Number(si.beloeb||0).toLocaleString("da-DK") + ' kr</td>';
+          h += '<td style="text-align:right">' + (si.faengselMaaneder||0) + ' mdr</td></tr>';
+        });
+        h += '</tbody></table>';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Hændelsesforløb / rapport
+  h += '<div class="section"><div class="section-title">Hændelsesforløb</div>';
+  var rapportTekst = (sag.rapport && sag.rapport.haendelsesforloeb) || "";
+  h += '<div class="rapport-box">' + (rapportTekst || "<em style=\"color:#94a3b8\">Ingen rapport skrevet</em>") + '</div></div>';
+
+  // Konfiskerede genstande
+  if (sag.rapport && Array.isArray(sag.rapport.konfiskeredeGenstande) && sag.rapport.konfiskeredeGenstande.length > 0) {
+    h += '<div class="section"><div class="section-title">Konfiskerede genstande</div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+    sag.rapport.konfiskeredeGenstande.forEach(function(g){ h += '<span style="font-size:10px;padding:3px 10px;border-radius:999px;border:1px solid #e2e8f0;background:#f1f5f9">' + g + '</span>'; });
+    h += '</div></div>';
+  }
+
+  // Magtanvendelse
+  if (sag.rapport && Array.isArray(sag.rapport.magtanvendelse) && sag.rapport.magtanvendelse.length > 0) {
+    h += '<div class="section"><div class="section-title">Magtanvendelse</div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+    sag.rapport.magtanvendelse.forEach(function(m){ h += '<span style="font-size:10px;padding:3px 10px;border-radius:999px;border:1px solid #fde68a;background:#fef9c3;color:#92400e">' + m + '</span>'; });
+    h += '</div></div>';
+  }
+
+  // Køretøjer
+  if (sag.koeretoejer && sag.koeretoejer.length > 0) {
+    h += '<div class="section"><div class="section-title">Involverede køretøjer</div>';
+    sag.koeretoejer.forEach(function(k) {
+      h += '<div style="font-size:11px;margin-bottom:4px">🚗 ' + (k.nummerplade||"") + ' — ' + (k.maerke||"") + ' ' + (k.model||"") + '</div>';
+    });
+    h += '</div>';
+  }
+
+  // Beviser
+  if (sag.beviser && sag.beviser.length > 0) {
+    h += '<div class="section"><div class="section-title">Beviser</div>';
+    h += '<table><thead><tr><th>Type</th><th>Beskrivelse</th><th>Dato</th></tr></thead><tbody>';
+    sag.beviser.forEach(function(b) {
+      h += '<tr><td>' + (b.type||"—") + '</td><td>' + (b.beskrivelse||"—") + '</td><td>' + (b.dato||"—") + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+
+  // Noter
+  if (sag.noter && sag.noter.length > 0) {
+    h += '<div class="section"><div class="section-title">Noter</div>';
+    sag.noter.forEach(function(n) {
+      h += '<div style="border-left:2px solid #3b82f6;padding-left:10px;margin-bottom:8px;font-size:11px">';
+      h += '<div style="font-size:9px;color:#64748b">' + (n.dato||n.tid||"") + ' — ' + (n.forfatter||n.af||"") + '</div>';
+      h += '<div>' + (n.tekst||n.indhold||"") + '</div></div>';
+    });
+    h += '</div>';
+  }
+
+  // Footer
+  h += '<div class="footer">Sagsrapport · ' + (sag.sagsnummer||"") + ' · Genereret ' + datoStr + ' · MDT System</div>';
+  h += '</body></html>';
+
+  var win = window.open("", "_blank");
+  if (win) {
+    win.document.write(h);
+    win.document.close();
+    setTimeout(function(){ win.print(); }, 400);
+  } else {
+    showToast("Pop-up blokeret — tillad pop-ups");
+  }
+  showToast("Sagsrapport genereret");
+};
+
 // ═══ SAGSARKIV ═══
 async function renderSagsarkiv(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser sager...</span></div>';
@@ -11597,6 +11746,7 @@ Andre relevante oplysninger:`
                 <option value="lukket" ${sag.status==="lukket"?"selected":""}>Lukket</option>
               </select>
               <button class="btn btn-primary" onclick="saveSag()">${isExisting ? "Gem rapport" : "Opret rapport"}</button>
+              <button class="btn btn-outline" onclick="exportEnkeltSagPDF()" title="Eksporter som PDF">📋 PDF</button>
             </div>
 
             <div class="sag-clean-grid">
