@@ -9094,9 +9094,10 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     const container = document.getElementById("content-area");
     if (!p || !container) return;
 
-    let sager = [], koeretoejer = [], ejendomme = [], tilhoersforhold = [];
+    let sager = [], koeretoejer = [], ejendomme = [], tilhoersforhold = [], allSigtelser = [];
     try { sager = await sagerApi.getAll(); } catch {}
     try { koeretoejer = await koeretoejerApi.getAll(); } catch {}
+    try { allSigtelser = await sigtelserApi.getAll(); } catch {}
     try { ejendomme = await ejendommeApi.getAll(); } catch {}
     try { tilhoersforhold = await tilhoersforholdApi.getAll(); } catch {}
 
@@ -9104,6 +9105,11 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     const relKoeretoejer = (koeretoejer || []).filter(k => String(k.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
     const relEjendomme = (ejendomme || []).filter(e => String(e.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
     const relTilhoersforhold = (tilhoersforhold || []).filter(t => t.personId === id || t.personCpr === p.cpr);
+
+    // Build frakendelser from sigtelser with fratagKoerekort + manual ones on person
+    const autoFrakendelser = (allSigtelser || []).filter(function(s){ return s.fratagKoerekort && (String(s.personId) === String(id) || String(s.personCpr) === String(p.cpr)); }).map(function(s){ return { id: 'sig-'+s.id, type: 'Kørekort', grund: (s.sigtelseBoeder||[]).map(function(b){return b.beskrivelse||"";}).join(", ") || "Sigtelse", dato: s.dato || "", udloeb: "", kilde: "Sigtelse", auto: true }; });
+    const manuelFrakendelser = Array.isArray(p.frakendelser) ? p.frakendelser : [];
+    const allFrakendelser = autoFrakendelser.concat(manuelFrakendelser);
 
     const foto = p.mugshotUrl || p.mugshot || p.billede || "";
     const fodselsdato = p.fodselsdato || (p.cpr && p.cpr.length >= 6 ? `${p.cpr.slice(0,2)}/${p.cpr.slice(2,4)}/19${p.cpr.slice(4,6)}` : "Ukendt");
@@ -9113,7 +9119,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       {id:"koeretoejer", label:`Køretøjer (${relKoeretoejer.length})`},
       {id:"ejendomme", label:`Ejendomme (${relEjendomme.length})`},
       {id:"tilhoersforhold", label:`Tilhørsforhold (${relTilhoersforhold.length})`},
-      {id:"frakendelser", label:"Frakendelser (0)"}
+      {id:"frakendelser", label:`Frakendelser (${allFrakendelser.length})`}
     ];
     const activeTab = window._krDetailTab || "personlig";
     // Build sager HTML before the template literal to avoid backtick nesting issues
@@ -9321,6 +9327,27 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
                 </div>
               `}
             </div>
+          ` : activeTab === "frakendelser" ? `
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <div style="font-size:15px;font-weight:700">Frakendelser (${allFrakendelser.length})</div>
+                <button class="btn btn-primary btn-sm" onclick="window._showOpretFrakendelse('${p.id}')">+ Registrer frakendelse</button>
+              </div>
+
+              ${allFrakendelser.length > 0 ? allFrakendelser.map(function(f){
+                var isActive = !f.udloeb || new Date(f.udloeb) > new Date();
+                var statusBadge = isActive ? 'badge-destructive' : 'badge-muted';
+                var statusText = isActive ? 'Aktiv' : 'Udløbet';
+                return '<div class="pd-section" style="margin-bottom:10px;border-left:3px solid ' + (isActive ? 'var(--destructive)' : 'var(--muted-fg)') + '"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:700">🚫 ' + escLocal(f.type || 'Kørekort') + '-frakendelse</span><span class="badge ' + statusBadge + '">' + statusText + '</span>' + (f.auto ? '<span class="badge badge-muted" style="font-size:9px">Auto fra sigtelse</span>' : '') + '</div>' + (!f.auto ? '<button class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 8px" onclick="window._removeFrakendelse(\'' + p.id + '\',\'' + escLocal(f.id) + '\')">✕ Fjern</button>' : '') + '</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div><div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Grund</div><div style="font-size:12px">' + escLocal(f.grund || 'Ikke angivet') + '</div></div><div><div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Fra dato</div><div style="font-size:12px;font-family:monospace">' + escLocal(f.dato || 'Ukendt') + '</div></div><div><div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Udløb</div><div style="font-size:12px;font-family:monospace">' + escLocal(f.udloeb || 'Ubestemt') + '</div></div></div>' + (f.noter ? '<div style="font-size:11px;color:var(--muted-fg);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">' + escLocal(f.noter) + '</div>' : '') + '</div>';
+              }).join("") : `
+                <div class="pr-empty-state" style="min-height:200px">
+                  <div class="pr-empty-card">
+                    <div style="font-size:13px;color:var(--muted-fg)">Ingen frakendelser registreret</div>
+                    <div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Frakendelser oprettes automatisk ved sigtelser med "fratag kørekort" eller manuelt herfra.</div>
+                  </div>
+                </div>
+              `}
+            </div>
           ` : `
             <div class="pr-empty-state" style="min-height:360px">
               <div class="pr-empty-card">
@@ -9334,7 +9361,53 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     `;
   };
 
-  window.editPerson = async function(id) {
+  window._showOpretFrakendelse = function(personId) {
+    var overlay = document.createElement("div");
+    overlay.className = "dialog-overlay";
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    overlay.innerHTML = '<div class="dialog" style="max-width:480px">' +
+      '<div class="dialog-title">🚫 Registrer frakendelse</div>' +
+      '<div class="label">Type</div>' +
+      '<select class="select mb-2" id="frak-type"><option value="Kørekort">Kørekort</option><option value="Jagttegn">Jagttegn</option><option value="Våbentilladelse">Våbentilladelse</option><option value="Andet">Andet</option></select>' +
+      '<div class="label">Grund / Begrundelse</div>' +
+      '<input class="input mb-2" id="frak-grund" placeholder="F.eks. spirituskørsel, vanvidskørsel...">' +
+      '<div class="grid grid-2 gap-2 mb-2"><div><div class="label">Fra dato</div><input class="input" type="date" id="frak-dato"></div><div><div class="label">Udløbsdato (valgfri)</div><input class="input" type="date" id="frak-udloeb"></div></div>' +
+      '<div class="label">Noter (valgfri)</div>' +
+      '<textarea class="textarea mb-2" id="frak-noter" rows="2" placeholder="Yderligere information..."></textarea>' +
+      '<div class="flex gap-2"><button class="btn btn-primary" id="frak-gem">Registrer</button><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById("frak-gem").addEventListener("click", function(){
+      var type = document.getElementById("frak-type").value;
+      var grund = document.getElementById("frak-grund").value;
+      var dato = document.getElementById("frak-dato").value;
+      var udloeb = document.getElementById("frak-udloeb").value;
+      var noter = document.getElementById("frak-noter").value;
+      if (!grund) { showToast("Angiv en begrundelse"); return; }
+      var all = getPersonStore();
+      var idx = all.findIndex(function(x){ return String(x.id) === String(personId); });
+      if (idx === -1) return;
+      if (!Array.isArray(all[idx].frakendelser)) all[idx].frakendelser = [];
+      all[idx].frakendelser.push({ id: Date.now().toString(), type: type, grund: grund, dato: dato || new Date().toISOString().split("T")[0], udloeb: udloeb, noter: noter, oprettetAf: currentUser ? currentUser.navn || currentUser.id : "Ukendt", oprettetDato: new Date().toISOString() });
+      setPersonStore(all);
+      overlay.remove();
+      showToast("Frakendelse registreret");
+      window._krDetailTab = "frakendelser";
+      selectPerson(personId);
+    });
+  };
+
+  window._removeFrakendelse = function(personId, frakId) {
+    if (!confirm("Fjern denne frakendelse?")) return;
+    var all = getPersonStore();
+    var idx = all.findIndex(function(x){ return String(x.id) === String(personId); });
+    if (idx === -1) return;
+    all[idx].frakendelser = (all[idx].frakendelser || []).filter(function(f){ return f.id !== frakId; });
+    setPersonStore(all);
+    showToast("Frakendelse fjernet");
+    selectPerson(personId);
+  };
+
     const personer = getPersonStore();
     const p = personer.find(x => String(x.id) === String(id));
     if (!p) {
