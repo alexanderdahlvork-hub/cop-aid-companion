@@ -5590,18 +5590,108 @@ async function renderSagsarkiv(container) {
     const sager = await sagerApi.getAll();
     const statusLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
     const statusColors = {aaben:"badge-success",under_efterforskning:"badge-primary",afventer_retten:"badge-warning",lukket:"badge-muted"};
-    let html = `<div class="flex items-center justify-between mb-3"><h1 style="font-size:18px;font-weight:700">Sagsarkiv</h1><button class="btn btn-primary" onclick="void openTab('opret_sag')">${icons.plus} Ny sag</button></div>`;
-    html += `<div style="margin-bottom:12px"><input class="input" id="sa-search" placeholder="Søg sagsnummer, titel..."></div>`;
-    sager.forEach(s => {
-      html += `<div class="card card-sm mb-2 sa-item" style="cursor:pointer" onclick="void openTab('sag',{sagId:'${s.id}',label:'${esc(s.titel||s.sagsnummer)}'})"><div class="flex items-center justify-between"><div><div style="font-size:13px;font-weight:600">${s.titel||"Unavngivet sag"}</div><div class="mono" style="font-size:10px;color:var(--muted-fg)">${s.sagsnummer} · ${s.oprettetAf} · ${new Date(s.oprettet).toLocaleDateString("da-DK")}</div></div><div class="flex items-center gap-2"><span class="badge ${statusColors[s.status]||'badge-muted'}">${statusLabels[s.status]||s.status}</span><span style="font-size:11px;color:var(--muted-fg)">${s.mistaenkte.length} mistænkte</span></div></div></div>`;
-    });
-    if (sager.length===0) html+='<div class="loading-center" style="min-height:200px"><p>Ingen sager oprettet</p></div>';
-    container.innerHTML = html;
-    document.getElementById("sa-search")?.addEventListener("input", e => {
-      const q = e.target.value.toLowerCase();
-      document.querySelectorAll(".sa-item").forEach((item,i) => { const s=sager[i]; item.style.display = `${s.titel} ${s.sagsnummer}`.toLowerCase().includes(q)?"":"none"; });
-    });
-  } catch (err) { container.innerHTML = `<p style="color:var(--destructive)">Fejl: ${err.message}</p>`; }
+    const statusKeys = ["alle","aaben","under_efterforskning","afventer_retten","lukket"];
+    const statusFilterLabels = {alle:"Alle",aaben:"Åben",under_efterforskning:"Efterforskning",afventer_retten:"Afventer ret",lukket:"Lukket"};
+
+    window._saFilter = window._saFilter || "alle";
+    window._saDateFrom = window._saDateFrom || "";
+    window._saDateTo = window._saDateTo || "";
+    window._saSearchQ = window._saSearchQ || "";
+
+    function renderList() {
+      let filtered = sager.slice();
+
+      // Text search
+      const q = (window._saSearchQ || "").toLowerCase();
+      if (q) filtered = filtered.filter(function(s) {
+        return (s.titel + " " + s.sagsnummer + " " + s.oprettetAf).toLowerCase().includes(q);
+      });
+
+      // Status filter
+      if (window._saFilter !== "alle") {
+        filtered = filtered.filter(function(s) { return s.status === window._saFilter; });
+      }
+
+      // Date range
+      if (window._saDateFrom) {
+        var from = new Date(window._saDateFrom);
+        filtered = filtered.filter(function(s) { return new Date(s.oprettet) >= from; });
+      }
+      if (window._saDateTo) {
+        var to = new Date(window._saDateTo);
+        to.setHours(23,59,59,999);
+        filtered = filtered.filter(function(s) { return new Date(s.oprettet) <= to; });
+      }
+
+      // Sort newest first
+      filtered.sort(function(a,b) { return new Date(b.oprettet) - new Date(a.oprettet); });
+
+      var html = '<div style="max-width:1200px;margin:0 auto">';
+      html += '<div class="flex items-center justify-between mb-3"><h1 style="font-size:18px;font-weight:700">Sagsarkiv</h1><div class="flex items-center gap-2"><span style="font-size:11px;color:var(--muted-fg)">' + sager.length + ' sager total</span><button class="btn btn-primary" onclick="void openTab(\'opret_sag\')">' + icons.plus + ' Ny sag</button></div></div>';
+
+      // Search + date filters row
+      html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-bottom:12px;align-items:end">';
+      html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Søg</div><input class="input" id="sa-search" placeholder="Søg sagsnummer, titel, betjent..." value="' + (window._saSearchQ||"").replace(/"/g,"&quot;") + '" style="height:38px"></div>';
+      html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Fra dato</div><input class="input" type="date" id="sa-date-from" value="' + (window._saDateFrom||"") + '" style="height:38px;width:150px"></div>';
+      html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Til dato</div><input class="input" type="date" id="sa-date-to" value="' + (window._saDateTo||"") + '" style="height:38px;width:150px"></div>';
+      html += '</div>';
+
+      // Status filter pills
+      html += '<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">';
+      statusKeys.forEach(function(key) {
+        var isActive = window._saFilter === key;
+        var count = key === "alle" ? sager.length : sager.filter(function(s){return s.status===key;}).length;
+        html += '<button class="sa-filter-pill" data-filter="' + key + '" style="font-size:11px;font-weight:600;padding:5px 14px;border-radius:999px;border:1px solid ' + (isActive ? 'rgba(96,165,250,.35)' : 'rgba(255,255,255,.06)') + ';background:' + (isActive ? 'rgba(59,130,246,.15)' : 'transparent') + ';color:' + (isActive ? '#f8fbff' : 'var(--muted-fg)') + ';cursor:pointer;transition:all .15s">' + statusFilterLabels[key] + ' (' + count + ')</button>';
+      });
+      html += '</div>';
+
+      // Sager list
+      if (filtered.length > 0) {
+        filtered.forEach(function(s) {
+          var dato = s.oprettet ? new Date(s.oprettet).toLocaleDateString("da-DK") : "";
+          html += '<div class="card card-sm mb-2 sa-item" style="cursor:pointer" onclick="void openTab(\'sag\',{sagId:\'' + s.id + '\',label:\'' + esc(s.titel||s.sagsnummer) + '\'})">';
+          html += '<div class="flex items-center justify-between">';
+          html += '<div style="min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.titel||"Unavngivet sag") + '</div>';
+          html += '<div class="mono" style="font-size:10px;color:var(--muted-fg)">' + esc(s.sagsnummer) + ' · ' + esc(s.oprettetAf||"") + ' · ' + dato + '</div></div>';
+          html += '<div class="flex items-center gap-2" style="flex-shrink:0"><span class="badge ' + (statusColors[s.status]||'badge-muted') + '">' + (statusLabels[s.status]||s.status) + '</span>';
+          html += '<span style="font-size:11px;color:var(--muted-fg)">' + (s.mistaenkte||[]).length + ' mistænkte</span></div>';
+          html += '</div></div>';
+        });
+      } else {
+        html += '<div class="loading-center" style="min-height:200px"><p style="color:var(--muted-fg)">Ingen sager matcher filteret</p></div>';
+      }
+      html += '</div>';
+      container.innerHTML = html;
+
+      // Attach listeners
+      document.getElementById("sa-search")?.addEventListener("input", function(e) {
+        window._saSearchQ = e.target.value;
+        renderList();
+      });
+      document.getElementById("sa-date-from")?.addEventListener("change", function(e) {
+        window._saDateFrom = e.target.value;
+        renderList();
+      });
+      document.getElementById("sa-date-to")?.addEventListener("change", function(e) {
+        window._saDateTo = e.target.value;
+        renderList();
+      });
+      document.querySelectorAll(".sa-filter-pill").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          window._saFilter = btn.getAttribute("data-filter");
+          renderList();
+        });
+      });
+
+      // Focus search if had text
+      if (window._saSearchQ) {
+        var inp = document.getElementById("sa-search");
+        if (inp) { inp.focus(); inp.selectionStart = inp.selectionEnd = inp.value.length; }
+      }
+    }
+
+    renderList();
+  } catch (err) { container.innerHTML = '<p style="color:var(--destructive)">Fejl: ' + err.message + '</p>'; }
 }
 
 // ═══ SAG EDITOR (KOMPLET) ═══
