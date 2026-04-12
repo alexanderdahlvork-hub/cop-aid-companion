@@ -9327,6 +9327,27 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
                 </div>
               `}
             </div>
+          ` : activeTab === "frakendelser" ? `
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <div style="font-size:15px;font-weight:700">Frakendelser (${allFrakendelser.length})</div>
+                <button class="btn btn-primary btn-sm" onclick="window._showOpretFrakendelse('${p.id}')">+ Registrer frakendelse</button>
+              </div>
+
+              ${allFrakendelser.length > 0 ? allFrakendelser.map(function(f){
+                var isActive = !f.udloeb || new Date(f.udloeb) > new Date();
+                var statusBadge = isActive ? 'badge-destructive' : 'badge-muted';
+                var statusText = isActive ? 'Aktiv' : 'Udløbet';
+                return '<div class="pd-section" style="margin-bottom:10px;border-left:3px solid ' + (isActive ? 'var(--destructive)' : 'var(--muted-fg)') + '"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:700">🚫 ' + escLocal(f.type || 'Kørekort') + '-frakendelse</span><span class="badge ' + statusBadge + '">' + statusText + '</span>' + (f.auto ? '<span class="badge badge-muted" style="font-size:9px">Auto fra sigtelse</span>' : '') + '</div>' + (!f.auto ? '<button class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 8px" onclick="window._removeFrakendelse(\'' + p.id + '\',\'' + escLocal(f.id) + '\')">✕ Fjern</button>' : '') + '</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div><div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Grund</div><div style="font-size:12px">' + escLocal(f.grund || 'Ikke angivet') + '</div></div><div><div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Fra dato</div><div style="font-size:12px;font-family:monospace">' + escLocal(f.dato || 'Ukendt') + '</div></div><div><div style="font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Udløb</div><div style="font-size:12px;font-family:monospace">' + escLocal(f.udloeb || 'Ubestemt') + '</div></div></div>' + (f.noter ? '<div style="font-size:11px;color:var(--muted-fg);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">' + escLocal(f.noter) + '</div>' : '') + '</div>';
+              }).join("") : `
+                <div class="pr-empty-state" style="min-height:200px">
+                  <div class="pr-empty-card">
+                    <div style="font-size:13px;color:var(--muted-fg)">Ingen frakendelser registreret</div>
+                    <div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Frakendelser oprettes automatisk ved sigtelser med "fratag kørekort" eller manuelt herfra.</div>
+                  </div>
+                </div>
+              `}
+            </div>
           ` : `
             <div class="pr-empty-state" style="min-height:360px">
               <div class="pr-empty-card">
