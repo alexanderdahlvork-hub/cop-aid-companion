@@ -8628,30 +8628,45 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           if (!isExp) {
             _sagerTabHtml += '<div style="font-size:10px;color:var(--muted-fg);margin-top:8px;opacity:.7">Klik for at læse rapporten</div>';
           } else {
+            var isEditing = window._krSagEditing === s.id;
             _sagerTabHtml += '<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px" onclick="event.stopPropagation()">';
             var skabelonLabel = s.rapport && s.rapport.skabelonType ? " · " + escLocal(s.rapport.skabelonType) : "";
-            _sagerTabHtml += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Rapport' + skabelonLabel + '</div>';
-            if (s.rapport && s.rapport.haendelsesforloeb) {
-              _sagerTabHtml += '<div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">' + escLocal(s.rapport.haendelsesforloeb) + '</div>';
-            } else {
-              _sagerTabHtml += '<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen rapport skrevet endnu</div>';
+            _sagerTabHtml += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+            _sagerTabHtml += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700">Rapport' + skabelonLabel + '</div>';
+            if (!isEditing) {
+              _sagerTabHtml += '<button class="btn btn-outline btn-sm" style="font-size:10px;padding:2px 10px" onclick="event.stopPropagation(); window._krSagEditing=\'' + s.id + '\'; selectPerson(\'' + p.id + '\')">✎ Rediger</button>';
             }
-            if (s.rapport && Array.isArray(s.rapport.konfiskeredeGenstande) && s.rapport.konfiskeredeGenstande.length > 0) {
+            _sagerTabHtml += '</div>';
+            if (isEditing) {
+              var currentText = (s.rapport && s.rapport.haendelsesforloeb) ? s.rapport.haendelsesforloeb.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : "";
+              _sagerTabHtml += '<textarea id="kr-edit-rapport-' + s.id + '" class="textarea" rows="8" style="width:100%;font-size:12px;line-height:1.6;resize:vertical">' + currentText + '</textarea>';
+              _sagerTabHtml += '<div style="display:flex;gap:8px;margin-top:10px">';
+              _sagerTabHtml += '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); (async function(){ var ta=document.getElementById(\'kr-edit-rapport-' + s.id + '\'); if(!ta) return; try { var allSager=await sagerApi.getAll(); var sag=allSager.find(function(x){return x.id===\'' + s.id + '\'}); if(!sag) return; sag.rapport=sag.rapport||{}; sag.rapport.haendelsesforloeb=ta.value; await sagerApi.update(sag); if(typeof showToast===\'function\') showToast(\'Rapport gemt\'); window._krSagEditing=null; selectPerson(\'' + p.id + '\'); } catch(e){ if(typeof showToast===\'function\') showToast(\'Fejl: \'+e.message); } })()">💾 Gem rapport</button>';
+              _sagerTabHtml += '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); window._krSagEditing=null; selectPerson(\'' + p.id + '\')">Annuller</button>';
+              _sagerTabHtml += '</div>';
+            } else {
+              if (s.rapport && s.rapport.haendelsesforloeb) {
+                _sagerTabHtml += '<div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">' + escLocal(s.rapport.haendelsesforloeb) + '</div>';
+              } else {
+                _sagerTabHtml += '<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen rapport skrevet endnu</div>';
+              }
+            }
+            if (!isEditing && s.rapport && Array.isArray(s.rapport.konfiskeredeGenstande) && s.rapport.konfiskeredeGenstande.length > 0) {
               _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Konfiskerede genstande</div><div style="display:flex;flex-wrap:wrap;gap:4px">';
               s.rapport.konfiskeredeGenstande.forEach(function(g) { _sagerTabHtml += '<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--fg)">' + escLocal(g) + '</span>'; });
               _sagerTabHtml += '</div></div>';
             }
-            if (s.rapport && Array.isArray(s.rapport.magtanvendelse) && s.rapport.magtanvendelse.length > 0) {
+            if (!isEditing && s.rapport && Array.isArray(s.rapport.magtanvendelse) && s.rapport.magtanvendelse.length > 0) {
               _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Magtanvendelse</div><div style="display:flex;flex-wrap:wrap;gap:4px">';
               s.rapport.magtanvendelse.forEach(function(m) { _sagerTabHtml += '<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(234,179,8,.3);color:var(--warning)">' + escLocal(m) + '</span>'; });
               _sagerTabHtml += '</div></div>';
             }
-            if (s.rapport && s.rapport.skabelonSvar && Object.keys(s.rapport.skabelonSvar).length > 0) {
+            if (!isEditing && s.rapport && s.rapport.skabelonSvar && Object.keys(s.rapport.skabelonSvar).length > 0) {
               _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Skabelon-svar</div>';
               Object.entries(s.rapport.skabelonSvar).forEach(function(entry) { _sagerTabHtml += '<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--muted-fg);font-weight:600">' + escLocal(entry[0]) + '</div><div style="font-size:12px;color:var(--fg)">' + escLocal(String(entry[1])) + '</div></div>'; });
               _sagerTabHtml += '</div>';
             }
-            if (Array.isArray(s.involveretBetjente) && s.involveretBetjente.length > 0) {
+            if (!isEditing && Array.isArray(s.involveretBetjente) && s.involveretBetjente.length > 0) {
               _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Involverede betjente</div><div style="font-size:12px;color:var(--fg)">' + s.involveretBetjente.map(function(b) { return escLocal(b); }).join(", ") + '</div></div>';
             }
             _sagerTabHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
