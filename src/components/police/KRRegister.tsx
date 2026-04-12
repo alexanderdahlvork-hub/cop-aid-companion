@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save, Building, Car, Phone, Check, ChevronDown, Users } from "lucide-react";
+import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save, Building, Car, Phone, Check, ChevronDown, Users, ChevronLeft, Clock, Shield, Gavel } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +52,7 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const [redigerOpenKat, setRedigerOpenKat] = useState<string | null>(null);
   const [efterlysningDialogOpen, setEfterlysningDialogOpen] = useState(false);
   const [sager, setSager] = useState<Sag[]>([]);
+  const [visSag, setVisSag] = useState<Sag | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -626,7 +627,11 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                       {personSager.map((sag) => {
                         const mistaenkt = sag.mistaenkte.find(m => m.personId === valgtPerson.id);
                         return (
-                          <div key={sag.id} className="p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors">
+                          <button
+                            key={sag.id}
+                            onClick={() => setVisSag(sag)}
+                            className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted/20 hover:border-primary/30 transition-colors cursor-pointer"
+                          >
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-mono text-muted-foreground">{sag.sagsnummer}</span>
@@ -635,30 +640,12 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                               <span className="text-[10px] text-muted-foreground">{new Date(sag.oprettet).toLocaleDateString("da-DK")}</span>
                             </div>
                             <p className="text-xs font-medium text-foreground truncate">{sag.titel}</p>
-                            {mistaenkt && (
-                              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
-                                {mistaenkt.sigtelser.length > 0 && (
-                                  <span>{mistaenkt.sigtelser.length} sigtelse{mistaenkt.sigtelser.length !== 1 ? "r" : ""}</span>
-                                )}
-                                {mistaenkt.totalBoede > 0 && (
-                                  <span className="font-mono text-warning">{mistaenkt.totalBoede.toLocaleString("da-DK")} kr</span>
-                                )}
-                                {mistaenkt.totalFaengsel > 0 && (
-                                  <span className="font-mono">{mistaenkt.totalFaengsel} mdr fængsel</span>
-                                )}
-                                <span className={cn("font-medium",
-                                  mistaenkt.erkender === true ? "text-success" : mistaenkt.erkender === false ? "text-destructive" : ""
-                                )}>
-                                  {mistaenkt.erkender === true ? "Erkender" : mistaenkt.erkender === false ? "Nægter" : "Uafklaret"}
-                                </span>
-                              </div>
-                            )}
-                            {sag.rapport?.haendelsesforloeb && (
-                              <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">
-                                {sag.rapport.haendelsesforloeb.slice(0, 120)}{sag.rapport.haendelsesforloeb.length > 120 ? "..." : ""}
+                            {mistaenkt && mistaenkt.sigtelser.length > 0 && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                                {mistaenkt.sigtelser.map(b => b.beskrivelse).join(", ")}
                               </p>
                             )}
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
