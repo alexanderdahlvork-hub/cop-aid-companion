@@ -7132,17 +7132,20 @@ async function renderNSKBandeDetaljer(bande) {
   const color = threatColors[bande.trusselsniveau] || '#6b7585';
   // Internal NSK sigtelser
   const nskSigtelser = (bande.medlemmer||[]).flatMap(m => (m.sigtelserListe || []).map(s => ({...s, medlemNavn: m.navn, kilde:'NSK'})));
-  // Also pull sigtelser from Sagsarkiv for band members
+  // Also pull sager from Sagsarkiv for band members
   let sagSigtelser = [];
+  let relSager = []; // full sag objects related to this band
   try {
     const allSager = await sagerApi.getAll();
     const medlemCprs = (bande.medlemmer||[]).map(m => (m.cpr||'').toLowerCase()).filter(Boolean);
     const medlemNavne = (bande.medlemmer||[]).map(m => (m.navn||'').toLowerCase()).filter(Boolean);
     (allSager||[]).forEach(function(sag) {
+      let sagRelevant = false;
       (sag.mistaenkte||[]).forEach(function(mist) {
         const matchCpr = mist.personCpr && medlemCprs.includes(mist.personCpr.toLowerCase());
         const matchNavn = mist.navn && medlemNavne.includes(mist.navn.toLowerCase());
         if (matchCpr || matchNavn) {
+          sagRelevant = true;
           (mist.sigtelser||[]).forEach(function(sig) {
             sagSigtelser.push({
               beskrivelse: sig.beskrivelse || 'Ukendt sigtelse',
@@ -7154,6 +7157,7 @@ async function renderNSKBandeDetaljer(bande) {
           });
         }
       });
+      if (sagRelevant) relSager.push(sag);
     });
   } catch(e) { console.error('NSK sag-sigtelser fejl', e); }
   const allSigtelser = [...nskSigtelser, ...sagSigtelser];
