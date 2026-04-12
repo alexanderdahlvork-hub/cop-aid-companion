@@ -5643,10 +5643,14 @@ async function renderSagsarkiv(container) {
       html += '<div class="flex items-center justify-between mb-3"><h1 style="font-size:18px;font-weight:700">Sagsarkiv</h1><div class="flex items-center gap-2"><span style="font-size:11px;color:var(--muted-fg)">' + sager.length + ' sager total</span><button class="btn btn-primary" onclick="void openTab(\'opret_sag\')">' + icons.plus + ' Ny sag</button></div></div>';
 
       // Search + date filters row
-      html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-bottom:12px;align-items:end">';
+      html += '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:10px;margin-bottom:12px;align-items:end">';
       html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Søg</div><input class="input" id="sa-search" placeholder="Søg sagsnummer, titel, betjent..." value="' + (window._saSearchQ||"").replace(/"/g,"&quot;") + '" style="height:38px"></div>';
       html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Fra dato</div><input class="input" type="date" id="sa-date-from" value="' + (window._saDateFrom||"") + '" style="height:38px;width:150px"></div>';
       html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Til dato</div><input class="input" type="date" id="sa-date-to" value="' + (window._saDateTo||"") + '" style="height:38px;width:150px"></div>';
+      html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Sortering</div><select class="select" id="sa-sort" style="height:38px;width:170px;font-size:12px">';
+      var sortOpts = [{v:"dato_desc",l:"Dato (nyeste først)"},{v:"dato_asc",l:"Dato (ældste først)"},{v:"sagsnr_asc",l:"Sagsnr. (stigende)"},{v:"sagsnr_desc",l:"Sagsnr. (faldende)"},{v:"status_asc",l:"Status (åben → lukket)"},{v:"status_desc",l:"Status (lukket → åben)"}];
+      sortOpts.forEach(function(o){ html += '<option value="' + o.v + '"' + (window._saSort===o.v?' selected':'') + '>' + o.l + '</option>'; });
+      html += '</select></div>';
       html += '</div>';
 
       // Status filter pills
