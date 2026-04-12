@@ -8733,7 +8733,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
               <div class="pr-notes-title">Noter</div>
               <div class="pr-notes-text">${escLocal(p.noter || "Ingen synlige noter fundet..")}</div>
             </div>
-          ` : activeTab === "sager" ? _sagerTabHtml : activeTab === "tilhoersforhold" ? `
+          ` : activeTab === "sager" ? `${_sagerTabHtml}` : activeTab === "tilhoersforhold" ? `
             <div style="padding:20px">
               <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tilhørsforhold (${relTilhoersforhold.length})</div>
               ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(t => `
