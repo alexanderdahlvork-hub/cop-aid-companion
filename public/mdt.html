@@ -7057,7 +7057,7 @@ async function renderNSKBander() {
       if (!window._nskPersoner || window._nskPersoner.length === 0) {
         try { window._nskPersoner = await personerApi.getAll(); } catch(e) { console.error('Failed to load personer:', e); }
       }
-      return renderNSKBandeDetaljer(bande);
+      return await renderNSKBandeDetaljer(bande);
     }
     window._nskViewBande = null;
   }
@@ -7127,10 +7127,36 @@ async function renderNSKBander() {
   return html;
 }
 
-function renderNSKBandeDetaljer(bande) {
+async function renderNSKBandeDetaljer(bande) {
   const threatColors = {Høj:'#d6364b',Middel:'#e0642a',Lav:'#33a06a'};
   const color = threatColors[bande.trusselsniveau] || '#6b7585';
-  const allSigtelser = (bande.medlemmer||[]).flatMap(m => (m.sigtelserListe || []).map(s => ({...s, medlemNavn: m.navn})));
+  // Internal NSK sigtelser
+  const nskSigtelser = (bande.medlemmer||[]).flatMap(m => (m.sigtelserListe || []).map(s => ({...s, medlemNavn: m.navn, kilde:'NSK'})));
+  // Also pull sigtelser from Sagsarkiv for band members
+  let sagSigtelser = [];
+  try {
+    const allSager = await sagerApi.getAll();
+    const medlemCprs = (bande.medlemmer||[]).map(m => (m.cpr||'').toLowerCase()).filter(Boolean);
+    const medlemNavne = (bande.medlemmer||[]).map(m => (m.navn||'').toLowerCase()).filter(Boolean);
+    (allSager||[]).forEach(function(sag) {
+      (sag.mistaenkte||[]).forEach(function(mist) {
+        const matchCpr = mist.personCpr && medlemCprs.includes(mist.personCpr.toLowerCase());
+        const matchNavn = mist.navn && medlemNavne.includes(mist.navn.toLowerCase());
+        if (matchCpr || matchNavn) {
+          (mist.sigtelser||[]).forEach(function(sig) {
+            sagSigtelser.push({
+              beskrivelse: sig.beskrivelse || 'Ukendt sigtelse',
+              dato: sag.oprettet ? new Date(sag.oprettet).toLocaleDateString('da-DK') : '',
+              medlemNavn: mist.navn || mist.personCpr || 'Ukendt',
+              kilde: 'Sag: ' + (sag.sagsnummer || sag.titel || ''),
+              sagId: sag.id
+            });
+          });
+        }
+      });
+    });
+  } catch(e) { console.error('NSK sag-sigtelser fejl', e); }
+  const allSigtelser = [...nskSigtelser, ...sagSigtelser];
   const totalSigtelser = allSigtelser.length;
   
   let html = '';
@@ -7227,9 +7253,10 @@ function renderNSKBandeDetaljer(bande) {
   
   if (allSigtelser.length > 0) {
     const sorted = [...allSigtelser].sort((a,b) => (b.dato||'').localeCompare(a.dato||''));
-    sorted.slice(0, 10).forEach(s => {
+    sorted.slice(0, 15).forEach(s => {
+      const kildeTag = s.kilde && s.kilde !== 'NSK' ? `<span style="font-size:8px;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.12);color:var(--primary);margin-left:6px">${esc(s.kilde)}</span>` : '';
       html += `<div style="font-size:11px;padding:4px 0;border-bottom:1px solid rgba(42,47,58,0.3)">
-        <span style="color:var(--fg);font-weight:500">${esc(s.beskrivelse)}</span>
+        <span style="color:var(--fg);font-weight:500">${esc(s.beskrivelse)}</span>${kildeTag}
         <div style="font-size:9px;color:var(--muted-fg)">${esc(s.medlemNavn)} — ${s.dato || '—'}</div>
       </div>`;
     });
