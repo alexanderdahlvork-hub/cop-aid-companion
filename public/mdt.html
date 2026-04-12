@@ -8589,6 +8589,82 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       {id:"frakendelser", label:"Frakendelser (0)"}
     ];
     const activeTab = window._krDetailTab || "personlig";
+    // Build sager HTML before the template literal to avoid backtick nesting issues
+    let _sagerTabHtml = '';
+    if (activeTab === "sager") {
+      _sagerTabHtml = '<div style="padding:20px">';
+      _sagerTabHtml += '<div style="font-size:15px;font-weight:700;margin-bottom:16px">Sager (' + relSager.length + ')</div>';
+      if (relSager.length > 0) {
+        relSager.forEach(function(s) {
+          const mistaenkt = (s.mistaenkte||[]).find(function(m) { return String(m.personId||"") === String(p.id) || String(m.personCpr||"") === String(p.cpr||""); });
+          const sLabels = {aaben:"Åben",under_efterforskning:"Efterforskning",afventer_retten:"Afventer ret",lukket:"Lukket"};
+          const sColors = {aaben:"var(--success)",under_efterforskning:"var(--primary)",afventer_retten:"var(--warning)",lukket:"var(--destructive)"};
+          const sLabel = sLabels[s.status] || (s.status || "Ukendt");
+          const sColor = sColors[s.status] || "var(--muted-fg)";
+          const isExp = window._krSagExpanded === s.id;
+          const dato = s.oprettet ? new Date(s.oprettet).toLocaleDateString("da-DK") : "";
+          _sagerTabHtml += '<div class="card" style="margin-bottom:10px;cursor:pointer;transition:border-color .15s;border-left:3px solid ' + sColor + '" onclick="window._krSagExpanded=window._krSagExpanded===\'' + s.id + '\'?null:\'' + s.id + '\'; selectPerson(\'' + p.id + '\')">';
+          _sagerTabHtml += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">';
+          _sagerTabHtml += '<div style="display:flex;align-items:center;gap:8px;min-width:0">';
+          _sagerTabHtml += '<span style="font-size:11px;font-family:monospace;color:var(--muted-fg);white-space:nowrap">' + escLocal(s.sagsnummer||"") + '</span>';
+          _sagerTabHtml += '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, ' + sColor + ' 15%, transparent);color:' + sColor + ';font-weight:600;white-space:nowrap">' + escLocal(sLabel) + '</span>';
+          _sagerTabHtml += '</div>';
+          _sagerTabHtml += '<span style="font-size:10px;color:var(--muted-fg);white-space:nowrap">' + escLocal(dato) + '</span>';
+          _sagerTabHtml += '</div>';
+          _sagerTabHtml += '<div style="font-size:13px;font-weight:700;color:var(--fg)">' + escLocal(s.titel||"Uden titel") + '</div>';
+          if (mistaenkt && Array.isArray(mistaenkt.sigtelser) && mistaenkt.sigtelser.length > 0) {
+            _sagerTabHtml += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">' + mistaenkt.sigtelser.map(function(b) { return escLocal(b.beskrivelse||""); }).join(", ") + '</div>';
+          }
+          if (mistaenkt) {
+            _sagerTabHtml += '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:10px;color:var(--muted-fg)">';
+            if (Number(mistaenkt.totalBoede||0) > 0) _sagerTabHtml += '<span style="font-family:monospace;color:var(--warning);font-weight:700">' + Number(mistaenkt.totalBoede||0).toLocaleString("da-DK") + ' kr</span>';
+            if (Number(mistaenkt.totalFaengsel||0) > 0) _sagerTabHtml += '<span style="font-family:monospace;font-weight:600">' + Number(mistaenkt.totalFaengsel||0) + ' mdr fængsel</span>';
+            var erkColor = mistaenkt.erkender===true?"var(--success)":mistaenkt.erkender===false?"var(--destructive)":"var(--muted-fg)";
+            var erkText = mistaenkt.erkender===true?"Erkender":mistaenkt.erkender===false?"Nægter":"Uafklaret";
+            _sagerTabHtml += '<span style="font-weight:600;color:' + erkColor + '">' + erkText + '</span>';
+            if (mistaenkt.fratagKoerekort) _sagerTabHtml += '<span style="color:var(--destructive)">Kørekort frataget</span>';
+            _sagerTabHtml += '</div>';
+          }
+          if (!isExp) {
+            _sagerTabHtml += '<div style="font-size:10px;color:var(--muted-fg);margin-top:8px;opacity:.7">Klik for at læse rapporten</div>';
+          } else {
+            _sagerTabHtml += '<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px" onclick="event.stopPropagation()">';
+            var skabelonLabel = s.rapport && s.rapport.skabelonType ? " · " + escLocal(s.rapport.skabelonType) : "";
+            _sagerTabHtml += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Rapport' + skabelonLabel + '</div>';
+            if (s.rapport && s.rapport.haendelsesforloeb) {
+              _sagerTabHtml += '<div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">' + escLocal(s.rapport.haendelsesforloeb) + '</div>';
+            } else {
+              _sagerTabHtml += '<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen rapport skrevet endnu</div>';
+            }
+            if (s.rapport && Array.isArray(s.rapport.konfiskeredeGenstande) && s.rapport.konfiskeredeGenstande.length > 0) {
+              _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Konfiskerede genstande</div><div style="display:flex;flex-wrap:wrap;gap:4px">';
+              s.rapport.konfiskeredeGenstande.forEach(function(g) { _sagerTabHtml += '<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--fg)">' + escLocal(g) + '</span>'; });
+              _sagerTabHtml += '</div></div>';
+            }
+            if (s.rapport && Array.isArray(s.rapport.magtanvendelse) && s.rapport.magtanvendelse.length > 0) {
+              _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Magtanvendelse</div><div style="display:flex;flex-wrap:wrap;gap:4px">';
+              s.rapport.magtanvendelse.forEach(function(m) { _sagerTabHtml += '<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(234,179,8,.3);color:var(--warning)">' + escLocal(m) + '</span>'; });
+              _sagerTabHtml += '</div></div>';
+            }
+            if (s.rapport && s.rapport.skabelonSvar && Object.keys(s.rapport.skabelonSvar).length > 0) {
+              _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Skabelon-svar</div>';
+              Object.entries(s.rapport.skabelonSvar).forEach(function(entry) { _sagerTabHtml += '<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--muted-fg);font-weight:600">' + escLocal(entry[0]) + '</div><div style="font-size:12px;color:var(--fg)">' + escLocal(String(entry[1])) + '</div></div>'; });
+              _sagerTabHtml += '</div>';
+            }
+            if (Array.isArray(s.involveretBetjente) && s.involveretBetjente.length > 0) {
+              _sagerTabHtml += '<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Involverede betjente</div><div style="font-size:12px;color:var(--fg)">' + s.involveretBetjente.map(function(b) { return escLocal(b); }).join(", ") + '</div></div>';
+            }
+            _sagerTabHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">';
+            _sagerTabHtml += '<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openTab(\'sag\',{sagId:\'' + s.id + '\',label:\'' + escLocal(s.titel||s.sagsnummer) + '\'})">Åbn i sagsarkiv</button>';
+            _sagerTabHtml += '</div></div>';
+          }
+          _sagerTabHtml += '</div>';
+        });
+      } else {
+        _sagerTabHtml += '<div class="pr-empty-state" style="min-height:200px"><div class="pr-empty-card"><div class="pr-empty-title">Ingen sager</div><div class="pr-empty-text">Der er endnu ikke registreret sager på denne person.</div></div></div>';
+      }
+      _sagerTabHtml += '</div>';
+    }
 
     container.innerHTML = `
       <div class="pr-shell">
