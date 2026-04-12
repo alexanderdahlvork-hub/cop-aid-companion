@@ -8050,6 +8050,97 @@ window.markEftersoegt = async function(id) {
             </div>
           `}
         </div>
+        ` : activeTab === "sager" ? `
+        <div style="padding:20px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:16px">Sager (${relSager.length})</div>
+          ${relSager.length > 0 ? relSager.map(s => {
+            const mistaenkt = (s.mistaenkte||[]).find(m => m.personCpr === p.cpr || m.personId === p.id);
+            const statusLabel = {aaben:"Åben",under_efterforskning:"Efterforskning",afventer_retten:"Afventer ret",lukket:"Lukket"}[s.status] || s.status;
+            const statusColor = {aaben:"var(--success)",under_efterforskning:"var(--primary)",afventer_retten:"var(--warning)",lukket:"var(--destructive)"}[s.status] || "var(--muted-fg)";
+            return `
+            <div class="card" style="margin-bottom:10px;cursor:pointer;transition:border-color .15s;border-left:3px solid ${statusColor}" onclick="window._krSagExpanded=window._krSagExpanded==='${s.id}'?null:'${s.id}'; selectPerson('${p.id}')">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:11px;font-family:monospace;color:var(--muted-fg)">${escLocal(s.sagsnummer||"")}</span>
+                  <span style="font-size:10px;padding:2px 8px;border-radius:99px;background:color-mix(in srgb, ${statusColor} 15%, transparent);color:${statusColor};font-weight:600">${statusLabel}</span>
+                </div>
+                <span style="font-size:10px;color:var(--muted-fg)">${s.oprettet ? new Date(s.oprettet).toLocaleDateString("da-DK") : ""}</span>
+              </div>
+              <div style="font-size:13px;font-weight:600;color:var(--fg)">${escLocal(s.titel||"Uden titel")}</div>
+              ${mistaenkt && mistaenkt.sigtelser && mistaenkt.sigtelser.length > 0 ? `
+                <div style="font-size:11px;color:var(--muted-fg);margin-top:4px">${mistaenkt.sigtelser.map(b => escLocal(b.beskrivelse||"")).join(", ")}</div>
+              ` : ""}
+              ${mistaenkt ? `
+                <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted-fg)">
+                  ${mistaenkt.totalBoede > 0 ? `<span style="font-family:monospace;color:var(--warning);font-weight:700">${mistaenkt.totalBoede.toLocaleString("da-DK")} kr</span>` : ""}
+                  ${mistaenkt.totalFaengsel > 0 ? `<span style="font-family:monospace;font-weight:600">${mistaenkt.totalFaengsel} mdr fængsel</span>` : ""}
+                  <span style="font-weight:600;color:${mistaenkt.erkender===true?"var(--success)":mistaenkt.erkender===false?"var(--destructive)":"var(--muted-fg)"}">${mistaenkt.erkender===true?"Erkender":mistaenkt.erkender===false?"Nægter":"Uafklaret"}</span>
+                  ${mistaenkt.fratagKoerekort ? `<span style="color:var(--destructive)">Kørekort frataget</span>` : ""}
+                </div>
+              ` : ""}
+
+              ${window._krSagExpanded === s.id ? `
+                <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+                  <!-- Rapport -->
+                  <div style="margin-bottom:14px">
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Rapport${s.rapport && s.rapport.skabelonType ? ` · ${escLocal(s.rapport.skabelonType)}` : ""}</div>
+                    ${s.rapport && s.rapport.haendelsesforloeb ? `
+                      <div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">${escLocal(s.rapport.haendelsesforloeb)}</div>
+                    ` : `<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Intet hændelsesforløb registreret</div>`}
+                  </div>
+
+                  ${s.rapport && s.rapport.konfiskeredeGenstande && s.rapport.konfiskeredeGenstande.length > 0 ? `
+                    <div style="margin-bottom:14px">
+                      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Konfiskerede genstande</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:4px">${s.rapport.konfiskeredeGenstande.map(g => `<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid var(--border);color:var(--fg)">${escLocal(g)}</span>`).join("")}</div>
+                    </div>
+                  ` : ""}
+
+                  ${s.rapport && s.rapport.magtanvendelse && s.rapport.magtanvendelse.length > 0 ? `
+                    <div style="margin-bottom:14px">
+                      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Magtanvendelse</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:4px">${s.rapport.magtanvendelse.map(m => `<span style="font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid rgba(234,179,8,.3);color:var(--warning)">${escLocal(m)}</span>`).join("")}</div>
+                    </div>
+                  ` : ""}
+
+                  ${s.rapport && s.rapport.skabelonSvar && Object.keys(s.rapport.skabelonSvar).length > 0 ? `
+                    <div style="margin-bottom:14px">
+                      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Skabelon-svar</div>
+                      ${Object.entries(s.rapport.skabelonSvar).map(([q,a]) => `
+                        <div style="margin-bottom:8px">
+                          <div style="font-size:11px;color:var(--muted-fg);font-weight:600">${escLocal(q)}</div>
+                          <div style="font-size:12px;color:var(--fg)">${escLocal(String(a))}</div>
+                        </div>
+                      `).join("")}
+                    </div>
+                  ` : ""}
+
+                  <!-- Involverede betjente -->
+                  ${s.involveretBetjente && s.involveretBetjente.length > 0 ? `
+                    <div style="margin-bottom:14px">
+                      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Involverede betjente</div>
+                      <div style="font-size:12px;color:var(--fg)">${s.involveretBetjente.map(b => escLocal(b)).join(", ")}</div>
+                    </div>
+                  ` : ""}
+
+                  <!-- Oprettet af -->
+                  <div style="font-size:10px;color:var(--muted-fg);margin-top:8px">Oprettet af: ${escLocal(s.oprettetAf||"Ukendt")}</div>
+
+                  <!-- Åbn i sagsarkiv -->
+                  <div style="margin-top:12px">
+                    <button style="font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid var(--primary);background:transparent;color:var(--primary);cursor:pointer;font-weight:600" onclick="event.stopPropagation(); openTab('sag',{sagId:'${s.id}',label:'${escLocal(s.titel||s.sagsnummer)}'})">Åbn i sagsarkiv</button>
+                  </div>
+                </div>
+              ` : `
+                <div style="font-size:10px;color:var(--muted-fg);margin-top:6px;opacity:.6">Klik for at se rapport →</div>
+              `}
+            </div>`;
+          }).join("") : `
+            <div class="card" style="text-align:center;padding:32px">
+              <div style="font-size:13px;color:var(--muted-fg)">Ingen sager registreret for denne person</div>
+            </div>
+          `}
+        </div>
         ` : `
         <div class="card">
           <div style="font-size:14px;font-weight:700;margin-bottom:10px">${topTabs.find(t=>t.id===activeTab)?.label || ""}</div>
