@@ -9094,9 +9094,10 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     const container = document.getElementById("content-area");
     if (!p || !container) return;
 
-    let sager = [], koeretoejer = [], ejendomme = [], tilhoersforhold = [];
+    let sager = [], koeretoejer = [], ejendomme = [], tilhoersforhold = [], allSigtelser = [];
     try { sager = await sagerApi.getAll(); } catch {}
     try { koeretoejer = await koeretoejerApi.getAll(); } catch {}
+    try { allSigtelser = await sigtelserApi.getAll(); } catch {}
     try { ejendomme = await ejendommeApi.getAll(); } catch {}
     try { tilhoersforhold = await tilhoersforholdApi.getAll(); } catch {}
 
