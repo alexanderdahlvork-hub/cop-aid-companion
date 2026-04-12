@@ -10923,7 +10923,7 @@ Andre relevante oplysninger:`
       addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
       updateHeaderStats();
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
-      renderPage(activeTabId);
+      closePenaltyPicker();
       showToast(`✓ ${esc(charge.beskrivelse || charge.title)} x${qty}`);
     }
 
@@ -11164,7 +11164,7 @@ Andre relevante oplysninger:`
         }
       });
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
-      renderPage(activeTabId);
+      closePenaltyPicker();
       showToast(`Sigtelse tilføjet x${qty}`);
     }
 
