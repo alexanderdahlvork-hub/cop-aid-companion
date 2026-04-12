@@ -9208,90 +9208,111 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       _sagerTabHtml += '</div>';
     }
 
+    const statusColors2 = {aktiv:"badge-success",eftersøgt:"badge-warning",anholdt:"badge-destructive",sigtet:"badge-primary"};
+    const statusLabels2 = {aktiv:"Aktiv",eftersøgt:"Eftersøgt",anholdt:"Anholdt",sigtet:"Sigtet"};
+
+    // Aggregate totals from sager
+    let _totalBoede = 0, _totalFaengsel = 0;
+    relSager.forEach(function(s) {
+      const mist = (s.mistaenkte||[]).find(function(m) { return String(m.personId||"") === String(p.id) || String(m.personCpr||"") === String(p.cpr||""); });
+      if (mist) {
+        _totalBoede += Number(mist.totalBoede || 0);
+        _totalFaengsel += Number(mist.totalFaengsel || 0);
+      }
+    });
+
     container.innerHTML = `
-      <div class="pr-shell">
-        <div class="pr-back-row">
-          <button class="btn btn-outline" onclick="window._krSelectedId=null; renderPersonregister(document.getElementById('content-area'))">← Tilbage til søgning</button>
+      <div class="pr-shell pd-page">
+        <div class="pd-header">
+          <button class="btn btn-outline btn-sm" style="position:absolute;top:10px;left:12px;font-size:11px;padding:4px 10px;border-radius:10px;opacity:.7" onclick="window._krSelectedId=null; renderPersonregister(document.getElementById('content-area'))">← Tilbage</button>
+          <div class="pd-avatar">
+            ${foto ? '<img src="' + escLocal(foto) + '">' : personInitials(p)}
+          </div>
+          <div class="pd-header-info">
+            <div class="pd-name">${escLocal(p.fornavn || "")} ${escLocal(p.efternavn || "")}</div>
+            <div class="pd-cpr">${escLocal(p.cpr)}</div>
+            <div class="pd-header-badges">
+              <span class="badge ${statusColors2[p.status] || 'badge-muted'}">${statusLabels2[p.status] || p.status}</span>
+              ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(function(t){ return '<span class="badge badge-destructive" style="font-size:9px">' + escLocal(t.bande) + '</span>'; }).join("") : ""}
+            </div>
+          </div>
+          <div class="pd-header-actions">
+            <button class="btn btn-outline btn-sm" onclick="editPerson('${p.id}')">✎ Rediger</button>
+            <button class="btn btn-primary btn-sm" onclick="showOpretSigtelseDialog('${p.id}')">+ Sigtelse</button>
+            <button class="btn btn-outline btn-sm" onclick="showEfterlysningDialog('${p.id}')">${p.status === 'eftersøgt' ? '✕ Fjern efterlysning' : '△ Efterlys'}</button>
+          </div>
         </div>
 
-        <div class="pr-main">
-          <div class="pr-top-tabs">
-            ${topTabs.map(tab => `<div class="pr-tab ${activeTab===tab.id ? "active" : ""}" onclick="window._krDetailTab='${tab.id}'; selectPerson('${p.id}')">${tab.label}</div>`).join("")}
-          </div>
+        ${p.status === "eftersøgt" ? '<div class="alert-banner alert-warning" style="margin:0;border-radius:0;padding:10px 32px;font-size:12px">⚠ Denne person er aktivt eftersøgt</div>' : ""}
 
+        <div class="pd-tabs">
+          ${topTabs.map(function(tab){ return '<div class="pd-pill ' + (activeTab === tab.id ? "active" : "") + '" onclick="window._krDetailTab=\'' + tab.id + '\'; selectPerson(\'' + p.id + '\')">' + tab.label + '</div>'; }).join("")}
+        </div>
+
+        <div class="pd-body">
           ${activeTab === "personlig" ? `
-            <div class="pr-profile-top">
-              <div class="pr-side-stack">
-                <div class="pr-mugshot">
-                  ${foto ? `<img src="${escLocal(foto)}" style="width:100%;height:100%;object-fit:cover">` : personInitials(p)}
+            <div class="pd-metrics">
+              <div class="pd-metric"><div class="pd-metric-value">${relSager.length}</div><div class="pd-metric-label">Sager</div></div>
+              <div class="pd-metric"><div class="pd-metric-value" style="color:var(--warning)">${_totalBoede > 0 ? (_totalBoede/1000).toFixed(0) + 'k' : '0'}</div><div class="pd-metric-label">Bøder (kr)</div></div>
+              <div class="pd-metric"><div class="pd-metric-value" style="color:var(--destructive)">${_totalFaengsel}</div><div class="pd-metric-label">Fængsel (mdr)</div></div>
+              <div class="pd-metric"><div class="pd-metric-value">${relTilhoersforhold.length}</div><div class="pd-metric-label">Tilhørsforhold</div></div>
+            </div>
+
+            <div class="pd-two-col">
+              <div>
+                <div class="pd-section">
+                  <div class="pd-section-title">👤 Personoplysninger</div>
+                  <div class="pd-field"><span class="pd-field-label">Fødselsdato</span><span class="pd-field-value">${escLocal(fodselsdato)}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Nationalitet</span><span class="pd-field-value">${escLocal(p.nationalitet || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Køn</span><span class="pd-field-value">${escLocal(p.koen || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Fødested</span><span class="pd-field-value">${escLocal(p.foedested || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Telefon</span><span class="pd-field-value">${escLocal(p.telefon || "Ukendt")}</span></div>
                 </div>
-                <div class="pr-side-card">
-                  <div class="pr-side-title">Særlige kendetegn</div>
-                  <div class="pr-side-text">${escLocal(p.saerligeKendetegn || p["særligeKendetegn"] || "Ingen Data/Ukendt")}</div>
-                </div>
-                <div class="pr-side-card">
-                  <div class="pr-side-title">Tags</div>
-                  <div class="pr-side-text">${escLocal(p.tags || "Ingen Data/Ukendt")}</div>
-                </div>
-                <div class="pr-side-card">
-                  <div class="pr-side-title">Kommentarer</div>
-                  <div class="pr-side-text">${escLocal(p.kommentar || "Ingen Data/Ukendt")}</div>
-                </div>
+
+                ${relTilhoersforhold.length > 0 ? '<div class="pd-section" style="margin-top:20px"><div class="pd-section-title">🎯 Tilhørsforhold</div>' + relTilhoersforhold.map(function(t){ return '<div style="padding:8px 12px;border:1px solid rgba(255,255,255,.05);border-radius:10px;margin-bottom:6px;border-left:3px solid var(--destructive);display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:600">' + escLocal(t.bande) + '</span><div style="display:flex;gap:4px"><span class="badge badge-muted" style="font-size:9px">' + escLocal(t.rolle||"Medlem") + '</span><span class="badge ' + (t.status==="aktiv"?"badge-success":"badge-muted") + '" style="font-size:9px">' + escLocal(t.status||"aktiv") + '</span></div></div>'; }).join("") + '</div>' : ""}
               </div>
 
               <div>
-                <div class="pr-main-top">
-                  <div class="pr-person-name">${escLocal(p.fornavn || "")} ${escLocal(p.efternavn || "")}</div>
-                  <div class="pr-actions">
-                    <button class="btn btn-outline btn-sm" onclick="editPerson('${p.id}')">✎ Rediger</button>
-                    <button class="btn btn-outline btn-sm" onclick="showEfterlysningDialog('${p.id}')">△ Efterlys</button>
-                    <button class="btn btn-outline btn-sm">⋯</button>
-                  </div>
+                <div class="pd-section">
+                  <div class="pd-section-title">📐 Fysiske kendetegn</div>
+                  <div class="pd-field"><span class="pd-field-label">Højde</span><span class="pd-field-value">${escLocal(p.hoejde || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Vægt</span><span class="pd-field-value">${escLocal(p.vaegt || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Øjenfarve</span><span class="pd-field-value">${escLocal(p.oejenfarve || p["øjenfarve"] || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">Hårfarve</span><span class="pd-field-value">${escLocal(p.haarfarve || p["hårfarve"] || "Ukendt")}</span></div>
                 </div>
 
-                <div class="pr-info-grid">
-                  <div class="pr-info"><div class="pr-info-label">Fødselsdato</div><div class="pr-info-value">${escLocal(fodselsdato)}</div></div>
-                  <div class="pr-info"><div class="pr-info-label">Nationalitet</div><div class="pr-info-value">${escLocal(p.nationalitet || "Ingen Data/Ukendt")}</div></div>
-                  <div class="pr-info"><div class="pr-info-label">Køn</div><div class="pr-info-value">${escLocal(p.koen || "Ingen Data/Ukendt")}</div></div>
-
-                  <div class="pr-info"><div class="pr-info-label">Fødested</div><div class="pr-info-value">${escLocal(p.foedested || "Ukendt")}</div></div>
-                  <div class="pr-info"><div class="pr-info-label">Højde</div><div class="pr-info-value">${escLocal(p.hoejde || "Ingen Data/Ukendt")}</div></div>
-                  <div class="pr-info"><div class="pr-info-label">Vægt</div><div class="pr-info-value">${escLocal(p.vaegt || "Ingen Data/Ukendt")}</div></div>
-
-                  <div class="pr-info"><div class="pr-info-label">Øjenfarve</div><div class="pr-info-value">${escLocal(p.oejenfarve || p["øjenfarve"] || "Ingen Data/Ukendt")}</div></div>
-                  <div class="pr-info"><div class="pr-info-label">Hårfarve</div><div class="pr-info-value">${escLocal(p.haarfarve || p["hårfarve"] || "Ingen Data/Ukendt")}</div></div>
-                  <div class="pr-info"><div class="pr-info-label">Telefon</div><div class="pr-info-value">${escLocal(p.telefon || "Ingen Data/Ukendt")}</div></div>
+                <div class="pd-section" style="margin-top:20px">
+                  <div class="pd-section-title">🏠 Adresse & Ejendomme</div>
+                  <div class="pd-field"><span class="pd-field-label">Adresse</span><span class="pd-field-value">${escLocal(p.adresse || "Ukendt")}</span></div>
+                  <div class="pd-field"><span class="pd-field-label">By</span><span class="pd-field-value">${escLocal((p.postnr||"") + " " + (p.by||"") || "Ukendt")}</span></div>
+                  ${relEjendomme.length > 0 ? relEjendomme.map(function(e){ return '<div class="pd-field"><span class="pd-field-label">Ejendom</span><span class="pd-field-value" style="font-size:11px">' + escLocal(e.adresse||"") + ' <span class="badge badge-muted" style="font-size:8px;margin-left:4px">' + escLocal(e.type||"Bolig") + '</span></span></div>'; }).join("") : ""}
+                  ${relKoeretoejer.length > 0 ? relKoeretoejer.map(function(k){ return '<div class="pd-field"><span class="pd-field-label">Køretøj</span><span class="pd-field-value" style="font-size:11px">' + escLocal(k.nummerplade||"") + ' — ' + escLocal(k.maerke||"") + ' ' + escLocal(k.model||"") + '</span></div>'; }).join("") : ""}
                 </div>
               </div>
             </div>
 
-            <div class="pr-stats">
-              <div class="pr-stat-card"><div class="pr-stat-label">Antal sager</div><div class="pr-stat-value">${relSager.length}</div></div>
-              <div class="pr-stat-card"><div class="pr-stat-label">Antal køretøjer</div><div class="pr-stat-value">${relKoeretoejer.length}</div></div>
-              <div class="pr-stat-card"><div class="pr-stat-label">Antal ejendomme</div><div class="pr-stat-value">${relEjendomme.length}</div></div>
+            <div class="pd-kendetegn">
+              <div class="pd-section-title">🔍 Særlige kendetegn & Tags</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div>
+                  <div style="font-size:11px;color:var(--muted-fg);margin-bottom:4px">Kendetegn</div>
+                  <div style="font-size:13px;line-height:1.6">${escLocal(p.saerligeKendetegn || p["særligeKendetegn"] || "Ingen registreret")}</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--muted-fg);margin-bottom:4px">Tags</div>
+                  <div style="font-size:13px;line-height:1.6">${escLocal(p.tags || "Ingen tags")}</div>
+                </div>
+              </div>
             </div>
 
-            <div class="pr-notes-card">
-              <div class="pr-notes-title">Noter</div>
-              <div class="pr-notes-text">${escLocal(p.noter || "Ingen synlige noter fundet..")}</div>
+            <div class="pd-notes">
+              <div class="pd-notes-title">📝 Noter & Kommentarer</div>
+              <div class="pd-notes-text">${escLocal(p.kommentar || p.noter || "Ingen synlige noter fundet..")}</div>
             </div>
-          ` : activeTab === "sager" ? `${_sagerTabHtml}` : activeTab === "tilhoersforhold" ? `
-            <div style="padding:20px">
+          ` : activeTab === "sager" ? _sagerTabHtml : activeTab === "tilhoersforhold" ? `
+            <div>
               <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tilhørsforhold (${relTilhoersforhold.length})</div>
-              ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(t => `
-                <div style="padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;border-left:3px solid var(--destructive);background:rgba(239,68,68,0.03)">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <span style="font-size:14px;font-weight:600">${escLocal(t.bande)}</span>
-                      <span class="badge badge-muted" style="margin-left:8px">${escLocal(t.rolle||"Medlem")}</span>
-                      <span class="badge ${t.status==="aktiv"?"badge-success":"badge-muted"}" style="margin-left:4px">${escLocal(t.status||"aktiv")}</span>
-                    </div>
-                    <div style="font-size:10px;color:var(--muted-fg)">${escLocal(t.oprettetDato||"")}</div>
-                  </div>
-                  ${t.noter ? `<div style="font-size:11px;color:var(--muted-fg);margin-top:6px">${escLocal(t.noter)}</div>` : ""}
-                  <div style="font-size:10px;color:var(--muted-fg);margin-top:4px">Registreret af: ${escLocal(t.oprettetAf||"Ukendt")}</div>
-                </div>
-              `).join("") : `
+              ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(function(t){ return '<div style="padding:12px 16px;border:1px solid rgba(255,255,255,.05);border-radius:12px;margin-bottom:8px;border-left:3px solid var(--destructive);background:rgba(239,68,68,0.03)"><div class="flex items-center justify-between"><div><span style="font-size:14px;font-weight:600">' + escLocal(t.bande) + '</span><span class="badge badge-muted" style="margin-left:8px">' + escLocal(t.rolle||"Medlem") + '</span><span class="badge ' + (t.status==="aktiv"?"badge-success":"badge-muted") + '" style="margin-left:4px">' + escLocal(t.status||"aktiv") + '</span></div><div style="font-size:10px;color:var(--muted-fg)">' + escLocal(t.oprettetDato||"") + '</div></div>' + (t.noter ? '<div style="font-size:11px;color:var(--muted-fg);margin-top:6px">' + escLocal(t.noter) + '</div>' : "") + '<div style="font-size:10px;color:var(--muted-fg);margin-top:4px">Registreret af: ' + escLocal(t.oprettetAf||"Ukendt") + '</div></div>'; }).join("") : `
                 <div class="pr-empty-state" style="min-height:200px">
                   <div class="pr-empty-card">
                     <div style="font-size:13px;color:var(--muted-fg)">Ingen tilhørsforhold registreret</div>
@@ -9303,7 +9324,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           ` : `
             <div class="pr-empty-state" style="min-height:360px">
               <div class="pr-empty-card">
-                <div class="pr-empty-title">${topTabs.find(t=>t.id===activeTab)?.label || ""}</div>
+                <div class="pr-empty-title">${topTabs.find(function(t){return t.id===activeTab})?.label || ""}</div>
                 <div class="pr-empty-text">Denne fane kan udbygges videre i samme stil.</div>
               </div>
             </div>
