@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { personerApi, sigtelserApi, ejendommeApi, koeretoejerApi } from "@/lib/api";
-import type { Person, Sigtelse, Ejendom, Koeretoej, SigtelseBoede, SagsStatus } from "@/types/police";
+import { sagerApi } from "@/lib/sagerApi";
+import type { Person, Sigtelse, Ejendom, Koeretoej, SigtelseBoede, SagsStatus, Sag } from "@/types/police";
 import OpretSigtelseDialog from "./OpretSigtelseDialog";
 import EfterlysningDialog from "./EfterlysningDialog";
 import { toast } from "@/components/ui/sonner";
@@ -50,7 +51,7 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const [redigerBoederSoegning, setRedigerBoederSoegning] = useState("");
   const [redigerOpenKat, setRedigerOpenKat] = useState<string | null>(null);
   const [efterlysningDialogOpen, setEfterlysningDialogOpen] = useState(false);
-
+  const [sager, setSager] = useState<Sag[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -82,6 +83,12 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
         setKoeretoejer(koeretoejData);
       } catch (err) {
         console.error("Fejl ved indlæsning af køretøjer:", err);
+      }
+      try {
+        const sagerData = await sagerApi.getAll();
+        setSager(sagerData);
+      } catch (err) {
+        console.error("Fejl ved indlæsning af sager:", err);
       }
       setLoading(false);
     };
@@ -594,6 +601,76 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                 </div>
               )}
             </div>
+
+            {/* Sager (Cases) */}
+            {(() => {
+              const personSager = sager.filter(s =>
+                s.mistaenkte.some(m => m.personId === valgtPerson.id)
+              );
+              const statusLabel: Record<string, string> = { aaben: "Åben", under_efterforskning: "Efterforskning", afventer_retten: "Afventer ret", lukket: "Lukket" };
+              const statusCls: Record<string, string> = {
+                aaben: "bg-success/15 text-success",
+                under_efterforskning: "bg-primary/15 text-primary",
+                afventer_retten: "bg-warning/15 text-warning",
+                lukket: "bg-destructive/15 text-destructive",
+              };
+              return (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                    <h3 className="text-xs font-semibold text-foreground">Sager</h3>
+                    <span className="text-[10px] text-muted-foreground">({personSager.length})</span>
+                  </div>
+                  {personSager.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {personSager.map((sag) => {
+                        const mistaenkt = sag.mistaenkte.find(m => m.personId === valgtPerson.id);
+                        return (
+                          <div key={sag.id} className="p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono text-muted-foreground">{sag.sagsnummer}</span>
+                                <Badge className={cn("text-[8px] px-1.5 py-0 h-4", statusCls[sag.status] || "")}>{statusLabel[sag.status] || sag.status}</Badge>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground">{new Date(sag.oprettet).toLocaleDateString("da-DK")}</span>
+                            </div>
+                            <p className="text-xs font-medium text-foreground truncate">{sag.titel}</p>
+                            {mistaenkt && (
+                              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                                {mistaenkt.sigtelser.length > 0 && (
+                                  <span>{mistaenkt.sigtelser.length} sigtelse{mistaenkt.sigtelser.length !== 1 ? "r" : ""}</span>
+                                )}
+                                {mistaenkt.totalBoede > 0 && (
+                                  <span className="font-mono text-warning">{mistaenkt.totalBoede.toLocaleString("da-DK")} kr</span>
+                                )}
+                                {mistaenkt.totalFaengsel > 0 && (
+                                  <span className="font-mono">{mistaenkt.totalFaengsel} mdr fængsel</span>
+                                )}
+                                <span className={cn("font-medium",
+                                  mistaenkt.erkender === true ? "text-success" : mistaenkt.erkender === false ? "text-destructive" : ""
+                                )}>
+                                  {mistaenkt.erkender === true ? "Erkender" : mistaenkt.erkender === false ? "Nægter" : "Uafklaret"}
+                                </span>
+                              </div>
+                            )}
+                            {sag.rapport?.haendelsesforloeb && (
+                              <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">
+                                {sag.rapport.haendelsesforloeb.slice(0, 120)}{sag.rapport.haendelsesforloeb.length > 120 ? "..." : ""}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-border p-8 text-center">
+                      <FileText className="w-6 h-6 text-muted-foreground/20 mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground">Ingen sager</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
           </div>
         </ScrollArea>
