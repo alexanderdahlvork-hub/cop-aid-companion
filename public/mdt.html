@@ -5693,6 +5693,9 @@ async function renderSagsarkiv(container) {
         window._saDateTo = e.target.value;
         renderList();
       });
+      document.getElementById("sa-sort")?.addEventListener("change", function(e) {
+        window._saSort = e.target.value;
+        renderList();
       document.querySelectorAll(".sa-filter-pill").forEach(function(btn) {
         btn.addEventListener("click", function() {
           window._saFilter = btn.getAttribute("data-filter");
