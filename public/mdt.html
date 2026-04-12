@@ -4386,6 +4386,7 @@ async function openTab(type, data = {}, forceNew = false) {
 
 async function closeTab(id) {
   if (id === "forside") return;
+  if (typeof window._recentlyClosedPenalty === "function" && window._recentlyClosedPenalty()) return;
   delete tabStateCache[id];
   const idx = openTabs.findIndex(t => t.id === id);
   openTabs = openTabs.filter(t => t.id !== id);
@@ -10443,7 +10444,14 @@ Andre relevante oplysninger:`
     try {
       const [personer, betjente, koeretoejer] = await Promise.all([personerApi.getAll(), betjenteApi.getAll(), koeretoejerApi.getAll()]);
       let sag, isExisting = false;
-      if (data?.sagId) {
+      const currentSagTab = Array.isArray(openTabs) ? openTabs.find(t => t.id === activeTabId && t.type === "sag") : null;
+      const draftSag = data?.draftSag || currentSagTab?.data?.draftSag;
+      if (draftSag && (!data?.sagId || String(draftSag.id) === String(data.sagId))) {
+        try { sag = JSON.parse(JSON.stringify(draftSag)); }
+        catch { sag = draftSag; }
+        isExisting = Boolean(data?.sagId || currentSagTab?.data?.sagId);
+      }
+      if (!sag && data?.sagId) {
         const allSager = await sagerApi.getAll();
         sag = allSager.find(s => s.id === data.sagId);
         if (sag) isExisting = true;
@@ -10487,6 +10495,12 @@ Andre relevante oplysninger:`
       window._sagBetjente = betjente;
       window._sagKoeretoejer = koeretoejer;
       window._sagBoedetakster = getBoedetaksterLocal();
+
+      function syncSagDraft() {
+        if (typeof window._syncActiveSagDraft === "function") window._syncActiveSagDraft(sag);
+      }
+
+      syncSagDraft();
 
       let html = `
       <div class="sag-clean-wrap">
@@ -10728,6 +10742,7 @@ Andre relevante oplysninger:`
           if (!sag.mistaenkte.some(x => x.personId === p.id)) {
             sag.mistaenkte.push({ personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr || "", erkender:"", sigtelser:[], behandlet:false });
           }
+          syncSagDraft();
           renderMistaenkteList(); renderSigtelserWrap();
         }
       );
@@ -10737,6 +10752,7 @@ Andre relevante oplysninger:`
         b => `<div style="font-size:13px;font-weight:700">${esc(b.fornavn + " " + b.efternavn)}</div><div style="font-size:11px;color:var(--muted-fg)">${esc(b.badgeNr || "")}</div>`,
         async (b) => {
           if (!sag.involveretBetjente.some(x => x.id === b.id)) sag.involveretBetjente.push({ id:b.id, navn:`${b.fornavn} ${b.efternavn}`, badgeNr:b.badgeNr || "" });
+          syncSagDraft();
           renderBetjenteList();
         }
       );
@@ -10746,12 +10762,15 @@ Andre relevante oplysninger:`
         k => `<div style="font-size:13px;font-weight:700">${esc(k.nummerplade || "")}</div><div style="font-size:11px;color:var(--muted-fg)">${esc(((k.maerke||"") + " " + (k.model||"")).trim())}</div>`,
         async (k) => {
           if (!sag.koeretoejer.some(x => x.id === k.id || x.nummerplade === k.nummerplade)) sag.koeretoejer.push(k);
+          syncSagDraft();
           renderKoeretoejerList();
         }
       );
 
       window.openSagPenaltyMenu = function() {
-        const justClosedPenalty = Date.now() - Number(window._lastPenaltyCloseAt || 0) < 250;
+        const justClosedPenalty = typeof window._recentlyClosedPenalty === "function"
+          ? window._recentlyClosedPenalty()
+          : Date.now() - Number(window._lastPenaltyCloseAt || 0) < 450;
         if (justClosedPenalty || document.getElementById("penalty-modal") || document.querySelector('.dialog-overlay[data-penalty-suspect-picker="true"]')) return;
         if (!sag.mistaenkte.length) { showToast("Tilføj mindst én mistænkt først"); return; }
         if (sag.mistaenkte.length === 1) {
@@ -10761,7 +10780,15 @@ Andre relevante oplysninger:`
         const overlay = document.createElement("div");
         overlay.className = "dialog-overlay";
         overlay.dataset.penaltySuspectPicker = "true";
-        overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+        overlay.onpointerdown = e => {
+          if (e.target !== overlay) return;
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+          window._lastPenaltyCloseAt = Date.now();
+          if (typeof window._blockPenaltyCloseInteractions === "function") window._blockPenaltyCloseInteractions();
+          overlay.remove();
+        };
         overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Vælg mistænkt</div><div style="display:flex;flex-direction:column;gap:8px">${sag.mistaenkte.map((m, i) => `<button class="btn btn-outline" type="button" style="justify-content:flex-start;gap:8px" data-pick-suspect="${i}"><span style="font-weight:700">${esc(m.personNavn)}</span><span class="mono" style="font-size:10px;color:var(--muted-fg)">${esc(m.personCpr || '')}</span></button>`).join('')}</div></div>`;
         document.body.appendChild(overlay);
         overlay.querySelectorAll("[data-pick-suspect]").forEach(btn => {
@@ -10780,10 +10807,25 @@ Andre relevante oplysninger:`
       renderSigtelserWrap();
       renderBeviserWrap();
 
-      window.removeMistaenkt = function(i){ sag.mistaenkte.splice(i,1); renderMistaenkteList(); renderSigtelserWrap(); };
-      window.removeSagBetjent = function(i){ sag.involveretBetjente.splice(i,1); renderBetjenteList(); };
-      window.removeSagKoeretoej = function(i){ sag.koeretoejer.splice(i,1); renderKoeretoejerList(); };
-      window.setMistaenktField = function(i, field, value){ sag.mistaenkte[i][field] = value; renderMistaenkteList(); renderSigtelserWrap(); };
+      window.removeMistaenkt = function(i){
+        if (typeof window._recentlyClosedPenalty === "function" && window._recentlyClosedPenalty()) return;
+        sag.mistaenkte.splice(i,1);
+        syncSagDraft();
+        renderMistaenkteList();
+        renderSigtelserWrap();
+      };
+      window.removeSagBetjent = function(i){ sag.involveretBetjente.splice(i,1); syncSagDraft(); renderBetjenteList(); };
+      window.removeSagKoeretoej = function(i){ sag.koeretoejer.splice(i,1); syncSagDraft(); renderKoeretoejerList(); };
+      window.setMistaenktField = function(i, field, value){ if (!sag.mistaenkte[i]) return; sag.mistaenkte[i][field] = value; syncSagDraft(); renderMistaenkteList(); renderSigtelserWrap(); };
+      window.removeSigtelseFromMistaenkt = function(i, si){
+        const m = sag.mistaenkte[i];
+        if (!m || !m.sigtelser?.[si]) return;
+        m.sigtelser.splice(si, 1);
+        m.totalBoede = (m.sigtelser || []).reduce((sum, item) => sum + Number(item.boede || 0), 0);
+        m.totalFaengsel = (m.sigtelser || []).reduce((sum, item) => sum + Number(item.faengselsTid || item.faengsel || 0), 0);
+        syncSagDraft();
+        renderSigtelserWrap();
+      };
 
       const oldBevisForm = window.showBevisForm;
       if (oldBevisForm) window.showBevisForm = async function(){ await oldBevisForm(); setTimeout(renderBeviserWrap, 80); };
@@ -10840,10 +10882,60 @@ Andre relevante oplysninger:`
     return [];
   }
 
-  window.closePenaltyPicker = function(){ document.getElementById("penalty-modal")?.remove(); };
+  function cloneSagDraftLocal(sag) {
+    try { return JSON.parse(JSON.stringify(sag)); }
+    catch { return sag || null; }
+  }
+
+  function getActiveSagTabLocal() {
+    try { return Array.isArray(openTabs) ? openTabs.find(t => t.id === activeTabId && t.type === "sag") : null; }
+    catch { return null; }
+  }
+
+  function syncActiveSagDraftLocal(sag = window._currentSag) {
+    const tab = getActiveSagTabLocal();
+    if (!tab || !sag) return;
+    tab.data = {
+      ...(tab.data || {}),
+      draftSag: cloneSagDraftLocal(sag)
+    };
+  }
+
+  function recentlyClosedPenaltyLocal() {
+    return Date.now() - Number(window._lastPenaltyCloseAt || 0) < 450;
+  }
+
+  function blockPenaltyCloseInteractionsLocal() {
+    const eventTypes = ["pointerup", "mouseup", "click"];
+    const blocker = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+    };
+    eventTypes.forEach(type => document.addEventListener(type, blocker, true));
+    setTimeout(() => {
+      eventTypes.forEach(type => document.removeEventListener(type, blocker, true));
+    }, 380);
+  }
+
+  window._syncActiveSagDraft = syncActiveSagDraftLocal;
+  window._recentlyClosedPenalty = recentlyClosedPenaltyLocal;
+  window._blockPenaltyCloseInteractions = blockPenaltyCloseInteractionsLocal;
+
+  window.closePenaltyPicker = function(event){
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+    }
+    window._lastPenaltyCloseAt = Date.now();
+    blockPenaltyCloseInteractionsLocal();
+    document.getElementById("penalty-modal")?.remove();
+  };
 
   // Penalty picker targeting a specific suspect
   window.openPenaltyPickerForMistaenkt = function(mistaenktIdx) {
+    if (recentlyClosedPenaltyLocal() || document.getElementById("penalty-modal")) return;
     const takster = getBoedetaksterLocal();
     const sag = window._currentSag;
     if (!sag || !sag.mistaenkte[mistaenktIdx]) { showToast("Mistænkt ikke fundet"); return; }
@@ -10871,7 +10963,7 @@ Andre relevante oplysninger:`
               <div class="penalty-head-stat"><div class="penalty-head-stat-val" id="pp-stat-count">${currentCharges}</div><div class="penalty-head-stat-label">Sigtelser</div></div>
               <div class="penalty-head-stat"><div class="penalty-head-stat-val" id="pp-stat-fine">${currentFine.toLocaleString('da-DK')}</div><div class="penalty-head-stat-label">Total DKK</div></div>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()" style="gap:6px">
+            <button class="btn btn-outline btn-sm" type="button" onpointerdown="closePenaltyPicker(event); return false;" onclick="return false;" style="gap:6px">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               Luk
             </button>
@@ -10898,7 +10990,7 @@ Andre relevante oplysninger:`
           <div class="penalty-list" id="penalty-list-m"></div>
         </div>
       </div>`;
-    modal.addEventListener("click", (e) => { if (e.target === modal) closePenaltyPicker(); });
+    modal.addEventListener("pointerdown", (e) => { if (e.target === modal) closePenaltyPicker(e); });
     document.body.appendChild(modal);
 
     function updateHeaderStats() {
@@ -10923,6 +11015,7 @@ Andre relevante oplysninger:`
       }
       m.totalBoede = (m.sigtelser || []).reduce((a,s) => a + Number(s.boede || 0), 0);
       m.totalFaengsel = (m.sigtelser || []).reduce((a,s) => a + Number(s.faengselsTid || 0), 0);
+      syncActiveSagDraftLocal(sag);
       addAktivitetslog("Tilføjede sigtelse til " + m.personNavn + ": " + (charge.beskrivelse || charge.title) + " x" + qty);
       updateHeaderStats();
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
@@ -11117,6 +11210,7 @@ Andre relevante oplysninger:`
   };
 
   window.openPenaltyPicker = function(){
+    if (recentlyClosedPenaltyLocal() || document.getElementById("penalty-modal")) return;
     const takster = getBoedetaksterLocal();
     const modal = document.createElement("div");
     modal.className = "penalty-modal";
@@ -11128,7 +11222,7 @@ Andre relevante oplysninger:`
             <div class="penalty-title">Vælg sigtelser</div>
             <div class="penalty-sub">Straffe fra Bødetakster. Vælg antal med + / - eller skriv tallet direkte.</div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="closePenaltyPicker()">Luk</button>
+          <button class="btn btn-outline btn-sm" type="button" onpointerdown="closePenaltyPicker(event); return false;" onclick="return false;">Luk</button>
         </div>
         <div class="penalty-body">
           <div class="penalty-toolbar">
@@ -11143,7 +11237,7 @@ Andre relevante oplysninger:`
         </div>
       </div>
     `;
-    modal.addEventListener("click", (e) => { if (e.target === modal) closePenaltyPicker(); });
+    modal.addEventListener("pointerdown", (e) => { if (e.target === modal) closePenaltyPicker(e); });
     document.body.appendChild(modal);
 
     function addCharge(charge, qty){
@@ -11166,6 +11260,7 @@ Andre relevante oplysninger:`
           });
         }
       });
+      syncActiveSagDraftLocal(sag);
       if (typeof window._rerenderCharges === "function") window._rerenderCharges();
       closePenaltyPicker();
       showToast(`Sigtelse tilføjet x${qty}`);
@@ -11283,7 +11378,15 @@ Andre relevante oplysninger:`
       else { await sagerApi.create(sag); window._sagExisting = true; }
       showToast(window._sagExisting ? "Sag opdateret" : "Sag oprettet");
       const tab = openTabs.find(t => t.id === activeTabId);
-      if (tab) tab.label = sag.titel || sag.sagsnummer;
+      if (tab) {
+        tab.label = sag.titel || sag.sagsnummer;
+        tab.data = {
+          ...(tab.data || {}),
+          sagId: sag.id,
+          label: sag.titel || sag.sagsnummer,
+          draftSag: cloneSagDraftLocal(sag)
+        };
+      }
       renderTabs();
     } catch (e) {
       showToast("Fejl: " + e.message);
