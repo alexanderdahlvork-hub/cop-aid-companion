@@ -5624,8 +5624,20 @@ async function renderSagsarkiv(container) {
         filtered = filtered.filter(function(s) { return new Date(s.oprettet) <= to; });
       }
 
-      // Sort newest first
-      filtered.sort(function(a,b) { return new Date(b.oprettet) - new Date(a.oprettet); });
+      // Sort
+      var sortKey = window._saSort || "dato_desc";
+      var statusOrder = {aaben:0,under_efterforskning:1,afventer_retten:2,lukket:3};
+      filtered.sort(function(a,b) {
+        switch(sortKey) {
+          case "dato_asc": return new Date(a.oprettet) - new Date(b.oprettet);
+          case "dato_desc": return new Date(b.oprettet) - new Date(a.oprettet);
+          case "sagsnr_asc": return String(a.sagsnummer||"").localeCompare(String(b.sagsnummer||""));
+          case "sagsnr_desc": return String(b.sagsnummer||"").localeCompare(String(a.sagsnummer||""));
+          case "status_asc": return (statusOrder[a.status]||9) - (statusOrder[b.status]||9);
+          case "status_desc": return (statusOrder[b.status]||9) - (statusOrder[a.status]||9);
+          default: return new Date(b.oprettet) - new Date(a.oprettet);
+        }
+      });
 
       var html = '<div style="max-width:1200px;margin:0 auto">';
       html += '<div class="flex items-center justify-between mb-3"><h1 style="font-size:18px;font-weight:700">Sagsarkiv</h1><div class="flex items-center gap-2"><span style="font-size:11px;color:var(--muted-fg)">' + sager.length + ' sager total</span><button class="btn btn-primary" onclick="void openTab(\'opret_sag\')">' + icons.plus + ' Ny sag</button></div></div>';
