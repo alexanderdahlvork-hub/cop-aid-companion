@@ -7272,80 +7272,80 @@ async function renderNSKBandeDetaljer(bande) {
         return mc || mn;
       });
 
-      html += \`<div class="card" style="margin-bottom:10px;cursor:pointer;transition:border-color .15s;border-left:3px solid \${sColor}" onclick="window._nskSagExpanded=window._nskSagExpanded==='\${s.id}'?null:'\${s.id}'; window._nskViewBandeDetaljer('\${bande.id}')">
+      html += `<div class="card" style="margin-bottom:10px;cursor:pointer;transition:border-color .15s;border-left:3px solid ${sColor}" onclick="window._nskSagExpanded=window._nskSagExpanded==='${s.id}'?null:'${s.id}'; window._nskViewBandeDetaljer('${bande.id}')">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:8px;min-width:0">
-            <span style="font-size:11px;font-family:monospace;color:var(--muted-fg);white-space:nowrap">\${esc(s.sagsnummer||"")}</span>
-            <span style="font-size:10px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, \${sColor} 15%, transparent);color:\${sColor};font-weight:600;white-space:nowrap">\${esc(sLabel)}</span>
+            <span style="font-size:11px;font-family:monospace;color:var(--muted-fg);white-space:nowrap">${esc(s.sagsnummer||"")}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, ${sColor} 15%, transparent);color:${sColor};font-weight:600;white-space:nowrap">${esc(sLabel)}</span>
           </div>
-          <span style="font-size:10px;color:var(--muted-fg);white-space:nowrap">\${esc(dato)}</span>
+          <span style="font-size:10px;color:var(--muted-fg);white-space:nowrap">${esc(dato)}</span>
         </div>
-        <div style="font-size:13px;font-weight:700;color:var(--fg)">\${esc(s.titel||"Uden titel")}</div>\`;
+        <div style="font-size:13px;font-weight:700;color:var(--fg)">${esc(s.titel||"Uden titel")}</div>`;
 
       // Show involved band members and their charges
       matchedMistaenkte.forEach(mist => {
-        html += \`<div style="margin-top:6px;padding:4px 8px;background:rgba(59,130,246,0.05);border-radius:6px;border-left:2px solid var(--primary)">
-          <div style="font-size:11px;font-weight:600;color:var(--fg)">👤 \${esc(mist.navn || mist.personCpr || 'Ukendt')}</div>\`;
+        html += `<div style="margin-top:6px;padding:4px 8px;background:rgba(59,130,246,0.05);border-radius:6px;border-left:2px solid var(--primary)">
+          <div style="font-size:11px;font-weight:600;color:var(--fg)">👤 ${esc(mist.navn || mist.personCpr || 'Ukendt')}</div>`;
         if (Array.isArray(mist.sigtelser) && mist.sigtelser.length > 0) {
-          html += \`<div style="font-size:10px;color:var(--muted-fg);margin-top:2px">\${mist.sigtelser.map(b => esc(b.beskrivelse||"")).join(", ")}</div>\`;
+          html += `<div style="font-size:10px;color:var(--muted-fg);margin-top:2px">${mist.sigtelser.map(b => esc(b.beskrivelse||"")).join(", ")}</div>`;
         }
-        html += \`<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;font-size:10px;color:var(--muted-fg)">\`;
+        html += `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;font-size:10px;color:var(--muted-fg)">`;
         const totalBoede = (mist.sigtelser||[]).reduce((sum, si) => sum + (si.beloeb || 0), 0);
         const totalFaengsel = (mist.sigtelser||[]).reduce((sum, si) => sum + (si.faengselMaaneder || si.faengsel_maaneder || 0), 0);
-        if (totalBoede > 0) html += \`<span style="font-family:monospace;color:var(--warning);font-weight:700">\${totalBoede.toLocaleString("da-DK")} kr</span>\`;
-        if (totalFaengsel > 0) html += \`<span style="font-family:monospace;font-weight:600">\${totalFaengsel} mdr fængsel</span>\`;
+        if (totalBoede > 0) html += `<span style="font-family:monospace;color:var(--warning);font-weight:700">${totalBoede.toLocaleString("da-DK")} kr</span>`;
+        if (totalFaengsel > 0) html += `<span style="font-family:monospace;font-weight:600">${totalFaengsel} mdr fængsel</span>`;
         const erkColor = mist.erkender===true?"var(--success)":mist.erkender===false?"var(--destructive)":"var(--muted-fg)";
         const erkText = mist.erkender===true?"Erkender":mist.erkender===false?"Nægter":"Uafklaret";
-        html += \`<span style="font-weight:600;color:\${erkColor}">\${erkText}</span>\`;
-        html += \`</div></div>\`;
+        html += `<span style="font-weight:600;color:${erkColor}">${erkText}</span>`;
+        html += `</div></div>`;
       });
 
       if (!isExp) {
-        html += \`<div style="font-size:10px;color:var(--muted-fg);margin-top:8px;opacity:.7">Klik for at læse rapporten</div>\`;
+        html += `<div style="font-size:10px;color:var(--muted-fg);margin-top:8px;opacity:.7">Klik for at læse rapporten</div>`;
       } else {
-        html += \`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px" onclick="event.stopPropagation()">\`;
+        html += `<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px" onclick="event.stopPropagation()">`;
         const skabelonLabel = s.rapport && s.rapport.skabelonType ? " · " + esc(s.rapport.skabelonType) : "";
-        html += \`<div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Rapport\${skabelonLabel}</div>\`;
+        html += `<div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Rapport${skabelonLabel}</div>`;
         if (s.rapport && s.rapport.haendelsesforloeb) {
-          html += \`<div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">\${esc(s.rapport.haendelsesforloeb)}</div>\`;
+          html += `<div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">${esc(s.rapport.haendelsesforloeb)}</div>`;
         } else {
-          html += \`<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen rapport skrevet endnu</div>\`;
+          html += `<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen rapport skrevet endnu</div>`;
         }
         if (s.rapport && Array.isArray(s.rapport.konfiskeredeGenstande) && s.rapport.konfiskeredeGenstande.length > 0) {
-          html += \`<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Konfiskerede genstande</div><div style="display:flex;flex-wrap:wrap;gap:4px">\`;
-          s.rapport.konfiskeredeGenstande.forEach(g => { html += \`<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--fg)">\${esc(g)}</span>\`; });
-          html += \`</div></div>\`;
+          html += `<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Konfiskerede genstande</div><div style="display:flex;flex-wrap:wrap;gap:4px">`;
+          s.rapport.konfiskeredeGenstande.forEach(g => { html += `<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--fg)">${esc(g)}</span>`; });
+          html += `</div></div>`;
         }
         if (s.rapport && Array.isArray(s.rapport.magtanvendelse) && s.rapport.magtanvendelse.length > 0) {
-          html += \`<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Magtanvendelse</div><div style="display:flex;flex-wrap:wrap;gap:4px">\`;
-          s.rapport.magtanvendelse.forEach(m2 => { html += \`<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(234,179,8,.3);color:var(--warning)">\${esc(m2)}</span>\`; });
-          html += \`</div></div>\`;
+          html += `<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Magtanvendelse</div><div style="display:flex;flex-wrap:wrap;gap:4px">`;
+          s.rapport.magtanvendelse.forEach(m2 => { html += `<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(234,179,8,.3);color:var(--warning)">${esc(m2)}</span>`; });
+          html += `</div></div>`;
         }
-        html += \`</div>\`;
+        html += `</div>`;
       }
-      html += \`</div>\`;
+      html += `</div>`;
     });
   } else if (allSigtelser.length === 0) {
-    html += \`<div style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px">Ingen sager eller sigtelser registreret</div>\`;
+    html += `<div style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px">Ingen sager eller sigtelser registreret</div>`;
   }
 
   // Also show NSK-internal sigtelser if any
   if (nskSigtelser.length > 0) {
-    html += \`<div style="font-size:13px;font-weight:700;margin:16px 0 10px;color:var(--fg)">NSK Sigtelser (\${nskSigtelser.length})</div>\`;
+    html += `<div style="font-size:13px;font-weight:700;margin:16px 0 10px;color:var(--fg)">NSK Sigtelser (${nskSigtelser.length})</div>`;
     nskSigtelser.forEach(s => {
-      html += \`<div style="font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(42,47,58,0.3)">
-        <span style="color:var(--fg);font-weight:500">\${esc(s.beskrivelse)}</span>
-        <div style="font-size:9px;color:var(--muted-fg);margin-top:2px">👤 <strong>\${esc(s.medlemNavn)}</strong> — \${s.dato || '—'}</div>
-      </div>\`;
+      html += `<div style="font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(42,47,58,0.3)">
+        <span style="color:var(--fg);font-weight:500">${esc(s.beskrivelse)}</span>
+        <div style="font-size:9px;color:var(--muted-fg);margin-top:2px">👤 <strong>${esc(s.medlemNavn)}</strong> — ${s.dato || '—'}</div>
+      </div>`;
     });
   }
 
-  html += \`
-    <div style="font-size:11px;color:var(--muted-fg);margin-top:14px">Oprettet: \${bande.oprettetDato || '—'}</div>
-    <div style="font-size:11px;color:var(--muted-fg)">Af: \${bande.oprettetAf || '—'}</div>
-  </div>\`;
+  html += `
+    <div style="font-size:11px;color:var(--muted-fg);margin-top:14px">Oprettet: ${bande.oprettetDato || '—'}</div>
+    <div style="font-size:11px;color:var(--muted-fg)">Af: ${bande.oprettetAf || '—'}</div>
+  </div>`;
   
-  html += \`</div>\`;
+  html += `</div>`;
   
   // Evidence section
   html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
