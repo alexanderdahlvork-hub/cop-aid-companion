@@ -8731,8 +8731,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
             }
             sagHtml += '</div>';
             return sagHtml;
-          })() + `
-          ` : activeTab === "tilhoersforhold" ? `
+          })() : activeTab === "tilhoersforhold" ? `
             <div style="padding:20px">
               <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tilhørsforhold (${relTilhoersforhold.length})</div>
               ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(t => `
