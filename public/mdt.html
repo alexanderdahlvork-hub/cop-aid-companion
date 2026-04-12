@@ -8657,8 +8657,76 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
               <div class="pr-notes-title">Noter</div>
               <div class="pr-notes-text">${escLocal(p.noter || "Ingen synlige noter fundet..")}</div>
             </div>
-          ` : `
-            ${activeTab === "tilhoersforhold" ? `
+          ` : activeTab === "sager" ? `
+            <div style="padding:20px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:16px">Sager (${relSager.length})</div>
+              ${relSager.length > 0 ? relSager.map(s => {
+                const mistaenkt = (s.mistaenkte||[]).find(m => String(m.personId||"") === String(p.id) || String(m.personCpr||"") === String(p.cpr||""));
+                const statusLabel = {aaben:"Åben",under_efterforskning:"Efterforskning",afventer_retten:"Afventer ret",lukket:"Lukket"}[s.status] || (s.status || "Ukendt");
+                const statusColor = {aaben:"var(--success)",under_efterforskning:"var(--primary)",afventer_retten:"var(--warning)",lukket:"var(--destructive)"}[s.status] || "var(--muted-fg)";
+                const isExpanded = window._krSagExpanded === s.id;
+                return `
+                  <div class="card" style="margin-bottom:10px;cursor:pointer;transition:border-color .15s;border-left:3px solid ${statusColor}" onclick="window._krSagExpanded=window._krSagExpanded==='${s.id}'?null:'${s.id}'; selectPerson('${p.id}')">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
+                      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                        <span style="font-size:11px;font-family:monospace;color:var(--muted-fg);white-space:nowrap">${escLocal(s.sagsnummer||"")}</span>
+                        <span style="font-size:10px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, ${statusColor} 15%, transparent);color:${statusColor};font-weight:600;white-space:nowrap">${escLocal(statusLabel)}</span>
+                      </div>
+                      <span style="font-size:10px;color:var(--muted-fg);white-space:nowrap">${s.oprettet ? new Date(s.oprettet).toLocaleDateString("da-DK") : ""}</span>
+                    </div>
+                    <div style="font-size:13px;font-weight:700;color:var(--fg)">${escLocal(s.titel||"Uden titel")}</div>
+                    ${mistaenkt && Array.isArray(mistaenkt.sigtelser) && mistaenkt.sigtelser.length > 0 ? `
+                      <div style="font-size:11px;color:var(--muted-fg);margin-top:4px">${mistaenkt.sigtelser.map(b => escLocal(b.beskrivelse||"")).join(", ")}</div>
+                    ` : ""}
+                    ${mistaenkt ? `
+                      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:10px;color:var(--muted-fg)">
+                        ${Number(mistaenkt.totalBoede||0) > 0 ? `<span style="font-family:monospace;color:var(--warning);font-weight:700">${Number(mistaenkt.totalBoede||0).toLocaleString("da-DK")} kr</span>` : ""}
+                        ${Number(mistaenkt.totalFaengsel||0) > 0 ? `<span style="font-family:monospace;font-weight:600">${Number(mistaenkt.totalFaengsel||0)} mdr fængsel</span>` : ""}
+                        <span style="font-weight:600;color:${mistaenkt.erkender===true?"var(--success)":mistaenkt.erkender===false?"var(--destructive)":"var(--muted-fg)"}">${mistaenkt.erkender===true?"Erkender":mistaenkt.erkender===false?"Nægter":"Uafklaret"}</span>
+                        ${mistaenkt.fratagKoerekort ? `<span style="color:var(--destructive)">Kørekort frataget</span>` : ""}
+                      </div>
+                    ` : ""}
+                    ${!isExpanded ? `<div style="font-size:10px;color:var(--muted-fg);margin-top:8px;opacity:.7">Klik for at læse rapporten</div>` : `
+                      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px" onclick="event.stopPropagation()">
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Rapport${s.rapport && s.rapport.skabelonType ? ` · ${escLocal(s.rapport.skabelonType)}` : ""}</div>
+                        ${s.rapport && s.rapport.haendelsesforloeb ? `<div style="font-size:12px;color:var(--fg);line-height:1.6;white-space:pre-wrap;background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid var(--border)">${escLocal(s.rapport.haendelsesforloeb)}</div>` : `<div style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen rapport skrevet endnu</div>`}
+                        ${s.rapport && Array.isArray(s.rapport.konfiskeredeGenstande) && s.rapport.konfiskeredeGenstande.length > 0 ? `
+                          <div style="margin-top:12px">
+                            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Konfiskerede genstande</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px">${s.rapport.konfiskeredeGenstande.map(g => `<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--fg)">${escLocal(g)}</span>`).join("")}</div>
+                          </div>
+                        ` : ""}
+                        ${s.rapport && Array.isArray(s.rapport.magtanvendelse) && s.rapport.magtanvendelse.length > 0 ? `
+                          <div style="margin-top:12px">
+                            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Magtanvendelse</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:4px">${s.rapport.magtanvendelse.map(m => `<span style="font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid rgba(234,179,8,.3);color:var(--warning)">${escLocal(m)}</span>`).join("")}</div>
+                          </div>
+                        ` : ""}
+                        ${s.rapport && s.rapport.skabelonSvar && Object.keys(s.rapport.skabelonSvar).length > 0 ? `
+                          <div style="margin-top:12px">
+                            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Skabelon-svar</div>
+                            ${Object.entries(s.rapport.skabelonSvar).map(([q,a]) => `<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--muted-fg);font-weight:600">${escLocal(q)}</div><div style="font-size:12px;color:var(--fg)">${escLocal(String(a))}</div></div>`).join("")}
+                          </div>
+                        ` : ""}
+                        ${Array.isArray(s.involveretBetjente) && s.involveretBetjente.length > 0 ? `<div style="margin-top:12px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-fg);font-weight:700;margin-bottom:6px">Involverede betjente</div><div style="font-size:12px;color:var(--fg)">${s.involveretBetjente.map(b => escLocal(b)).join(", ")}</div></div>` : ""}
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+                          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openTab('sag',{sagId:'${s.id}',label:'${escLocal(s.titel||s.sagsnummer)}'})">Åbn i sagsarkiv</button>
+                          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openTab('sag',{sagId:'${s.id}',label:'${escLocal(s.titel||s.sagsnummer)}'}); setTimeout(() => { try { document.querySelector('[data-action=edit-sag]')?.click(); } catch(e){} }, 80)">Rediger sag</button>
+                        </div>
+                      </div>
+                    `}
+                  </div>
+                `;
+              }).join("") : `
+                <div class="pr-empty-state" style="min-height:200px">
+                  <div class="pr-empty-card">
+                    <div class="pr-empty-title">Ingen sager</div>
+                    <div class="pr-empty-text">Der er endnu ikke registreret sager på denne person.</div>
+                  </div>
+                </div>
+              `}
+            </div>
+          ` : activeTab === "tilhoersforhold" ? `
             <div style="padding:20px">
               <div style="font-size:15px;font-weight:700;margin-bottom:16px">Tilhørsforhold (${relTilhoersforhold.length})</div>
               ${relTilhoersforhold.length > 0 ? relTilhoersforhold.map(t => `
@@ -8683,7 +8751,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
                 </div>
               `}
             </div>
-            ` : `
+          ` : `
             <div class="pr-empty-state" style="min-height:360px">
               <div class="pr-empty-card">
                 <div class="pr-empty-title">${topTabs.find(t=>t.id===activeTab)?.label || ""}</div>
