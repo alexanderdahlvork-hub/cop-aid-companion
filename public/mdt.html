@@ -7248,10 +7248,52 @@ async function renderNSKBandeDetaljer(bande) {
   }
   html += `</div>`;
   
+  // Calculate totals across all sigtelser
+  const totalBoede = allSigtelser.reduce((sum, s) => sum + (s.beloeb || 0), 0)
+    + sagSigtelser.reduce((sum, s) => sum + (s.beloeb || 0), 0);
+  // For sag-based charges, recalculate from actual sag data
+  let samletBoede = 0;
+  let samletFaengsel = 0;
+  // From NSK internal
+  (bande.medlemmer||[]).forEach(m => {
+    (m.sigtelserListe||[]).forEach(s => {
+      samletBoede += Number(s.beloeb || 0);
+      samletFaengsel += Number(s.faengselMaaneder || s.faengsel_maaneder || 0);
+    });
+  });
+  // From Sagsarkiv
+  relSager.forEach(sag => {
+    const medlemCprsL = (bande.medlemmer||[]).map(m => (m.cpr||'').toLowerCase()).filter(Boolean);
+    const medlemNavneL = (bande.medlemmer||[]).map(m => (m.navn||'').toLowerCase()).filter(Boolean);
+    (sag.mistaenkte||[]).forEach(mist => {
+      const mc = mist.personCpr && medlemCprsL.includes(mist.personCpr.toLowerCase());
+      const mn = mist.navn && medlemNavneL.includes(mist.navn.toLowerCase());
+      if (mc || mn) {
+        (mist.sigtelser||[]).forEach(si => {
+          samletBoede += Number(si.beloeb || 0);
+          samletFaengsel += Number(si.faengselMaaneder || si.faengsel_maaneder || 0);
+        });
+      }
+    });
+  });
+
   // Right: Stats panel — Personregister-style sag cards (read-only)
   html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;overflow-y:auto;max-height:600px">
-    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:6px;color:var(--fg)">Bande Statistik</span>
-    <div style="font-size:13px;color:var(--fg);margin-bottom:16px"><strong>Samlet antal sigtelser:</strong> ${totalSigtelser}</div>`;
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:12px;color:var(--fg)">Bande Statistik</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--input);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);margin-bottom:4px">Sigtelser</div>
+        <div style="font-size:20px;font-weight:800;color:var(--fg)">${totalSigtelser}</div>
+      </div>
+      <div style="background:var(--input);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);margin-bottom:4px">Samlet bøde</div>
+        <div style="font-size:20px;font-weight:800;color:var(--warning);font-family:monospace">${samletBoede > 0 ? samletBoede.toLocaleString('da-DK') + ' kr' : '0 kr'}</div>
+      </div>
+      <div style="background:var(--input);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);margin-bottom:4px">Fængsel</div>
+        <div style="font-size:20px;font-weight:800;color:var(--destructive);font-family:monospace">${samletFaengsel > 0 ? samletFaengsel + ' mdr' : '0 mdr'}</div>
+      </div>
+    </div>`;
 
   if (relSager.length > 0) {
     html += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--fg)">Sager (${relSager.length})</div>`;
