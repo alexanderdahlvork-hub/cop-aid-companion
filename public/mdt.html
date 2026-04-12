@@ -10751,6 +10751,8 @@ Andre relevante oplysninger:`
       );
 
       window.openSagPenaltyMenu = function() {
+        const justClosedPenalty = Date.now() - Number(window._lastPenaltyCloseAt || 0) < 250;
+        if (justClosedPenalty || document.getElementById("penalty-modal") || document.querySelector('.dialog-overlay[data-penalty-suspect-picker="true"]')) return;
         if (!sag.mistaenkte.length) { showToast("Tilføj mindst én mistænkt først"); return; }
         if (sag.mistaenkte.length === 1) {
           window.openPenaltyPickerForMistaenkt(0);
@@ -10758,6 +10760,7 @@ Andre relevante oplysninger:`
         }
         const overlay = document.createElement("div");
         overlay.className = "dialog-overlay";
+        overlay.dataset.penaltySuspectPicker = "true";
         overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
         overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Vælg mistænkt</div><div style="display:flex;flex-direction:column;gap:8px">${sag.mistaenkte.map((m, i) => `<button class="btn btn-outline" type="button" style="justify-content:flex-start;gap:8px" data-pick-suspect="${i}"><span style="font-weight:700">${esc(m.personNavn)}</span><span class="mono" style="font-size:10px;color:var(--muted-fg)">${esc(m.personCpr || '')}</span></button>`).join('')}</div></div>`;
         document.body.appendChild(overlay);
