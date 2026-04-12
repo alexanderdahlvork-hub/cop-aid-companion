@@ -7347,6 +7347,7 @@ async function renderNSKBandeDetaljer(bande) {
     html += `</svg></div></div>`;
   }
 
+  if (relSager.length > 0) {
     html += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--fg)">Sager (${relSager.length})</div>`;
     const sLabels = {aaben:"Åben",under_efterforskning:"Efterforskning",afventer_retten:"Afventer ret",lukket:"Lukket"};
     const sColors = {aaben:"var(--success)",under_efterforskning:"var(--primary)",afventer_retten:"var(--warning)",lukket:"var(--destructive)"};
