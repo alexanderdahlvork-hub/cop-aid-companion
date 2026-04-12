@@ -9361,7 +9361,53 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     `;
   };
 
-  window.editPerson = async function(id) {
+  window._showOpretFrakendelse = function(personId) {
+    var overlay = document.createElement("div");
+    overlay.className = "dialog-overlay";
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    overlay.innerHTML = '<div class="dialog" style="max-width:480px">' +
+      '<div class="dialog-title">🚫 Registrer frakendelse</div>' +
+      '<div class="label">Type</div>' +
+      '<select class="select mb-2" id="frak-type"><option value="Kørekort">Kørekort</option><option value="Jagttegn">Jagttegn</option><option value="Våbentilladelse">Våbentilladelse</option><option value="Andet">Andet</option></select>' +
+      '<div class="label">Grund / Begrundelse</div>' +
+      '<input class="input mb-2" id="frak-grund" placeholder="F.eks. spirituskørsel, vanvidskørsel...">' +
+      '<div class="grid grid-2 gap-2 mb-2"><div><div class="label">Fra dato</div><input class="input" type="date" id="frak-dato"></div><div><div class="label">Udløbsdato (valgfri)</div><input class="input" type="date" id="frak-udloeb"></div></div>' +
+      '<div class="label">Noter (valgfri)</div>' +
+      '<textarea class="textarea mb-2" id="frak-noter" rows="2" placeholder="Yderligere information..."></textarea>' +
+      '<div class="flex gap-2"><button class="btn btn-primary" id="frak-gem">Registrer</button><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById("frak-gem").addEventListener("click", function(){
+      var type = document.getElementById("frak-type").value;
+      var grund = document.getElementById("frak-grund").value;
+      var dato = document.getElementById("frak-dato").value;
+      var udloeb = document.getElementById("frak-udloeb").value;
+      var noter = document.getElementById("frak-noter").value;
+      if (!grund) { showToast("Angiv en begrundelse"); return; }
+      var all = getPersonStore();
+      var idx = all.findIndex(function(x){ return String(x.id) === String(personId); });
+      if (idx === -1) return;
+      if (!Array.isArray(all[idx].frakendelser)) all[idx].frakendelser = [];
+      all[idx].frakendelser.push({ id: Date.now().toString(), type: type, grund: grund, dato: dato || new Date().toISOString().split("T")[0], udloeb: udloeb, noter: noter, oprettetAf: currentUser ? currentUser.navn || currentUser.id : "Ukendt", oprettetDato: new Date().toISOString() });
+      setPersonStore(all);
+      overlay.remove();
+      showToast("Frakendelse registreret");
+      window._krDetailTab = "frakendelser";
+      selectPerson(personId);
+    });
+  };
+
+  window._removeFrakendelse = function(personId, frakId) {
+    if (!confirm("Fjern denne frakendelse?")) return;
+    var all = getPersonStore();
+    var idx = all.findIndex(function(x){ return String(x.id) === String(personId); });
+    if (idx === -1) return;
+    all[idx].frakendelser = (all[idx].frakendelser || []).filter(function(f){ return f.id !== frakId; });
+    setPersonStore(all);
+    showToast("Frakendelse fjernet");
+    selectPerson(personId);
+  };
+
     const personer = getPersonStore();
     const p = personer.find(x => String(x.id) === String(id));
     if (!p) {
