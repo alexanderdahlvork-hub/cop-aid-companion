@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save, Building, Car, Phone, Check, ChevronDown, Users } from "lucide-react";
+import { Search, Plus, AlertTriangle, Loader2, Scale, X, FileText, Pencil, Save, Building, Car, Phone, Check, ChevronDown, Users, ChevronLeft, Clock, Shield, Gavel } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +52,7 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
   const [redigerOpenKat, setRedigerOpenKat] = useState<string | null>(null);
   const [efterlysningDialogOpen, setEfterlysningDialogOpen] = useState(false);
   const [sager, setSager] = useState<Sag[]>([]);
+  const [visSag, setVisSag] = useState<Sag | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -626,7 +627,11 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                       {personSager.map((sag) => {
                         const mistaenkt = sag.mistaenkte.find(m => m.personId === valgtPerson.id);
                         return (
-                          <div key={sag.id} className="p-3 rounded-lg border border-border hover:bg-muted/20 transition-colors">
+                          <button
+                            key={sag.id}
+                            onClick={() => setVisSag(sag)}
+                            className="w-full text-left p-3 rounded-lg border border-border hover:bg-muted/20 hover:border-primary/30 transition-colors cursor-pointer"
+                          >
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-mono text-muted-foreground">{sag.sagsnummer}</span>
@@ -635,30 +640,12 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
                               <span className="text-[10px] text-muted-foreground">{new Date(sag.oprettet).toLocaleDateString("da-DK")}</span>
                             </div>
                             <p className="text-xs font-medium text-foreground truncate">{sag.titel}</p>
-                            {mistaenkt && (
-                              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
-                                {mistaenkt.sigtelser.length > 0 && (
-                                  <span>{mistaenkt.sigtelser.length} sigtelse{mistaenkt.sigtelser.length !== 1 ? "r" : ""}</span>
-                                )}
-                                {mistaenkt.totalBoede > 0 && (
-                                  <span className="font-mono text-warning">{mistaenkt.totalBoede.toLocaleString("da-DK")} kr</span>
-                                )}
-                                {mistaenkt.totalFaengsel > 0 && (
-                                  <span className="font-mono">{mistaenkt.totalFaengsel} mdr fængsel</span>
-                                )}
-                                <span className={cn("font-medium",
-                                  mistaenkt.erkender === true ? "text-success" : mistaenkt.erkender === false ? "text-destructive" : ""
-                                )}>
-                                  {mistaenkt.erkender === true ? "Erkender" : mistaenkt.erkender === false ? "Nægter" : "Uafklaret"}
-                                </span>
-                              </div>
-                            )}
-                            {sag.rapport?.haendelsesforloeb && (
-                              <p className="text-[10px] text-muted-foreground/70 mt-1 truncate">
-                                {sag.rapport.haendelsesforloeb.slice(0, 120)}{sag.rapport.haendelsesforloeb.length > 120 ? "..." : ""}
+                            {mistaenkt && mistaenkt.sigtelser.length > 0 && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                                {mistaenkt.sigtelser.map(b => b.beskrivelse).join(", ")}
                               </p>
                             )}
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
@@ -753,6 +740,156 @@ const KRRegister = ({ initialPersonId }: KRRegisterProps = {}) => {
           }}
         />
       )}
+
+      {/* Vis sag/rapport dialog */}
+      <Dialog open={!!visSag} onOpenChange={(open) => { if (!open) setVisSag(null); }}>
+        <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
+            <DialogTitle className="text-base font-semibold flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              {visSag?.sagsnummer}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">{visSag?.titel}</p>
+          </DialogHeader>
+          {visSag && (
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="px-6 py-5 space-y-5">
+                {/* Status & meta */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg bg-muted/15 p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Status</p>
+                    <Badge className={cn("text-[10px]", {
+                      "bg-success/15 text-success": visSag.status === "aaben",
+                      "bg-primary/15 text-primary": visSag.status === "under_efterforskning",
+                      "bg-warning/15 text-warning": visSag.status === "afventer_retten",
+                      "bg-destructive/15 text-destructive": visSag.status === "lukket",
+                    })}>
+                      {{ aaben: "Åben", under_efterforskning: "Efterforskning", afventer_retten: "Afventer ret", lukket: "Lukket" }[visSag.status]}
+                    </Badge>
+                  </div>
+                  <div className="rounded-lg bg-muted/15 p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Oprettet</p>
+                    <p className="text-xs text-foreground">{new Date(visSag.oprettet).toLocaleDateString("da-DK")}</p>
+                    <p className="text-[10px] text-muted-foreground">{visSag.oprettetAf}</p>
+                  </div>
+                  <div className="rounded-lg bg-muted/15 p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Involverede betjente</p>
+                    <p className="text-xs text-foreground">{visSag.involveretBetjente.length > 0 ? visSag.involveretBetjente.join(", ") : "Ingen"}</p>
+                  </div>
+                </div>
+
+                {/* Mistænkte */}
+                {visSag.mistaenkte.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-3.5 h-3.5 text-muted-foreground" />
+                      <h4 className="text-xs font-semibold text-foreground">Mistænkte</h4>
+                    </div>
+                    {visSag.mistaenkte.map((m) => (
+                      <div key={m.id} className="p-3 rounded-lg border border-border space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-foreground">{m.personNavn}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{m.personCpr}</span>
+                        </div>
+                        {m.sigtelser.length > 0 && (
+                          <div className="space-y-1">
+                            {m.sigtelser.map((s, i) => (
+                              <div key={i} className="flex items-center justify-between text-[11px] px-2 py-1 rounded bg-muted/10">
+                                <span className="text-foreground">{s.paragraf && `${s.paragraf} — `}{s.beskrivelse}</span>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {s.beloeb > 0 && <span className="font-mono text-warning">{s.beloeb.toLocaleString("da-DK")} kr</span>}
+                                  {s.faengselMaaneder > 0 && <span className="font-mono">{s.faengselMaaneder} mdr</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                          {m.totalBoede > 0 && <span className="font-mono font-bold text-warning">Total: {m.totalBoede.toLocaleString("da-DK")} kr</span>}
+                          {m.totalFaengsel > 0 && <span className="font-mono font-bold">{m.totalFaengsel} mdr fængsel</span>}
+                          <span className={cn("font-medium", m.erkender === true ? "text-success" : m.erkender === false ? "text-destructive" : "")}>
+                            {m.erkender === true ? "Erkender" : m.erkender === false ? "Nægter" : "Uafklaret"}
+                          </span>
+                          {m.fratagKoerekort && <span className="text-destructive">Kørekort frataget</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Rapport / Hændelsesforløb */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Gavel className="w-3.5 h-3.5 text-muted-foreground" />
+                    <h4 className="text-xs font-semibold text-foreground">Rapport</h4>
+                    {visSag.rapport?.skabelonType && <Badge variant="outline" className="text-[8px] h-4">{visSag.rapport.skabelonType}</Badge>}
+                  </div>
+                  <div className="p-3 rounded-lg border border-border space-y-3">
+                    {visSag.rapport?.haendelsesforloeb ? (
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Hændelsesforløb</p>
+                        <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{visSag.rapport.haendelsesforloeb}</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">Intet hændelsesforløb registreret</p>
+                    )}
+                    {visSag.rapport?.konfiskeredeGenstande && visSag.rapport.konfiskeredeGenstande.length > 0 && (
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Konfiskerede genstande</p>
+                        <div className="flex flex-wrap gap-1">
+                          {visSag.rapport.konfiskeredeGenstande.map((g, i) => (
+                            <Badge key={i} variant="outline" className="text-[10px]">{g}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {visSag.rapport?.magtanvendelse && visSag.rapport.magtanvendelse.length > 0 && (
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Magtanvendelse</p>
+                        <div className="flex flex-wrap gap-1">
+                          {visSag.rapport.magtanvendelse.map((m, i) => (
+                            <Badge key={i} variant="outline" className="text-[10px] border-warning/30 text-warning">{m}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {visSag.rapport?.skabelonSvar && Object.keys(visSag.rapport.skabelonSvar).length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Skabelon-svar</p>
+                        {Object.entries(visSag.rapport.skabelonSvar).map(([q, a]) => (
+                          <div key={q}>
+                            <p className="text-[10px] text-muted-foreground font-medium">{q}</p>
+                            <p className="text-xs text-foreground/80">{a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Aktivitetslog */}
+                {visSag.aktivitetslog.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                      <h4 className="text-xs font-semibold text-foreground">Aktivitetslog</h4>
+                    </div>
+                    <div className="space-y-1">
+                      {visSag.aktivitetslog.map((a) => (
+                        <div key={a.id} className="flex items-start gap-2 text-[11px] px-2 py-1.5 rounded bg-muted/10">
+                          <span className="text-muted-foreground shrink-0">{new Date(a.tidspunkt).toLocaleDateString("da-DK")}</span>
+                          <span className="text-foreground">{a.beskrivelse}</span>
+                          <span className="text-muted-foreground ml-auto shrink-0">{a.bruger}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Rediger sigtelse dialog */}
       <Dialog open={!!redigerSigtelse} onOpenChange={(open) => { if (!open) { setRedigerSigtelse(null); setRedigerForm(null); } }}>
