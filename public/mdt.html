@@ -7253,9 +7253,10 @@ async function renderNSKBandeDetaljer(bande) {
   
   if (allSigtelser.length > 0) {
     const sorted = [...allSigtelser].sort((a,b) => (b.dato||'').localeCompare(a.dato||''));
-    sorted.slice(0, 10).forEach(s => {
+    sorted.slice(0, 15).forEach(s => {
+      const kildeTag = s.kilde && s.kilde !== 'NSK' ? `<span style="font-size:8px;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,0.12);color:var(--primary);margin-left:6px">${esc(s.kilde)}</span>` : '';
       html += `<div style="font-size:11px;padding:4px 0;border-bottom:1px solid rgba(42,47,58,0.3)">
-        <span style="color:var(--fg);font-weight:500">${esc(s.beskrivelse)}</span>
+        <span style="color:var(--fg);font-weight:500">${esc(s.beskrivelse)}</span>${kildeTag}
         <div style="font-size:9px;color:var(--muted-fg)">${esc(s.medlemNavn)} — ${s.dato || '—'}</div>
       </div>`;
     });
