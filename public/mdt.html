@@ -5597,6 +5597,7 @@ async function renderSagsarkiv(container) {
     window._saDateFrom = window._saDateFrom || "";
     window._saDateTo = window._saDateTo || "";
     window._saSearchQ = window._saSearchQ || "";
+    window._saSort = window._saSort || "dato_desc";
 
     function renderList() {
       let filtered = sager.slice();
@@ -5623,17 +5624,33 @@ async function renderSagsarkiv(container) {
         filtered = filtered.filter(function(s) { return new Date(s.oprettet) <= to; });
       }
 
-      // Sort newest first
-      filtered.sort(function(a,b) { return new Date(b.oprettet) - new Date(a.oprettet); });
+      // Sort
+      var sortKey = window._saSort || "dato_desc";
+      var statusOrder = {aaben:0,under_efterforskning:1,afventer_retten:2,lukket:3};
+      filtered.sort(function(a,b) {
+        switch(sortKey) {
+          case "dato_asc": return new Date(a.oprettet) - new Date(b.oprettet);
+          case "dato_desc": return new Date(b.oprettet) - new Date(a.oprettet);
+          case "sagsnr_asc": return String(a.sagsnummer||"").localeCompare(String(b.sagsnummer||""));
+          case "sagsnr_desc": return String(b.sagsnummer||"").localeCompare(String(a.sagsnummer||""));
+          case "status_asc": return (statusOrder[a.status]||9) - (statusOrder[b.status]||9);
+          case "status_desc": return (statusOrder[b.status]||9) - (statusOrder[a.status]||9);
+          default: return new Date(b.oprettet) - new Date(a.oprettet);
+        }
+      });
 
       var html = '<div style="max-width:1200px;margin:0 auto">';
       html += '<div class="flex items-center justify-between mb-3"><h1 style="font-size:18px;font-weight:700">Sagsarkiv</h1><div class="flex items-center gap-2"><span style="font-size:11px;color:var(--muted-fg)">' + sager.length + ' sager total</span><button class="btn btn-primary" onclick="void openTab(\'opret_sag\')">' + icons.plus + ' Ny sag</button></div></div>';
 
       // Search + date filters row
-      html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-bottom:12px;align-items:end">';
+      html += '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:10px;margin-bottom:12px;align-items:end">';
       html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Søg</div><input class="input" id="sa-search" placeholder="Søg sagsnummer, titel, betjent..." value="' + (window._saSearchQ||"").replace(/"/g,"&quot;") + '" style="height:38px"></div>';
       html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Fra dato</div><input class="input" type="date" id="sa-date-from" value="' + (window._saDateFrom||"") + '" style="height:38px;width:150px"></div>';
       html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Til dato</div><input class="input" type="date" id="sa-date-to" value="' + (window._saDateTo||"") + '" style="height:38px;width:150px"></div>';
+      html += '<div><div style="font-size:10px;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Sortering</div><select class="select" id="sa-sort" style="height:38px;width:170px;font-size:12px">';
+      var sortOpts = [{v:"dato_desc",l:"Dato (nyeste først)"},{v:"dato_asc",l:"Dato (ældste først)"},{v:"sagsnr_asc",l:"Sagsnr. (stigende)"},{v:"sagsnr_desc",l:"Sagsnr. (faldende)"},{v:"status_asc",l:"Status (åben → lukket)"},{v:"status_desc",l:"Status (lukket → åben)"}];
+      sortOpts.forEach(function(o){ html += '<option value="' + o.v + '"' + (window._saSort===o.v?' selected':'') + '>' + o.l + '</option>'; });
+      html += '</select></div>';
       html += '</div>';
 
       // Status filter pills
@@ -5676,6 +5693,9 @@ async function renderSagsarkiv(container) {
         window._saDateTo = e.target.value;
         renderList();
       });
+      document.getElementById("sa-sort")?.addEventListener("change", function(e) {
+        window._saSort = e.target.value;
+        renderList();
       document.querySelectorAll(".sa-filter-pill").forEach(function(btn) {
         btn.addEventListener("click", function() {
           window._saFilter = btn.getAttribute("data-filter");
