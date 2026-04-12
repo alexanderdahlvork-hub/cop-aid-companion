@@ -4067,6 +4067,20 @@ const sagerApi = {
   async remove(id) { try { await remove("sager", id); } catch { const e = JSON.parse(localStorage.getItem("sager") || "[]"); localStorage.setItem("sager", JSON.stringify(e.filter(s => s.id !== id))); } },
 };
 
+async function genererSagsnummer() {
+  try {
+    var allSager = await sagerApi.getAll();
+    var maxNum = 0;
+    allSager.forEach(function(s) {
+      var m = String(s.sagsnummer || "").match(/SAG-(\d+)/);
+      if (m) { var n = parseInt(m[1], 10); if (n > maxNum) maxNum = n; }
+    });
+    return "SAG-" + String(maxNum + 1).padStart(5, "0");
+  } catch(e) {
+    return "SAG-" + String(Date.now()).slice(-5);
+  }
+}
+
 const opslagApi = { async getAll() { try { const r = await getAll("opslag"); return r.results; } catch { const s = localStorage.getItem("opslagstavle_opslag"); return s ? JSON.parse(s) : []; } }, async create(o) { try { await create("opslag", o); } catch {} }, async update(id, data) { try { await update("opslag", id, data); } catch {} }, async remove(id) { try { await remove("opslag", id); } catch {} } };
 const tilhoersforholdApi = { async getAll() { try { const r = await getAll("nsk_tilhoersforhold"); return r.results; } catch { const s = localStorage.getItem("nsk_netvaerk"); return s ? JSON.parse(s) : []; } }, async create(t) { try { await create("nsk_tilhoersforhold", t); } catch {} }, async update(id, data) { try { await update("nsk_tilhoersforhold", id, data); } catch {} }, async remove(id) { try { await remove("nsk_tilhoersforhold", id); } catch {} } };
 const efterlysningerApi = { async getAll() { try { const r = await getAll("efterlysninger"); return r.results; } catch { return []; } }, async create(e) { try { await create("efterlysninger", e); } catch {} }, async update(id, data) { try { await update("efterlysninger", id, data); } catch {} }, async remove(id) { try { await remove("efterlysninger", id); } catch {} } };
