@@ -7645,6 +7645,58 @@ window._nskSaveInfo = function(bandeId) {
   if (b) { b.information = info; saveNSKBander(bander); showToast('Information gemt'); }
 };
 
+// Billeder handlers
+window._nskAddBillede = function(bandeId) {
+  const url = document.getElementById('nsk-bande-img-url')?.value?.trim();
+  const desc = document.getElementById('nsk-bande-img-desc')?.value?.trim();
+  if (!url) { showToast('Indsæt en billed-URL'); return; }
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (!b) return;
+  if (!b.billeder) b.billeder = [];
+  b.billeder.push({ url, beskrivelse: desc || '', dato: new Date().toLocaleDateString('da-DK'), tilfojetAf: window._currentUser || '' });
+  saveNSKBander(bander);
+  showToast('Billede tilføjet');
+  window._nskViewBandeDetaljer(bandeId);
+};
+
+window._nskRemoveBillede = function(bandeId, idx) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (!b || !b.billeder) return;
+  b.billeder.splice(idx, 1);
+  saveNSKBander(bander);
+  showToast('Billede fjernet');
+  window._nskViewBandeDetaljer(bandeId);
+};
+
+window._nskShowFullImage = function(url, desc) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer';
+  overlay.onclick = () => overlay.remove();
+  overlay.innerHTML = '<img src="' + url + '" style="max-width:90%;max-height:80vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
+    (desc ? '<div style="color:#fff;font-size:13px;margin-top:12px;text-align:center;max-width:600px">' + desc + '</div>' : '') +
+    '<div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:8px">Klik for at lukke</div>';
+  document.body.appendChild(overlay);
+};
+
+// Efterretning handler
+window._nskSaveEfterretning = function(bandeId) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (!b) return;
+  b.efterretning = {
+    stoffer: document.getElementById('nsk-intel-stoffer')?.value || '',
+    omraade: document.getElementById('nsk-intel-omraade')?.value || '',
+    lagre: document.getElementById('nsk-intel-lagre')?.value || '',
+    labs: document.getElementById('nsk-intel-labs')?.value || '',
+    koeretoej: document.getElementById('nsk-intel-koeretoej')?.value || '',
+    oevrigt: document.getElementById('nsk-intel-oevrigt')?.value || ''
+  };
+  saveNSKBander(bander);
+  showToast('Efterretning gemt');
+};
+
 // Member search in detail view
 document.addEventListener('input', e => {
   if (e.target.id !== 'nsk-add-member-search') return;
