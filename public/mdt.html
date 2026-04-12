@@ -5708,6 +5708,10 @@ async function renderSagsarkiv(container) {
         });
       });
 
+      // Export buttons
+      document.getElementById("sa-export-csv")?.addEventListener("click", function() { exportSagerCSV(window._saFiltered || []); });
+      document.getElementById("sa-export-pdf")?.addEventListener("click", function() { exportSagerPDF(window._saFiltered || []); });
+
       // Focus search if had text
       if (window._saSearchQ) {
         var inp = document.getElementById("sa-search");
