@@ -9106,6 +9106,11 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     const relEjendomme = (ejendomme || []).filter(e => String(e.ejer || "").toLowerCase() === `${(p.fornavn||"").toLowerCase()} ${(p.efternavn||"").toLowerCase()}`);
     const relTilhoersforhold = (tilhoersforhold || []).filter(t => t.personId === id || t.personCpr === p.cpr);
 
+    // Build frakendelser from sigtelser with fratagKoerekort + manual ones on person
+    const autoFrakendelser = (allSigtelser || []).filter(function(s){ return s.fratagKoerekort && (String(s.personId) === String(id) || String(s.personCpr) === String(p.cpr)); }).map(function(s){ return { id: 'sig-'+s.id, type: 'Kørekort', grund: (s.sigtelseBoeder||[]).map(function(b){return b.beskrivelse||"";}).join(", ") || "Sigtelse", dato: s.dato || "", udloeb: "", kilde: "Sigtelse", auto: true }; });
+    const manuelFrakendelser = Array.isArray(p.frakendelser) ? p.frakendelser : [];
+    const allFrakendelser = autoFrakendelser.concat(manuelFrakendelser);
+
     const foto = p.mugshotUrl || p.mugshot || p.billede || "";
     const fodselsdato = p.fodselsdato || (p.cpr && p.cpr.length >= 6 ? `${p.cpr.slice(0,2)}/${p.cpr.slice(2,4)}/19${p.cpr.slice(4,6)}` : "Ukendt");
     const topTabs = [
@@ -9114,7 +9119,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       {id:"koeretoejer", label:`Køretøjer (${relKoeretoejer.length})`},
       {id:"ejendomme", label:`Ejendomme (${relEjendomme.length})`},
       {id:"tilhoersforhold", label:`Tilhørsforhold (${relTilhoersforhold.length})`},
-      {id:"frakendelser", label:"Frakendelser (0)"}
+      {id:"frakendelser", label:`Frakendelser (${allFrakendelser.length})`}
     ];
     const activeTab = window._krDetailTab || "personlig";
     // Build sager HTML before the template literal to avoid backtick nesting issues
