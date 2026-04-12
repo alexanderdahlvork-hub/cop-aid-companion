@@ -7464,11 +7464,78 @@ async function renderNSKBandeDetaljer(bande) {
   }
   html += `</div>`;
   
-  // Information section
+  // Billeder section
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">📷 Billeder</span>
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:flex-end">
+      <div style="flex:1">
+        <div class="label">Billed-URL</div>
+        <input class="input" id="nsk-bande-img-url" placeholder="Indsæt billed-URL..." style="font-size:12px;background:var(--input);border-radius:8px">
+      </div>
+      <div style="flex:1">
+        <div class="label">Beskrivelse</div>
+        <input class="input" id="nsk-bande-img-desc" placeholder="Kort beskrivelse..." style="font-size:12px;background:var(--input);border-radius:8px">
+      </div>
+      <button class="btn" style="background:rgba(255,255,255,0.06);color:var(--fg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;transition:all 0.2s;display:flex;align-items:center;gap:6px;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'" onclick="window._nskAddBillede('${bande.id}')">${icons.plus} Tilføj</button>
+    </div>`;
+  const billeder = bande.billeder || [];
+  if (billeder.length === 0) {
+    html += `<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:16px">Ingen billeder tilføjet endnu</p>`;
+  } else {
+    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">`;
+    billeder.forEach((img, i) => {
+      html += `<div style="position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--input)">
+        <img src="${esc(img.url)}" alt="${esc(img.beskrivelse||'')}" style="width:100%;height:100px;object-fit:cover;display:block;cursor:pointer" onclick="window._nskShowFullImage('${esc(img.url)}','${esc(img.beskrivelse||'')}')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;width:100%;height:100px;align-items:center;justify-content:center;color:var(--muted-fg);font-size:10px">Kan ikke indlæses</div>
+        <div style="padding:6px 8px">
+          <div style="font-size:10px;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(img.beskrivelse||'Intet beskrivelse')}</div>
+          <div style="font-size:8px;color:var(--muted-fg)">${img.dato||'—'}</div>
+        </div>
+        <button style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);border:none;color:var(--destructive);cursor:pointer;border-radius:50%;width:20px;height:20px;font-size:10px;display:flex;align-items:center;justify-content:center" onclick="window._nskRemoveBillede('${bande.id}',${i})">✕</button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // Efterretning / Intelligence section
+  const intel = bande.efterretning || {};
+  html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">🕵 Efterretning</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <div class="label">Stoffer / Narkotika</div>
+        <textarea class="textarea" id="nsk-intel-stoffer" rows="2" style="font-size:12px;background:var(--input);border-radius:8px" placeholder="Hvilke stoffer handler de med...">${esc(intel.stoffer||'')}</textarea>
+      </div>
+      <div>
+        <div class="label">Område / Tilholdssted</div>
+        <textarea class="textarea" id="nsk-intel-omraade" rows="2" style="font-size:12px;background:var(--input);border-radius:8px" placeholder="Hvor holder de til...">${esc(intel.omraade||'')}</textarea>
+      </div>
+      <div>
+        <div class="label">Lagre / Opbevaringssteder</div>
+        <textarea class="textarea" id="nsk-intel-lagre" rows="2" style="font-size:12px;background:var(--input);border-radius:8px" placeholder="Kendte lagre, adresser...">${esc(intel.lagre||'')}</textarea>
+      </div>
+      <div>
+        <div class="label">Laboratorier / Produktion</div>
+        <textarea class="textarea" id="nsk-intel-labs" rows="2" style="font-size:12px;background:var(--input);border-radius:8px" placeholder="Druglabs, produktionssteder...">${esc(intel.labs||'')}</textarea>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="label">Køretøjer / Transport</div>
+      <textarea class="textarea" id="nsk-intel-koeretoej" rows="2" style="font-size:12px;background:var(--input);border-radius:8px" placeholder="Kendte køretøjer, nummerplader...">${esc(intel.koeretoej||'')}</textarea>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="label">Øvrig information</div>
+      <textarea class="textarea" id="nsk-intel-oevrigt" rows="3" style="font-size:12px;background:var(--input);border-radius:8px" placeholder="Kontakter, alliancer, fjender, metoder...">${esc(intel.oevrigt||'')}</textarea>
+    </div>
+    <button class="btn btn-primary btn-sm" style="border-radius:8px;font-weight:600" onclick="window._nskSaveEfterretning('${bande.id}')">💾 Gem Efterretning</button>
+  </div>`;
+
+  // Old simple info section — keep as general notes
   html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
-    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">Information</span>
-    <textarea class="textarea" id="nsk-bande-info" rows="4" style="font-size:12px;margin-bottom:12px;background:var(--input);border-radius:8px" placeholder="Generel information om banden...">${esc(bande.information || '')}</textarea>
-    <button class="btn btn-primary btn-sm" style="border-radius:8px;font-weight:600" onclick="window._nskSaveInfo('${bande.id}')">Gem Information</button>
+    <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">Notater</span>
+    <textarea class="textarea" id="nsk-bande-info" rows="3" style="font-size:12px;margin-bottom:12px;background:var(--input);border-radius:8px" placeholder="Generelle notater...">${esc(bande.information || '')}</textarea>
+    <button class="btn btn-primary btn-sm" style="border-radius:8px;font-weight:600" onclick="window._nskSaveInfo('${bande.id}')">Gem Notater</button>
   </div>`;
   
   return html;
@@ -7576,6 +7643,58 @@ window._nskSaveInfo = function(bandeId) {
   const bander = getNSKBander();
   const b = bander.find(x => x.id === bandeId);
   if (b) { b.information = info; saveNSKBander(bander); showToast('Information gemt'); }
+};
+
+// Billeder handlers
+window._nskAddBillede = function(bandeId) {
+  const url = document.getElementById('nsk-bande-img-url')?.value?.trim();
+  const desc = document.getElementById('nsk-bande-img-desc')?.value?.trim();
+  if (!url) { showToast('Indsæt en billed-URL'); return; }
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (!b) return;
+  if (!b.billeder) b.billeder = [];
+  b.billeder.push({ url, beskrivelse: desc || '', dato: new Date().toLocaleDateString('da-DK'), tilfojetAf: window._currentUser || '' });
+  saveNSKBander(bander);
+  showToast('Billede tilføjet');
+  window._nskViewBandeDetaljer(bandeId);
+};
+
+window._nskRemoveBillede = function(bandeId, idx) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (!b || !b.billeder) return;
+  b.billeder.splice(idx, 1);
+  saveNSKBander(bander);
+  showToast('Billede fjernet');
+  window._nskViewBandeDetaljer(bandeId);
+};
+
+window._nskShowFullImage = function(url, desc) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer';
+  overlay.onclick = () => overlay.remove();
+  overlay.innerHTML = '<img src="' + url + '" style="max-width:90%;max-height:80vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.5)">' +
+    (desc ? '<div style="color:#fff;font-size:13px;margin-top:12px;text-align:center;max-width:600px">' + desc + '</div>' : '') +
+    '<div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:8px">Klik for at lukke</div>';
+  document.body.appendChild(overlay);
+};
+
+// Efterretning handler
+window._nskSaveEfterretning = function(bandeId) {
+  const bander = getNSKBander();
+  const b = bander.find(x => x.id === bandeId);
+  if (!b) return;
+  b.efterretning = {
+    stoffer: document.getElementById('nsk-intel-stoffer')?.value || '',
+    omraade: document.getElementById('nsk-intel-omraade')?.value || '',
+    lagre: document.getElementById('nsk-intel-lagre')?.value || '',
+    labs: document.getElementById('nsk-intel-labs')?.value || '',
+    koeretoej: document.getElementById('nsk-intel-koeretoej')?.value || '',
+    oevrigt: document.getElementById('nsk-intel-oevrigt')?.value || ''
+  };
+  saveNSKBander(bander);
+  showToast('Efterretning gemt');
 };
 
 // Member search in detail view
