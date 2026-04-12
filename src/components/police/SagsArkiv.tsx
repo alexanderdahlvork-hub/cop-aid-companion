@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Plus, Search, Loader2, FolderOpen, Clock, User } from "lucide-react";
+import { FileText, Plus, Search, Loader2, FolderOpen, Clock, User, Download, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ const SagsArkiv = ({ onOpenSag, onNewSag }: SagsArkivProps) => {
   const filtered = sager.filter(s => {
     const q = search.toLowerCase();
     return s.titel.toLowerCase().includes(q) || s.sagsnummer.toLowerCase().includes(q) ||
-      s.mistaenkte.some(m => m.personNavn.toLowerCase().includes(q));
+      (s.mistaenkte?.some(m => (m.personNavn || "").toLowerCase().includes(q)) ?? false);
   });
 
   const statusStyle: Record<string, string> = {
@@ -47,6 +47,57 @@ const SagsArkiv = ({ onOpenSag, onNewSag }: SagsArkivProps) => {
     under_efterforskning: "Efterforskning",
     afventer_retten: "Afventer retten",
     lukket: "Lukket",
+  };
+
+  const exportCSV = () => {
+    const header = ["Sagsnummer", "Titel", "Status", "Oprettet", "Oprettet af", "Mistænkte"].join(";");
+    const rows = filtered.map(s => [
+      s.sagsnummer,
+      `"${s.titel || ""}"`,
+      statusLabel[s.status] || s.status,
+      new Date(s.opdateret).toLocaleDateString("da-DK"),
+      s.oprettetAf || "",
+      s.mistaenkte?.map(m => m.personNavn).join(", ") || ""
+    ].join(";"));
+    const blob = new Blob(["\ufeff" + [header, ...rows].join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sagsarkiv_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportPDF = () => {
+    const now = new Date();
+    const statusCounts: Record<string, number> = {};
+    filtered.forEach(s => { statusCounts[s.status] = (statusCounts[s.status] || 0) + 1; });
+
+    let h = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sagsarkiv</title><style>
+      @page{size:A4 landscape;margin:15mm} body{font-family:Arial,sans-serif;font-size:11px;color:#1a1a2e;margin:0;padding:0}
+      .hdr{border-bottom:3px solid #3b82f6;padding-bottom:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end}
+      .hdr h1{font-size:18px;margin:0;color:#0f172a} .hdr .meta{font-size:10px;color:#64748b}
+      .stats{display:flex;gap:10px;margin-bottom:16px}
+      .stat{padding:8px 16px;border-radius:8px;border:1px solid #e2e8f0;text-align:center}
+      .stat .n{font-size:18px;font-weight:800} .stat .l{font-size:9px;text-transform:uppercase;color:#64748b}
+      table{width:100%;border-collapse:collapse} th{background:#1e293b;color:#f8fafc;padding:6px 10px;text-align:left;font-size:9px;text-transform:uppercase}
+      td{padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:10px} tr:nth-child(even){background:#f8fafc}
+      .footer{margin-top:20px;text-align:center;font-size:8px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px}
+    </style></head><body>`;
+    h += `<div class="hdr"><div><h1>📁 Sagsarkiv — Rapport</h1><div class="meta">Genereret: ${now.toLocaleDateString("da-DK")} ${now.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}</div></div><div class="meta">${filtered.length} sager</div></div>`;
+    h += `<div class="stats">`;
+    Object.entries(statusCounts).forEach(([k, v]) => {
+      h += `<div class="stat"><div class="n">${v}</div><div class="l">${statusLabel[k] || k}</div></div>`;
+    });
+    h += `</div>`;
+    h += `<table><thead><tr><th>Sagsnr.</th><th>Titel</th><th>Status</th><th>Dato</th><th>Oprettet af</th><th>Mistænkte</th></tr></thead><tbody>`;
+    filtered.forEach(s => {
+      h += `<tr><td style="font-family:monospace">${s.sagsnummer}</td><td>${s.titel || "—"}</td><td>${statusLabel[s.status] || s.status}</td><td>${new Date(s.opdateret).toLocaleDateString("da-DK")}</td><td>${s.oprettetAf || ""}</td><td>${s.mistaenkte?.map(m => m.personNavn).join(", ") || "—"}</td></tr>`;
+    });
+    h += `</tbody></table><div class="footer">MDT Sagsarkiv · ${filtered.length} sager · ${now.toLocaleDateString("da-DK")}</div></body></html>`;
+
+    const win = window.open("", "_blank");
+    if (win) { win.document.write(h); win.document.close(); setTimeout(() => win.print(), 400); }
   };
 
   if (loading) {
@@ -68,9 +119,17 @@ const SagsArkiv = ({ onOpenSag, onNewSag }: SagsArkivProps) => {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{sager.length} sager i alt</p>
         </div>
-        <Button onClick={onNewSag} className="gap-1.5 h-9 text-xs">
-          <Plus className="w-3.5 h-3.5" /> Opret ny sag
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={exportCSV} className="gap-1.5 h-8 text-xs" disabled={filtered.length === 0}>
+            <Download className="w-3.5 h-3.5" /> CSV
+          </Button>
+          <Button variant="outline" onClick={exportPDF} className="gap-1.5 h-8 text-xs" disabled={filtered.length === 0}>
+            <FileDown className="w-3.5 h-3.5" /> PDF
+          </Button>
+          <Button onClick={onNewSag} className="gap-1.5 h-9 text-xs">
+            <Plus className="w-3.5 h-3.5" /> Opret ny sag
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-md">
