@@ -1905,6 +1905,217 @@ body.theme-light .pr-item{
     inset 0 1px 0 rgba(255,255,255,0.5) !important;
 }
 
+/* ==== person detail v2 — dossier redesign ==== */
+.pd-page{
+  padding:0 !important;
+}
+.pd-header{
+  position:relative;
+  padding:28px 32px 20px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;
+  align-items:center;
+  gap:20px;
+  background:
+    linear-gradient(135deg, rgba(37,99,235,.10) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(12,18,30,.6), rgba(8,14,24,.4));
+}
+.pd-avatar{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  overflow:hidden;
+  border:2px solid rgba(96,165,250,.25);
+  background:rgba(59,130,246,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  font-weight:800;
+  flex-shrink:0;
+  box-shadow:0 0 20px rgba(59,130,246,.15);
+}
+.pd-avatar img{width:100%;height:100%;object-fit:cover;}
+.pd-header-info{flex:1;min-width:0;}
+.pd-name{
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:-0.03em;
+  line-height:1.1;
+  margin-bottom:4px;
+}
+.pd-cpr{
+  font-size:12px;
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--muted-fg);
+}
+.pd-header-badges{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+  flex-wrap:wrap;
+}
+.pd-header-actions{
+  display:flex;
+  gap:8px;
+  flex-shrink:0;
+  flex-wrap:wrap;
+}
+.pd-tabs{
+  display:flex;
+  gap:4px;
+  padding:12px 32px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  background:rgba(0,0,0,.15);
+  overflow-x:auto;
+}
+.pd-pill{
+  font-size:12px;
+  font-weight:600;
+  padding:6px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.06);
+  background:transparent;
+  color:var(--muted-fg);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all .15s ease;
+}
+.pd-pill:hover{
+  background:rgba(255,255,255,.04);
+  color:var(--fg);
+}
+.pd-pill.active{
+  background:rgba(59,130,246,.15);
+  border-color:rgba(96,165,250,.30);
+  color:#f8fbff;
+}
+.pd-body{
+  padding:24px 32px 32px;
+}
+.pd-two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+.pd-section{
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:16px;
+  background:rgba(255,255,255,.02);
+  padding:18px;
+}
+.pd-section-title{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  color:var(--muted-fg);
+  font-weight:700;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.pd-field{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.03);
+}
+.pd-field:last-child{border-bottom:none;}
+.pd-field-label{font-size:12px;color:var(--muted-fg);}
+.pd-field-value{font-size:13px;font-weight:600;text-align:right;}
+.pd-metrics{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:20px;
+}
+.pd-metric{
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:14px;
+  padding:14px 16px;
+  background:rgba(255,255,255,.02);
+  text-align:center;
+}
+.pd-metric-value{
+  font-size:28px;
+  font-weight:900;
+  font-family:'IBM Plex Mono',monospace;
+  line-height:1;
+  margin-bottom:4px;
+}
+.pd-metric-label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted-fg);
+}
+.pd-notes{
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:16px;
+  background:rgba(255,255,255,.02);
+  padding:18px;
+  margin-top:20px;
+}
+.pd-notes-title{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  color:var(--muted-fg);
+  font-weight:700;
+  margin-bottom:10px;
+}
+.pd-notes-text{
+  font-size:13px;
+  color:var(--muted-fg);
+  line-height:1.7;
+}
+.pd-kendetegn{
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:16px;
+  background:rgba(255,255,255,.02);
+  padding:18px;
+  margin-top:20px;
+}
+@media (max-width:900px){
+  .pd-two-col{grid-template-columns:1fr;}
+  .pd-metrics{grid-template-columns:1fr 1fr;}
+  .pd-header{flex-wrap:wrap;}
+}
+body.theme-light .pd-header{
+  background:
+    linear-gradient(135deg, rgba(37,99,235,.06) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(247,250,255,.9), rgba(240,245,255,.85)) !important;
+}
+body.theme-light .pd-tabs{
+  background:rgba(15,23,42,.03) !important;
+  border-bottom-color:rgba(15,23,42,.06) !important;
+}
+body.theme-light .pd-pill{
+  border-color:rgba(15,23,42,.08) !important;
+  color:#64748b !important;
+}
+body.theme-light .pd-pill.active{
+  background:rgba(37,99,235,.10) !important;
+  border-color:rgba(37,99,235,.25) !important;
+  color:#1e40af !important;
+}
+body.theme-light .pd-section,
+body.theme-light .pd-metric,
+body.theme-light .pd-notes,
+body.theme-light .pd-kendetegn{
+  background:rgba(255,255,255,.7) !important;
+  border-color:rgba(15,23,42,.06) !important;
+}
+body.theme-light .pd-field{
+  border-bottom-color:rgba(15,23,42,.05) !important;
+}
+body.theme-light .pd-avatar{
+  border-color:rgba(37,99,235,.20) !important;
+  background:rgba(37,99,235,.08) !important;
+}
+
 
 /* ==== vehicle register fullpage redesign ==== */
 .vr-shell{max-width:1200px;margin:0 auto}
