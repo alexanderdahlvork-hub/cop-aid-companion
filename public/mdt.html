@@ -4102,6 +4102,22 @@ const tabStateCache = {};
 let clockInterval = null;
 let globalSearchBound = false;
 
+function deriveAdminState(user) {
+  const rang = String(user?.rang || "");
+  const tilladelser = user?.tilladelser;
+  return rang.toLowerCase().includes("admin")
+    || rang === "Administrator"
+    || (Array.isArray(tilladelser) ? tilladelser.includes("*") : String(tilladelser || "").includes("*"));
+}
+
+function syncAuthState(user, adminOverride) {
+  currentUser = user || null;
+  isAdmin = typeof adminOverride === "boolean" ? adminOverride : deriveAdminState(currentUser);
+  window.currentUser = currentUser;
+  window.isAdmin = isAdmin;
+  return currentUser;
+}
+
 // ── Helpers ──
 function $(sel) { return document.querySelector(sel); }
 function $$(sel) { return document.querySelectorAll(sel); }
@@ -4239,14 +4255,12 @@ function standaloneOfficerUser() {
 }
 
 window.forceStandaloneAdminLogin = function() {
-  currentUser = standaloneAdminUser();
-  isAdmin = true;
+  syncAuthState(standaloneAdminUser(), true);
   initApp();
 };
 
 window.forceStandaloneOfficerLogin = function() {
-  currentUser = standaloneOfficerUser();
-  isAdmin = true;
+  syncAuthState(standaloneOfficerUser(), true);
   initApp();
 };
 
@@ -4267,8 +4281,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function finish(user) {
-    currentUser = user;
-    isAdmin = true;
+    syncAuthState(user, true);
     await initApp();
   }
 
@@ -4340,8 +4353,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      currentUser = betjent;
-      isAdmin = true;
+      syncAuthState(betjent, true);
       await initApp();
     } catch (err) {
       setError("Forkert login");
@@ -4397,8 +4409,18 @@ function getStandaloneUser(badge, pass) {
 
 async function initApp() {
   try {
+    if (!currentUser && window.currentUser) {
+      syncAuthState(window.currentUser, typeof window.isAdmin === "boolean" ? window.isAdmin : undefined);
+    }
+    if (!currentUser) {
+      $("#app")?.classList.add("hidden");
+      $("#login-page")?.classList.remove("hidden");
+      document.body.classList.add("login-mode");
+      return;
+    }
     $("#login-page")?.classList.add("hidden");
     $("#app")?.classList.remove("hidden");
+    document.body.classList.remove("login-mode");
     renderSidebar();
     renderTabs();
     await renderPage(activeTabId);
@@ -4537,13 +4559,14 @@ function updateClock() {
 }
 
 window.handleLogout = function() {
-  currentUser = null; isAdmin = false;
+  syncAuthState(null, false);
   openTabs = [{ id: "forside", label: "Forside", type: "forside" }];
   activeTabId = "forside";
   if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
   try { localStorage.removeItem("copaid_user"); } catch {}
   $("#app").classList.add("hidden");
   $("#login-page").classList.remove("hidden");
+  document.body.classList.add("login-mode");
   $("#login-badge").value = ""; $("#login-password").value = "";
   $("#sidebar-popup").classList.add("hidden");
 };
@@ -11435,8 +11458,7 @@ Andre relevante oplysninger:`
     el.classList.toggle("hidden", !msg);
   }
   function completeUser(user){
-    window.currentUser = user;
-    window.isAdmin = String(user?.rang || "").toLowerCase().includes("admin") || String(user?.rang || "") === "Administrator" || String(user?.tilladelser || "").includes("*");
+    syncAuthState(user, deriveAdminState(user));
     try { localStorage.setItem("copaid_user", JSON.stringify(user)); } catch {}
   }
   async function loadApp(){
