@@ -4266,9 +4266,102 @@ window.forceStandaloneOfficerLogin = function() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
-  // Login binding is handled by the hardBoot IIFE below
   const badgeInput = $("#login-badge");
+  const passInput = $("#login-password");
   const matchedDiv = $("#login-matched");
+  const loginBtn = $("#login-btn");
+  const logo = $("#login-logo-tap");
+
+  const setLoginError = (message) => {
+    const errorEl = $("#login-error");
+    if (!errorEl) return;
+    errorEl.textContent = message || "";
+    errorEl.classList.toggle("hidden", !message);
+  };
+
+  const persistLoginUser = (user, adminOverride) => {
+    syncAuthState(user, typeof adminOverride === "boolean" ? adminOverride : deriveAdminState(user));
+    try { localStorage.setItem("copaid_user", JSON.stringify(user)); } catch {}
+  };
+
+  const attemptLogin = async () => {
+    const badge = String(badgeInput?.value || "").trim().toUpperCase();
+    const pass = String(passInput?.value || "").trim();
+
+    if (!badge || !pass) {
+      setLoginError("Udfyld badge og kodeord");
+      return;
+    }
+
+    let user = getStandaloneUser(badge, pass);
+    if (!user) {
+      try {
+        const betjent = await betjenteApi.getByBadge(badge);
+        if (betjent && String(betjent.kodeord || "").trim() === pass) user = betjent;
+      } catch {}
+    }
+
+    if (!user) {
+      setLoginError("Forkert login");
+      return;
+    }
+
+    setLoginError("");
+    persistLoginUser(user);
+    await initApp();
+  };
+
+  if (badgeInput) {
+    badgeInput.addEventListener("input", () => setLoginError(""));
+    badgeInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        await attemptLogin();
+      }
+    });
+  }
+
+  if (passInput) {
+    passInput.addEventListener("input", () => setLoginError(""));
+    if (!passInput.dataset.boundHardLogin) {
+      passInput.dataset.boundHardLogin = "1";
+      passInput.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          await attemptLogin();
+        }
+      });
+    }
+  }
+
+  if (loginBtn && !loginBtn.dataset.boundHardLogin) {
+    loginBtn.dataset.boundHardLogin = "1";
+    loginBtn.type = "button";
+    loginBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await attemptLogin();
+    });
+  }
+
+  if (logo && !logo.dataset.boundTripleAdmin) {
+    logo.dataset.boundTripleAdmin = "1";
+    let taps = 0;
+    let lastTap = 0;
+    logo.addEventListener("click", async () => {
+      const now = Date.now();
+      taps = now - lastTap < 700 ? taps + 1 : 1;
+      lastTap = now;
+      if (taps < 3) return;
+      taps = 0;
+      const adminUser = standaloneAdminUser();
+      if (badgeInput) badgeInput.value = adminUser.badgeNr;
+      if (passInput) passInput.value = adminUser.kodeord;
+      setLoginError("");
+      persistLoginUser(adminUser, true);
+      await initApp();
+    });
+  }
+
   if (badgeInput && matchedDiv) {
     badgeInput.addEventListener("input", () => {
       const badge = badgeInput.value.trim().toUpperCase();
