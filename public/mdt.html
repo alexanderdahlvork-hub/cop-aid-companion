@@ -4266,43 +4266,11 @@ window.forceStandaloneOfficerLogin = function() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
+  // Login binding is handled by the hardBoot IIFE below
   const badgeInput = $("#login-badge");
-  const passInput = $("#login-password");
-  const loginBtn = $("#login-btn");
-  const loginError = $("#login-error");
   const matchedDiv = $("#login-matched");
-  const logoEl = $("#login-logo-tap");
-
-  function setError(msg) {
-    if (!loginError) return;
-    loginError.textContent = msg || "";
-    if (msg) loginError.classList.remove("hidden");
-    else loginError.classList.add("hidden");
-  }
-
-  async function finish(user) {
-    syncAuthState(user, true);
-    await initApp();
-  }
-
-  let tapCount = 0;
-  let lastTap = 0;
-  if (logoEl) {
-    logoEl.addEventListener("click", async () => {
-      const now = Date.now();
-      tapCount = (now - lastTap < 700) ? tapCount + 1 : 1;
-      lastTap = now;
-      if (tapCount >= 3) {
-        if (badgeInput) badgeInput.value = "ADM221";
-        if (passInput) passInput.value = "OverKommando99";
-        tapCount = 0;
-        await finish(standaloneAdminUser());
-      }
-    });
-  }
-
   if (badgeInput && matchedDiv) {
-    badgeInput.addEventListener("input", async () => {
+    badgeInput.addEventListener("input", () => {
       const badge = badgeInput.value.trim().toUpperCase();
       if (badge === "ADM221") {
         matchedDiv.innerHTML = `<span>Admin Bruger</span><small>Administrator</small>`;
@@ -4315,58 +4283,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       matchedDiv.classList.add("hidden");
-    });
-  }
-
-  async function doLogin() {
-    setError("");
-    const badge = (badgeInput?.value || "").trim().toUpperCase();
-    const pass = (passInput?.value || "").trim();
-
-    if (!badge || !pass) {
-      setError("Udfyld badge og kodeord");
-      return;
-    }
-
-    if (badge === "ADM221" && pass === "OverKommando99") {
-      await finish(standaloneAdminUser());
-      return;
-    }
-
-    if (badge === "A7400" && pass === "1234") {
-      await finish(standaloneOfficerUser());
-      return;
-    }
-
-    try {
-      const betjent = (typeof betjenteApi !== "undefined" && betjenteApi?.getByBadge)
-        ? await betjenteApi.getByBadge(badge)
-        : null;
-
-      if (!betjent) {
-        setError("Forkert login");
-        return;
-      }
-
-      if (String(betjent.kodeord || "").trim() !== pass) {
-        setError("Forkert login");
-        return;
-      }
-
-      syncAuthState(betjent, true);
-      await initApp();
-    } catch (err) {
-      setError("Forkert login");
-    }
-  }
-
-  if (loginBtn) loginBtn.addEventListener("click", doLogin);
-  if (passInput) {
-    passInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        doLogin();
-      }
     });
   }
 });
