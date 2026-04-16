@@ -11779,7 +11779,7 @@ Andre relevante oplysninger:`
                 <option value="lukket" ${sag.status==="lukket"?"selected":""}>Lukket</option>
               </select>
               <button class="btn btn-primary" onclick="saveSag()">${isExisting ? "Gem rapport" : "Opret rapport"}</button>
-              <button class="btn btn-outline" onclick="exportEnkeltSagPDF()" title="Eksporter som PDF">📋 PDF</button>
+              ${isExisting ? '<button class="btn btn-outline" onclick="exportEnkeltSagPDF()" title="Eksporter som PDF">📋 PDF</button>' : '<button class="btn btn-outline" disabled title="Gem sagen først for at kunne eksportere PDF" style="opacity:0.4;cursor:not-allowed">📋 PDF</button>'}
             </div>
 
             <div class="sag-clean-grid">
