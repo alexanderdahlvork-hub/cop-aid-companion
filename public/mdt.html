@@ -5715,6 +5715,7 @@ function exportSagerPDF(sager) {
 window.exportEnkeltSagPDF = function() {
   var sag = window._currentSag;
   if (!sag) { showToast("Ingen sag åben"); return; }
+  if (!sag.id || !sag.sagsnummer) { showToast("Gem sagen først for at kunne eksportere PDF"); return; }
   var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
   var sColors = {aaben:"#22c55e",under_efterforskning:"#3b82f6",afventer_retten:"#eab308",lukket:"#6b7280"};
   var now = new Date();
