@@ -5979,6 +5979,7 @@ async function renderSagsarkiv(container) {
       document.getElementById("sa-sort")?.addEventListener("change", function(e) {
         window._saSort = e.target.value;
         renderList();
+      });
       document.querySelectorAll(".sa-filter-pill").forEach(function(btn) {
         btn.addEventListener("click", function() {
           window._saFilter = btn.getAttribute("data-filter");
@@ -9863,6 +9864,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     selectPerson(personId);
   };
 
+  window.editPerson = function(id) {
     const personer = getPersonStore();
     const p = personer.find(x => String(x.id) === String(id));
     if (!p) {
