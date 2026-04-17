@@ -5617,6 +5617,12 @@ window.showOpretSigtelseDialog = function(personId) {
 
 // ═══ EKSPORT FUNKTIONER ═══
 function exportSagerCSV(sager) {
+  // Kun gemte sager (med id og sagsnummer) kan eksporteres
+  sager = (sager || []).filter(function(s) { return s && s.id && s.sagsnummer; });
+  if (sager.length === 0) {
+    showToast("Ingen gemte sager at eksportere");
+    return;
+  }
   var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
   var header = ["Sagsnummer","Titel","Status","Oprettet","Oprettet af","Antal mistænkte","Mistænkte"];
   var rows = [header.join(";")];
