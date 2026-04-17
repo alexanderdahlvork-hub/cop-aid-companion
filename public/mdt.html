@@ -4087,6 +4087,11 @@ const efterlysningerApi = { async getAll() { try { const r = await getAll("efter
 const afdelingsIndholdApi = { async getAll(afdelingId) { try { const p = afdelingId ? { afdelingId } : undefined; const r = await getAll("afdelingsindhold", p); return r.results; } catch { return []; } }, async create(a) { try { await create("afdelingsindhold", a); } catch {} }, async update(id, data) { try { await update("afdelingsindhold", id, data); } catch {} }, async remove(id) { try { await remove("afdelingsindhold", id); } catch {} } };
 const ansoeningerApi = { async getAll() { try { const r = await getAll("ansoegning_indsendelser"); return r.results; } catch { return []; } }, async create(a) { try { await create("ansoegning_indsendelser", a); } catch {} }, async update(id, data) { try { await update("ansoegning_indsendelser", id, data); } catch {} }, async remove(id) { try { await remove("ansoegning_indsendelser", id); } catch {} } };
 
+// Eksponer API'er globalt så de er tilgængelige i andre script-blokke (fx Wanted Register)
+window.personerApi = personerApi;
+window.koeretoejerApi = koeretoejerApi;
+window.efterlysningerApi = efterlysningerApi;
+
 function rowToPatrulje(row) { return { id: row.id, navn: row.navn, kategori: row.kategori, pladser: row.pladser, medlemmer: JSON.parse(row.medlemmer || "[]"), status: row.status || "ledig", bemaerkning: row.bemaerkning || "" }; }
 function patruljeToRow(p) { const row = {}; if (p.id !== undefined) row.id = p.id; if (p.navn !== undefined) row.navn = p.navn; if (p.kategori !== undefined) row.kategori = p.kategori; if (p.pladser !== undefined) row.pladser = p.pladser; if (p.medlemmer !== undefined) row.medlemmer = JSON.stringify(p.medlemmer); if (p.status !== undefined) row.status = p.status; if (p.bemaerkning !== undefined) row.bemaerkning = p.bemaerkning; return row; }
 const patruljerApi = { async getAll() { try { const r = await getAll("patruljer"); return (r.results || []).map(rowToPatrulje); } catch { return []; } }, async create(p) { await create("patruljer", patruljeToRow(p)); }, async update(id, data) { await update("patruljer", id, patruljeToRow(data)); }, async remove(id) { await remove("patruljer", id); } };
@@ -10549,11 +10554,30 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   }
 
   function getPersonStoreWanted() {
+    // Foretræk in-memory state (synkroniseret med backend), fald tilbage til localStorage
+    try {
+      if (window.appState && Array.isArray(window.appState.personer) && window.appState.personer.length) {
+        return window.appState.personer;
+      }
+    } catch {}
     try { const raw = localStorage.getItem("copaid_offline_personer"); if (raw) { const rows = JSON.parse(raw); if (Array.isArray(rows)) return rows; } } catch {}
     return [];
   }
   function getVehicleStoreWanted() {
+    try {
+      if (window.appState && Array.isArray(window.appState.koeretoejer) && window.appState.koeretoejer.length) {
+        return window.appState.koeretoejer;
+      }
+    } catch {}
     try { const raw = localStorage.getItem("copaid_offline_koeretoejer"); if (raw) { const rows = JSON.parse(raw); if (Array.isArray(rows)) return rows; } } catch {}
+    return [];
+  }
+  function getEfterlysningerStoreWanted() {
+    try {
+      if (window.appState && Array.isArray(window.appState.efterlysninger)) {
+        return window.appState.efterlysninger;
+      }
+    } catch {}
     return [];
   }
 
@@ -10565,23 +10589,32 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   }
 
   function buildWantedData() {
+    const efterlysninger = getEfterlysningerStoreWanted();
+    const eftByPerson = {};
+    efterlysninger.forEach(e => { if (e && e.personId) eftByPerson[e.personId] = e; });
+
     const persons = getPersonStoreWanted()
-      .filter(p => p.efterlyst || p.wanted || p.efterlysning)
-      .map(p => ({
-        kind: "person",
-        id: `person-${p.id}`,
-        sourceId: p.id,
-        title: `${p.fornavn || ""} ${p.efternavn || ""}`.trim() || "Ukendt person",
-        subtitle: p.cpr || "Ingen CPR",
-        image: p.mugshotUrl || p.mugshot || p.billede || "",
-        reason: p.efterlysningAarsag || p.wantedReason || p.reason || "Efterlyst person",
-        level: p.efterlysningGrad || p.level || "Aktiv",
-        phone: p.telefon || "",
-        notes: p.kommentar || p.noter || ""
-      }));
+      .filter(p => p.status === "eftersøgt" || p.efterlyst || p.wanted || p.efterlysning || eftByPerson[p.id])
+      .map(p => {
+        const eft = eftByPerson[p.id] || {};
+        return {
+          kind: "person",
+          id: `person-${p.id}`,
+          sourceId: p.id,
+          title: `${p.fornavn || ""} ${p.efternavn || ""}`.trim() || "Ukendt person",
+          subtitle: p.cpr || "Ingen CPR",
+          image: p.mugshotUrl || p.mugshot || p.billede || "",
+          reason: eft.aarsag || p.efterlysningAarsag || p.wantedReason || p.reason || "Efterlyst person",
+          level: eft.grad || p.efterlysningGrad || p.level || "Aktiv",
+          phone: p.telefon || "",
+          notes: eft.kommentar || p.kommentar || p.noter || "",
+          oprettetAf: eft.oprettetAf || "",
+          oprettetDato: eft.oprettetDato || ""
+        };
+      });
 
     const vehicles = getVehicleStoreWanted()
-      .filter(v => v.efterlyst || v.wanted)
+      .filter(v => v.efterlyst || v.wanted || v.status === "eftersøgt")
       .map(v => ({
         kind: "vehicle",
         id: `vehicle-${v.id}`,
@@ -10649,6 +10682,25 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   }
 
   window.renderEfterlysninger = async function(container) {
+    container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser efterlysninger...</span></div>';
+    // Hent live data så efterlyste personer og køretøjer altid er opdaterede
+    try {
+      window.appState = window.appState || {};
+      const pApi = window.personerApi;
+      const kApi = window.koeretoejerApi;
+      const eApi = window.efterlysningerApi;
+      const [personer, koeretoejer, efterlysninger] = await Promise.all([
+        (pApi && pApi.getAll) ? pApi.getAll().catch(() => []) : Promise.resolve([]),
+        (kApi && kApi.getAll) ? kApi.getAll().catch(() => []) : Promise.resolve([]),
+        (eApi && eApi.getAll) ? eApi.getAll().catch(() => []) : Promise.resolve([])
+      ]);
+      window.appState.personer = personer || [];
+      window.appState.koeretoejer = koeretoejer || [];
+      window.appState.efterlysninger = efterlysninger || [];
+    } catch (err) {
+      console.warn("[efterlysninger] kunne ikke hente live data:", err);
+    }
+
     const data = buildWantedData();
     const selected = window._wantedSelectedId;
     const exists = [...data.persons, ...data.vehicles].some(x => x.id === selected);
