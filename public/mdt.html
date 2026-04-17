@@ -10677,6 +10677,22 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   }
 
   window.renderEfterlysninger = async function(container) {
+    container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser efterlysninger...</span></div>';
+    // Hent live data så efterlyste personer og køretøjer altid er opdaterede
+    try {
+      window.appState = window.appState || {};
+      const [personer, koeretoejer, efterlysninger] = await Promise.all([
+        (typeof personerApi !== "undefined" && personerApi.getAll) ? personerApi.getAll() : Promise.resolve([]),
+        (typeof koeretoejerApi !== "undefined" && koeretoejerApi.getAll) ? koeretoejerApi.getAll() : Promise.resolve([]),
+        (typeof efterlysningerApi !== "undefined" && efterlysningerApi.getAll) ? efterlysningerApi.getAll() : Promise.resolve([])
+      ]);
+      window.appState.personer = personer || [];
+      window.appState.koeretoejer = koeretoejer || [];
+      window.appState.efterlysninger = efterlysninger || [];
+    } catch (err) {
+      console.warn("[efterlysninger] kunne ikke hente live data:", err);
+    }
+
     const data = buildWantedData();
     const selected = window._wantedSelectedId;
     const exists = [...data.persons, ...data.vehicles].some(x => x.id === selected);
