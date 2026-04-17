@@ -10549,11 +10549,30 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   }
 
   function getPersonStoreWanted() {
+    // Foretræk in-memory state (synkroniseret med backend), fald tilbage til localStorage
+    try {
+      if (window.appState && Array.isArray(window.appState.personer) && window.appState.personer.length) {
+        return window.appState.personer;
+      }
+    } catch {}
     try { const raw = localStorage.getItem("copaid_offline_personer"); if (raw) { const rows = JSON.parse(raw); if (Array.isArray(rows)) return rows; } } catch {}
     return [];
   }
   function getVehicleStoreWanted() {
+    try {
+      if (window.appState && Array.isArray(window.appState.koeretoejer) && window.appState.koeretoejer.length) {
+        return window.appState.koeretoejer;
+      }
+    } catch {}
     try { const raw = localStorage.getItem("copaid_offline_koeretoejer"); if (raw) { const rows = JSON.parse(raw); if (Array.isArray(rows)) return rows; } } catch {}
+    return [];
+  }
+  function getEfterlysningerStoreWanted() {
+    try {
+      if (window.appState && Array.isArray(window.appState.efterlysninger)) {
+        return window.appState.efterlysninger;
+      }
+    } catch {}
     return [];
   }
 
@@ -10565,23 +10584,32 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   }
 
   function buildWantedData() {
+    const efterlysninger = getEfterlysningerStoreWanted();
+    const eftByPerson = {};
+    efterlysninger.forEach(e => { if (e && e.personId) eftByPerson[e.personId] = e; });
+
     const persons = getPersonStoreWanted()
-      .filter(p => p.efterlyst || p.wanted || p.efterlysning)
-      .map(p => ({
-        kind: "person",
-        id: `person-${p.id}`,
-        sourceId: p.id,
-        title: `${p.fornavn || ""} ${p.efternavn || ""}`.trim() || "Ukendt person",
-        subtitle: p.cpr || "Ingen CPR",
-        image: p.mugshotUrl || p.mugshot || p.billede || "",
-        reason: p.efterlysningAarsag || p.wantedReason || p.reason || "Efterlyst person",
-        level: p.efterlysningGrad || p.level || "Aktiv",
-        phone: p.telefon || "",
-        notes: p.kommentar || p.noter || ""
-      }));
+      .filter(p => p.status === "eftersøgt" || p.efterlyst || p.wanted || p.efterlysning || eftByPerson[p.id])
+      .map(p => {
+        const eft = eftByPerson[p.id] || {};
+        return {
+          kind: "person",
+          id: `person-${p.id}`,
+          sourceId: p.id,
+          title: `${p.fornavn || ""} ${p.efternavn || ""}`.trim() || "Ukendt person",
+          subtitle: p.cpr || "Ingen CPR",
+          image: p.mugshotUrl || p.mugshot || p.billede || "",
+          reason: eft.aarsag || p.efterlysningAarsag || p.wantedReason || p.reason || "Efterlyst person",
+          level: eft.grad || p.efterlysningGrad || p.level || "Aktiv",
+          phone: p.telefon || "",
+          notes: eft.kommentar || p.kommentar || p.noter || "",
+          oprettetAf: eft.oprettetAf || "",
+          oprettetDato: eft.oprettetDato || ""
+        };
+      });
 
     const vehicles = getVehicleStoreWanted()
-      .filter(v => v.efterlyst || v.wanted)
+      .filter(v => v.efterlyst || v.wanted || v.status === "eftersøgt")
       .map(v => ({
         kind: "vehicle",
         id: `vehicle-${v.id}`,
