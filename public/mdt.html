@@ -10686,10 +10686,13 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     // Hent live data så efterlyste personer og køretøjer altid er opdaterede
     try {
       window.appState = window.appState || {};
+      const pApi = window.personerApi;
+      const kApi = window.koeretoejerApi;
+      const eApi = window.efterlysningerApi;
       const [personer, koeretoejer, efterlysninger] = await Promise.all([
-        (typeof personerApi !== "undefined" && personerApi.getAll) ? personerApi.getAll() : Promise.resolve([]),
-        (typeof koeretoejerApi !== "undefined" && koeretoejerApi.getAll) ? koeretoejerApi.getAll() : Promise.resolve([]),
-        (typeof efterlysningerApi !== "undefined" && efterlysningerApi.getAll) ? efterlysningerApi.getAll() : Promise.resolve([])
+        (pApi && pApi.getAll) ? pApi.getAll().catch(() => []) : Promise.resolve([]),
+        (kApi && kApi.getAll) ? kApi.getAll().catch(() => []) : Promise.resolve([]),
+        (eApi && eApi.getAll) ? eApi.getAll().catch(() => []) : Promise.resolve([])
       ]);
       window.appState.personer = personer || [];
       window.appState.koeretoejer = koeretoejer || [];
