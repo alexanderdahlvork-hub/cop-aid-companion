@@ -4087,6 +4087,11 @@ const efterlysningerApi = { async getAll() { try { const r = await getAll("efter
 const afdelingsIndholdApi = { async getAll(afdelingId) { try { const p = afdelingId ? { afdelingId } : undefined; const r = await getAll("afdelingsindhold", p); return r.results; } catch { return []; } }, async create(a) { try { await create("afdelingsindhold", a); } catch {} }, async update(id, data) { try { await update("afdelingsindhold", id, data); } catch {} }, async remove(id) { try { await remove("afdelingsindhold", id); } catch {} } };
 const ansoeningerApi = { async getAll() { try { const r = await getAll("ansoegning_indsendelser"); return r.results; } catch { return []; } }, async create(a) { try { await create("ansoegning_indsendelser", a); } catch {} }, async update(id, data) { try { await update("ansoegning_indsendelser", id, data); } catch {} }, async remove(id) { try { await remove("ansoegning_indsendelser", id); } catch {} } };
 
+// Eksponer API'er globalt så de er tilgængelige i andre script-blokke (fx Wanted Register)
+window.personerApi = personerApi;
+window.koeretoejerApi = koeretoejerApi;
+window.efterlysningerApi = efterlysningerApi;
+
 function rowToPatrulje(row) { return { id: row.id, navn: row.navn, kategori: row.kategori, pladser: row.pladser, medlemmer: JSON.parse(row.medlemmer || "[]"), status: row.status || "ledig", bemaerkning: row.bemaerkning || "" }; }
 function patruljeToRow(p) { const row = {}; if (p.id !== undefined) row.id = p.id; if (p.navn !== undefined) row.navn = p.navn; if (p.kategori !== undefined) row.kategori = p.kategori; if (p.pladser !== undefined) row.pladser = p.pladser; if (p.medlemmer !== undefined) row.medlemmer = JSON.stringify(p.medlemmer); if (p.status !== undefined) row.status = p.status; if (p.bemaerkning !== undefined) row.bemaerkning = p.bemaerkning; return row; }
 const patruljerApi = { async getAll() { try { const r = await getAll("patruljer"); return (r.results || []).map(rowToPatrulje); } catch { return []; } }, async create(p) { await create("patruljer", patruljeToRow(p)); }, async update(id, data) { await update("patruljer", id, patruljeToRow(data)); }, async remove(id) { await remove("patruljer", id); } };
