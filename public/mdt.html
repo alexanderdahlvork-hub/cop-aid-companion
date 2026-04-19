@@ -2608,6 +2608,22 @@ body.theme-light .wr-tab{color:#64748b!important}
 body.theme-light .wr-tab.active{color:#0f172a!important;border-color:#2563eb!important}
 body.theme-light .wr-result{background:linear-gradient(180deg,#ffffff,#f8fbff)!important;border-color:rgba(15,23,42,.08)!important}
 body.theme-light .wr-seg-btn.active{background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.06));color:#0f172a}
+.wr-grad-filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
+.wr-grad-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted-fg);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s ease}
+.wr-grad-chip:hover{border-color:rgba(59,130,246,.25);color:var(--fg)}
+.wr-grad-chip.active{background:linear-gradient(180deg, rgba(59,130,246,.18), rgba(59,130,246,.08));border-color:rgba(59,130,246,.35);color:var(--fg)}
+.wr-grad-chip-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted-fg);font-size:10px;font-weight:800}
+.wr-grad-chip.active .wr-grad-chip-count{background:rgba(59,130,246,.25);color:#dbeafe}
+.wr-result-grad{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;vertical-align:middle;border:1px solid transparent}
+.wr-grad-aktiv{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.32);color:#93c5fd}
+.wr-grad-højrisiko{background:rgba(234,179,8,.14);border-color:rgba(234,179,8,.32);color:#fde68a}
+.wr-grad-bevæbnet{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.36);color:#fca5a5}
+.wr-grad-farlig{background:rgba(249,115,22,.16);border-color:rgba(249,115,22,.36);color:#fdba74}
+.wr-grad-voldelig{background:rgba(220,38,38,.18);border-color:rgba(220,38,38,.4);color:#fecaca}
+.wr-grad-eskaleret{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.36);color:#d8b4fe}
+body.theme-light .wr-grad-chip{background:#ffffff;border-color:rgba(15,23,42,.1);color:#475569}
+body.theme-light .wr-grad-chip.active{background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.05));border-color:rgba(37,99,235,.3);color:#0f172a}
+body.theme-light .wr-grad-chip-count{background:rgba(15,23,42,.06);color:#475569}
 @media (max-width:1100px){.wr-layout,.wr-info-grid,.wr-stats{grid-template-columns:1fr}.wr-search-row{grid-template-columns:1fr}}
 
 
@@ -5333,6 +5349,14 @@ window.showEfterlysningDialog = async function(personId) {
       valgteBoeder.forEach((b,i) => { html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between"><span>${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`; });
       html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalBoede)} kr</div></div>`;
     }
+    const grader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
+    const valgtGrad = window._eftValgtGrad || "Aktiv";
+    html += `<div class="label">Trusselgrad</div><div class="flex gap-2 mb-3" style="flex-wrap:wrap">`;
+    grader.forEach(g => {
+      const aktiv = g === valgtGrad;
+      html += `<button type="button" class="btn ${aktiv?'btn-primary':'btn-outline'} btn-sm" onclick="window._eftSetGrad('${g}')">${g}</button>`;
+    });
+    html += `</div>`;
     html += `<div class="label">Beskrivelse</div><textarea class="textarea mb-3" id="eft-besk" rows="3" placeholder="Yderligere beskrivelse..."></textarea>`;
     html += `<div class="flex gap-2"><button class="btn btn-primary" onclick="window._eftSubmit()">Opret efterlysning</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
     overlay.innerHTML = html;
@@ -5354,10 +5378,12 @@ window.showEfterlysningDialog = async function(personId) {
   };
   window._eftPickBoede = async function(id) { const b=standardBoeder.find(x=>x.id===id); if(b)valgteBoeder.push({boedeId:b.id,paragraf:b.paragraf,beskrivelse:b.beskrivelse,beloeb:b.beloeb,faengselMaaneder:b.faengselMaaneder||0}); renderEftDialog(); };
   window._eftRemoveBoede = async function(i) { valgteBoeder.splice(i,1); renderEftDialog(); };
+  window._eftSetGrad = function(g) { window._eftValgtGrad = g; renderEftDialog(); };
   window._eftSubmit = async function() {
     const besk = document.getElementById("eft-besk")?.value || "";
-    const eft = { id: Date.now().toString(), personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr, begrundelse:besk, aarsag:besk, reason:besk, grad:"Aktiv", level:"Aktiv", kommentar:"", boeder:JSON.stringify(valgteBoeder), oprettetAf:`${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato:new Date().toISOString().split("T")[0], status:"aktiv" };
-    try { await efterlysningerApi.create(eft); await personerApi.update(p.id,{status:"eftersøgt"}); showToast("Efterlysning oprettet"); overlay.remove(); renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
+    const grad = window._eftValgtGrad || "Aktiv";
+    const eft = { id: Date.now().toString(), personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr, begrundelse:besk, aarsag:besk, reason:besk, grad:grad, level:grad, kommentar:"", boeder:JSON.stringify(valgteBoeder), oprettetAf:`${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato:new Date().toISOString().split("T")[0], status:"aktiv" };
+    try { await efterlysningerApi.create(eft); await personerApi.update(p.id,{status:"eftersøgt"}); showToast("Efterlysning oprettet"); overlay.remove(); window._eftValgtGrad = null; renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
   };
   document.body.appendChild(overlay);
   renderEftDialog();
@@ -10643,9 +10669,26 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   function renderWantedSearch(container) {
     const q = String(window._wantedSearch || "").toLowerCase();
     const mode = window._wantedMode || "person";
+    const gradFilter = window._wantedGradFilter || "Alle";
     const data = buildWantedData();
     const rows = mode === "vehicle" ? data.vehicles : data.persons;
-    const filtered = rows.filter(r => `${r.title} ${r.subtitle} ${r.owner || ""} ${r.reason || ""}`.toLowerCase().includes(q));
+
+    // Beregn grader og antal pr. grad for chip-knapper
+    const gradCounts = {};
+    rows.forEach(r => { const g = r.level || "Aktiv"; gradCounts[g] = (gradCounts[g]||0)+1; });
+    const standardGrader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
+    const ekstra = Object.keys(gradCounts).filter(g => !standardGrader.includes(g));
+    const grader = ["Alle", ...standardGrader, ...ekstra];
+
+    const filtered = rows
+      .filter(r => gradFilter === "Alle" || (r.level || "Aktiv") === gradFilter)
+      .filter(r => `${r.title} ${r.subtitle} ${r.owner || ""} ${r.reason || ""}`.toLowerCase().includes(q));
+
+    const chipsHtml = grader.map(g => {
+      const aktiv = g === gradFilter;
+      const antal = g === "Alle" ? rows.length : (gradCounts[g] || 0);
+      return `<button class="wr-grad-chip ${aktiv?'active':''}" data-grad="${escWanted(g)}">${escWanted(g)} <span class="wr-grad-chip-count">${antal}</span></button>`;
+    }).join("");
 
     container.innerHTML = `
       <div class="wr-shell">
@@ -10660,15 +10703,16 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
                 <button class="wr-seg-btn ${mode==="vehicle" ? "active" : ""}" id="wanted-vehicle-btn">Køretøjer</button>
               </div>
             </div>
+            <div class="wr-grad-filter" id="wanted-grad-filter">${chipsHtml}</div>
           </div>
 
           <div class="wr-search-results">
             ${filtered.length ? filtered.map(r => `
               <div class="wr-result" onclick="selectWantedItem('${r.id}')">
-                <div class="wr-result-title">${escWanted(r.title)}</div>
+                <div class="wr-result-title">${escWanted(r.title)} <span class="wr-result-grad wr-grad-${escWanted((r.level||'Aktiv').toLowerCase())}">${escWanted(r.level || 'Aktiv')}</span></div>
                 <div class="wr-result-sub">${escWanted(r.subtitle)}${r.owner ? ` · Ejer: ${escWanted(r.owner)}` : ""} · ${escWanted(r.reason)}</div>
               </div>
-            `).join("") : `<div class="wr-empty-card" style="max-width:980px;margin:0 auto"><div class="wr-empty-title">Ingen efterlysninger fundet</div><div class="wr-empty-text">Prøv en anden søgning eller skift mellem personer og køretøjer.</div></div>`}
+            `).join("") : `<div class="wr-empty-card" style="max-width:980px;margin:0 auto"><div class="wr-empty-title">Ingen efterlysninger fundet</div><div class="wr-empty-text">Prøv en anden søgning, et andet filter eller skift mellem personer og køretøjer.</div></div>`}
           </div>
         </div>
       </div>
@@ -10681,12 +10725,20 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     document.getElementById("wanted-person-btn")?.addEventListener("click", () => {
       window._wantedMode = "person";
       window._wantedSearch = "";
+      window._wantedGradFilter = "Alle";
       renderWantedSearch(container);
     });
     document.getElementById("wanted-vehicle-btn")?.addEventListener("click", () => {
       window._wantedMode = "vehicle";
       window._wantedSearch = "";
+      window._wantedGradFilter = "Alle";
       renderWantedSearch(container);
+    });
+    document.querySelectorAll("#wanted-grad-filter .wr-grad-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        window._wantedGradFilter = btn.getAttribute("data-grad") || "Alle";
+        renderWantedSearch(container);
+      });
     });
   }
 
