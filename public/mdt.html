@@ -4765,7 +4765,7 @@ async function renderPage(tabId) {
   if (!tab) return;
   area.innerHTML = "";
   switch (tab.type) {
-    case "forside": renderDashboard(area); break;
+    case "forside": case "dashboard": renderDashboard(area); break;
     case "opslagstavle": renderOpslagstavle(area); break;
     case "kr": renderPersonregister(area); break;
     case "koeretoej": renderKoeretoejsregister(area); break;
