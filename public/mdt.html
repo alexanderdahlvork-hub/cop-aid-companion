@@ -2608,6 +2608,22 @@ body.theme-light .wr-tab{color:#64748b!important}
 body.theme-light .wr-tab.active{color:#0f172a!important;border-color:#2563eb!important}
 body.theme-light .wr-result{background:linear-gradient(180deg,#ffffff,#f8fbff)!important;border-color:rgba(15,23,42,.08)!important}
 body.theme-light .wr-seg-btn.active{background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.06));color:#0f172a}
+.wr-grad-filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
+.wr-grad-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted-fg);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s ease}
+.wr-grad-chip:hover{border-color:rgba(59,130,246,.25);color:var(--fg)}
+.wr-grad-chip.active{background:linear-gradient(180deg, rgba(59,130,246,.18), rgba(59,130,246,.08));border-color:rgba(59,130,246,.35);color:var(--fg)}
+.wr-grad-chip-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted-fg);font-size:10px;font-weight:800}
+.wr-grad-chip.active .wr-grad-chip-count{background:rgba(59,130,246,.25);color:#dbeafe}
+.wr-result-grad{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;vertical-align:middle;border:1px solid transparent}
+.wr-grad-aktiv{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.32);color:#93c5fd}
+.wr-grad-højrisiko{background:rgba(234,179,8,.14);border-color:rgba(234,179,8,.32);color:#fde68a}
+.wr-grad-bevæbnet{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.36);color:#fca5a5}
+.wr-grad-farlig{background:rgba(249,115,22,.16);border-color:rgba(249,115,22,.36);color:#fdba74}
+.wr-grad-voldelig{background:rgba(220,38,38,.18);border-color:rgba(220,38,38,.4);color:#fecaca}
+.wr-grad-eskaleret{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.36);color:#d8b4fe}
+body.theme-light .wr-grad-chip{background:#ffffff;border-color:rgba(15,23,42,.1);color:#475569}
+body.theme-light .wr-grad-chip.active{background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.05));border-color:rgba(37,99,235,.3);color:#0f172a}
+body.theme-light .wr-grad-chip-count{background:rgba(15,23,42,.06);color:#475569}
 @media (max-width:1100px){.wr-layout,.wr-info-grid,.wr-stats{grid-template-columns:1fr}.wr-search-row{grid-template-columns:1fr}}
 
 
