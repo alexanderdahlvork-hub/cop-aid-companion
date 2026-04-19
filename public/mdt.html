@@ -5515,10 +5515,28 @@ function renderFartberegner(container) {
 }
 
 // ═══ OPRET SIGTELSE DIALOG ═══
-window.showOpretSigtelseDialog = function(personId) {
-  const p = window._krPersoner.find(pp => pp.id === personId);
-  if (!p) return;
-  let valgteBoeder = [], erkender = null, fratagKoerekort = false, openKat = null, haendelse = "";
+window.showOpretSigtelseDialog = function(personId, prefillBoeder, prefillHaendelse) {
+  // Hent person fra _krPersoner ELLER fra global appState/personerApi-cache
+  let p = (window._krPersoner || []).find(pp => pp.id === personId);
+  if (!p && window.appState && Array.isArray(window.appState.personer)) {
+    p = window.appState.personer.find(pp => pp.id === personId);
+  }
+  if (!p) {
+    // Asynkron fallback: hent personer og prøv igen
+    if (window.personerApi && window.personerApi.getAll) {
+      window.personerApi.getAll().then(rows => {
+        window.appState = window.appState || {};
+        window.appState.personer = rows || [];
+        window._krPersoner = rows || [];
+        const p2 = (rows || []).find(pp => pp.id === personId);
+        if (p2) window.showOpretSigtelseDialog(personId, prefillBoeder, prefillHaendelse);
+        else showToast("Person blev ikke fundet");
+      }).catch(() => showToast("Kunne ikke hente person"));
+    }
+    return;
+  }
+  let valgteBoeder = Array.isArray(prefillBoeder) ? prefillBoeder.map(b => ({...b})) : [];
+  let erkender = null, fratagKoerekort = false, openKat = null, haendelse = prefillHaendelse || "";
   const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
 
   function renderDialog() {
