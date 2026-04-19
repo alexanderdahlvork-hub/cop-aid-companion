@@ -5515,10 +5515,28 @@ function renderFartberegner(container) {
 }
 
 // ═══ OPRET SIGTELSE DIALOG ═══
-window.showOpretSigtelseDialog = function(personId) {
-  const p = window._krPersoner.find(pp => pp.id === personId);
-  if (!p) return;
-  let valgteBoeder = [], erkender = null, fratagKoerekort = false, openKat = null, haendelse = "";
+window.showOpretSigtelseDialog = function(personId, prefillBoeder, prefillHaendelse) {
+  // Hent person fra _krPersoner ELLER fra global appState/personerApi-cache
+  let p = (window._krPersoner || []).find(pp => pp.id === personId);
+  if (!p && window.appState && Array.isArray(window.appState.personer)) {
+    p = window.appState.personer.find(pp => pp.id === personId);
+  }
+  if (!p) {
+    // Asynkron fallback: hent personer og prøv igen
+    if (window.personerApi && window.personerApi.getAll) {
+      window.personerApi.getAll().then(rows => {
+        window.appState = window.appState || {};
+        window.appState.personer = rows || [];
+        window._krPersoner = rows || [];
+        const p2 = (rows || []).find(pp => pp.id === personId);
+        if (p2) window.showOpretSigtelseDialog(personId, prefillBoeder, prefillHaendelse);
+        else showToast("Person blev ikke fundet");
+      }).catch(() => showToast("Kunne ikke hente person"));
+    }
+    return;
+  }
+  let valgteBoeder = Array.isArray(prefillBoeder) ? prefillBoeder.map(b => ({...b})) : [];
+  let erkender = null, fratagKoerekort = false, openKat = null, haendelse = prefillHaendelse || "";
   const overlay = el("div", { className: "dialog-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
 
   function renderDialog() {
@@ -10822,7 +10840,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
               <div class="wr-main-top">
                 <div class="wr-name">${escWanted(item.title)}</div>
                 <div class="wr-actions">
-                  ${item.kind === "person" ? `<button class="btn btn-outline btn-sm" onclick="openTab('kr'); setTimeout(()=>selectPerson('${item.sourceId}'), 80)">👤 Åbn person</button>` : `<button class="btn btn-outline btn-sm" onclick="openTab('koeretoej'); setTimeout(()=>selectVehicle('${item.sourceId}'), 80)">🚘 Åbn køretøj</button>`}
+                  ${item.kind === "person" ? `<button class="btn btn-primary btn-sm" onclick="window.opretSagFraEfterlysning('${item.sourceId}')">📁 Opret sag</button> <button class="btn btn-outline btn-sm" onclick="openTab('kr'); setTimeout(()=>selectPerson('${item.sourceId}'), 80)">👤 Åbn person</button>` : `<button class="btn btn-outline btn-sm" onclick="openTab('koeretoej'); setTimeout(()=>selectVehicle('${item.sourceId}'), 80)">🚘 Åbn køretøj</button>`}
                 </div>
               </div>
 
@@ -10844,6 +10862,44 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
             <div class="wr-stat-card"><div class="wr-stat-label">Aktiv</div><div class="wr-stat-value">1</div></div>
           </div>
 
+          ${(function(){
+            // Find efterlysningen og parse boeder for at vise sigtelses-liste
+            if (item.kind !== "person") return "";
+            const efts = (window.appState && window.appState.efterlysninger) || [];
+            const eft = efts.find(e => e && e.personId === item.sourceId);
+            let boeder = [];
+            if (eft && eft.boeder) {
+              try { const parsed = typeof eft.boeder === "string" ? JSON.parse(eft.boeder) : eft.boeder; if (Array.isArray(parsed)) boeder = parsed; } catch(e){}
+            }
+            if (!boeder.length) return "";
+            const total = boeder.reduce((s,b)=>s+Number(b.beloeb||0),0);
+            const totalFaengsel = boeder.reduce((s,b)=>s+Number(b.faengselMaaneder||0),0);
+            const fmt = (n)=> new Intl.NumberFormat("da-DK").format(n);
+            return `
+              <div class="wr-notes-card" style="margin-top:14px">
+                <div class="wr-notes-title">Sigtelser personen er efterlyst for (${boeder.length})</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+                  ${boeder.map(b => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;font-size:12px">
+                      <span>${escWanted((b.paragraf?b.paragraf+" — ":"")+(b.beskrivelse||""))}</span>
+                      <span style="display:flex;gap:10px;align-items:center">
+                        ${b.faengselMaaneder>0 ? `<span style="color:#fca5a5;font-weight:700">${b.faengselMaaneder} md.</span>` : ""}
+                        <span class="mono" style="color:#fde68a;font-weight:700">${fmt(b.beloeb||0)} kr</span>
+                      </span>
+                    </div>
+                  `).join("")}
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;font-size:12px;font-weight:700;margin-top:4px">
+                    <span>Total</span>
+                    <span style="display:flex;gap:10px;align-items:center">
+                      ${totalFaengsel>0 ? `<span style="color:#fca5a5">${totalFaengsel} md.</span>` : ""}
+                      <span class="mono" style="color:#fde68a">${fmt(total)} kr</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            `;
+          })()}
+
           <div class="wr-notes-card">
             <div class="wr-notes-title">Noter</div>
             <div class="wr-notes-text">${escWanted(item.notes || "Ingen yderligere noter registreret.")}</div>
@@ -10851,6 +10907,23 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
         </div>
       </div>
     `;
+  };
+
+  // Helper: Opret sag fra efterlysning — åbner sigtelse-dialog med præudfyldte bøder
+  window.opretSagFraEfterlysning = function(personId) {
+    const efts = (window.appState && window.appState.efterlysninger) || [];
+    const eft = efts.find(e => e && e.personId === personId);
+    let boeder = [];
+    if (eft && eft.boeder) {
+      try { const parsed = typeof eft.boeder === "string" ? JSON.parse(eft.boeder) : eft.boeder; if (Array.isArray(parsed)) boeder = parsed; } catch(e){}
+    }
+    const aarsag = eft ? (eft.begrundelse || eft.aarsag || eft.reason || "") : "";
+    const haendelse = aarsag ? ("Sag oprettet fra efterlysning. Begrundelse: " + aarsag) : "Sag oprettet fra efterlysning.";
+    if (typeof window.showOpretSigtelseDialog === "function") {
+      window.showOpretSigtelseDialog(personId, boeder, haendelse);
+    } else {
+      if (typeof window.showToast === "function") window.showToast("Kunne ikke åbne sigtelse-dialog");
+    }
   };
 })();
 </script>
