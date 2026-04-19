@@ -4193,9 +4193,8 @@ if (!icons.camera) icons.camera = icons.file || "📷";
 
 const sidebarSections = [
   { label: "OVERSIGT", items: [
-    { id: "dashboard", label: "Forside", icon: "home" },
+    { id: "forside", label: "Forside", icon: "home" },
     { id: "opslagstavle", label: "Opslagstavle", icon: "megaphone" },
-    { id: "kort", label: "Aktiv Patrulje", icon: "radio" },
   ]},
   { label: "DATABASE", items: [
     { id: "kr", label: "Personregister", icon: "users" },
@@ -4226,7 +4225,7 @@ const afdelinger = [
 ];
 
 const tabLabels = {
-  forside:"Forside", opslagstavle:"Opslagstavle", kort:"Aktiv Patrulje", kr:"Personregister",
+  forside:"Forside", dashboard:"Forside", opslagstavle:"Opslagstavle", kr:"Personregister",
   koeretoej:"Køretøjsregister", ejendomme:"Ejendomsregister", efterlysninger:"Efterlysninger",
   opret_sag:"Opret Sag", haendelser:"Hændelser", rapporter:"Rapporter", telefon:"Telefon", boeder:"Bødetakster", sagsarkiv:"Sagsarkiv", flaade:"Flådestyring", fartberegner:"Fartberegner",
   ansatte:"Ansatte", ansoegninger:"Ansøgninger", profil:"Min Profil",
@@ -4766,7 +4765,7 @@ async function renderPage(tabId) {
   if (!tab) return;
   area.innerHTML = "";
   switch (tab.type) {
-    case "forside": renderDashboard(area); break;
+    case "forside": case "dashboard": renderDashboard(area); break;
     case "opslagstavle": renderOpslagstavle(area); break;
     case "kr": renderPersonregister(area); break;
     case "koeretoej": renderKoeretoejsregister(area); break;
