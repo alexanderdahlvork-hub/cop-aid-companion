@@ -10840,7 +10840,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
               <div class="wr-main-top">
                 <div class="wr-name">${escWanted(item.title)}</div>
                 <div class="wr-actions">
-                  ${item.kind === "person" ? `<button class="btn btn-outline btn-sm" onclick="openTab('kr'); setTimeout(()=>selectPerson('${item.sourceId}'), 80)">👤 Åbn person</button>` : `<button class="btn btn-outline btn-sm" onclick="openTab('koeretoej'); setTimeout(()=>selectVehicle('${item.sourceId}'), 80)">🚘 Åbn køretøj</button>`}
+                  ${item.kind === "person" ? `<button class="btn btn-primary btn-sm" onclick="window.opretSagFraEfterlysning('${item.sourceId}')">📁 Opret sag</button> <button class="btn btn-outline btn-sm" onclick="openTab('kr'); setTimeout(()=>selectPerson('${item.sourceId}'), 80)">👤 Åbn person</button>` : `<button class="btn btn-outline btn-sm" onclick="openTab('koeretoej'); setTimeout(()=>selectVehicle('${item.sourceId}'), 80)">🚘 Åbn køretøj</button>`}
                 </div>
               </div>
 
