@@ -5362,10 +5362,12 @@ window.showEfterlysningDialog = async function(personId) {
   };
   window._eftPickBoede = async function(id) { const b=standardBoeder.find(x=>x.id===id); if(b)valgteBoeder.push({boedeId:b.id,paragraf:b.paragraf,beskrivelse:b.beskrivelse,beloeb:b.beloeb,faengselMaaneder:b.faengselMaaneder||0}); renderEftDialog(); };
   window._eftRemoveBoede = async function(i) { valgteBoeder.splice(i,1); renderEftDialog(); };
+  window._eftSetGrad = function(g) { window._eftValgtGrad = g; renderEftDialog(); };
   window._eftSubmit = async function() {
     const besk = document.getElementById("eft-besk")?.value || "";
-    const eft = { id: Date.now().toString(), personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr, begrundelse:besk, aarsag:besk, reason:besk, grad:"Aktiv", level:"Aktiv", kommentar:"", boeder:JSON.stringify(valgteBoeder), oprettetAf:`${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato:new Date().toISOString().split("T")[0], status:"aktiv" };
-    try { await efterlysningerApi.create(eft); await personerApi.update(p.id,{status:"eftersøgt"}); showToast("Efterlysning oprettet"); overlay.remove(); renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
+    const grad = window._eftValgtGrad || "Aktiv";
+    const eft = { id: Date.now().toString(), personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr, begrundelse:besk, aarsag:besk, reason:besk, grad:grad, level:grad, kommentar:"", boeder:JSON.stringify(valgteBoeder), oprettetAf:`${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato:new Date().toISOString().split("T")[0], status:"aktiv" };
+    try { await efterlysningerApi.create(eft); await personerApi.update(p.id,{status:"eftersøgt"}); showToast("Efterlysning oprettet"); overlay.remove(); window._eftValgtGrad = null; renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
   };
   document.body.appendChild(overlay);
   renderEftDialog();
