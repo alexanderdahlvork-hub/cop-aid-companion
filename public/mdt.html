@@ -5333,6 +5333,14 @@ window.showEfterlysningDialog = async function(personId) {
       valgteBoeder.forEach((b,i) => { html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between"><span>${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`; });
       html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalBoede)} kr</div></div>`;
     }
+    const grader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
+    const valgtGrad = window._eftValgtGrad || "Aktiv";
+    html += `<div class="label">Trusselgrad</div><div class="flex gap-2 mb-3" style="flex-wrap:wrap">`;
+    grader.forEach(g => {
+      const aktiv = g === valgtGrad;
+      html += `<button type="button" class="btn ${aktiv?'btn-primary':'btn-outline'} btn-sm" onclick="window._eftSetGrad('${g}')">${g}</button>`;
+    });
+    html += `</div>`;
     html += `<div class="label">Beskrivelse</div><textarea class="textarea mb-3" id="eft-besk" rows="3" placeholder="Yderligere beskrivelse..."></textarea>`;
     html += `<div class="flex gap-2"><button class="btn btn-primary" onclick="window._eftSubmit()">Opret efterlysning</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
     overlay.innerHTML = html;
