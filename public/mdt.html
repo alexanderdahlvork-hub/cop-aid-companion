@@ -10653,9 +10653,26 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   function renderWantedSearch(container) {
     const q = String(window._wantedSearch || "").toLowerCase();
     const mode = window._wantedMode || "person";
+    const gradFilter = window._wantedGradFilter || "Alle";
     const data = buildWantedData();
     const rows = mode === "vehicle" ? data.vehicles : data.persons;
-    const filtered = rows.filter(r => `${r.title} ${r.subtitle} ${r.owner || ""} ${r.reason || ""}`.toLowerCase().includes(q));
+
+    // Beregn grader og antal pr. grad for chip-knapper
+    const gradCounts = {};
+    rows.forEach(r => { const g = r.level || "Aktiv"; gradCounts[g] = (gradCounts[g]||0)+1; });
+    const standardGrader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
+    const ekstra = Object.keys(gradCounts).filter(g => !standardGrader.includes(g));
+    const grader = ["Alle", ...standardGrader, ...ekstra];
+
+    const filtered = rows
+      .filter(r => gradFilter === "Alle" || (r.level || "Aktiv") === gradFilter)
+      .filter(r => `${r.title} ${r.subtitle} ${r.owner || ""} ${r.reason || ""}`.toLowerCase().includes(q));
+
+    const chipsHtml = grader.map(g => {
+      const aktiv = g === gradFilter;
+      const antal = g === "Alle" ? rows.length : (gradCounts[g] || 0);
+      return `<button class="wr-grad-chip ${aktiv?'active':''}" data-grad="${escWanted(g)}">${escWanted(g)} <span class="wr-grad-chip-count">${antal}</span></button>`;
+    }).join("");
 
     container.innerHTML = `
       <div class="wr-shell">
@@ -10670,15 +10687,16 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
                 <button class="wr-seg-btn ${mode==="vehicle" ? "active" : ""}" id="wanted-vehicle-btn">Køretøjer</button>
               </div>
             </div>
+            <div class="wr-grad-filter" id="wanted-grad-filter">${chipsHtml}</div>
           </div>
 
           <div class="wr-search-results">
             ${filtered.length ? filtered.map(r => `
               <div class="wr-result" onclick="selectWantedItem('${r.id}')">
-                <div class="wr-result-title">${escWanted(r.title)}</div>
+                <div class="wr-result-title">${escWanted(r.title)} <span class="wr-result-grad wr-grad-${escWanted((r.level||'Aktiv').toLowerCase())}">${escWanted(r.level || 'Aktiv')}</span></div>
                 <div class="wr-result-sub">${escWanted(r.subtitle)}${r.owner ? ` · Ejer: ${escWanted(r.owner)}` : ""} · ${escWanted(r.reason)}</div>
               </div>
-            `).join("") : `<div class="wr-empty-card" style="max-width:980px;margin:0 auto"><div class="wr-empty-title">Ingen efterlysninger fundet</div><div class="wr-empty-text">Prøv en anden søgning eller skift mellem personer og køretøjer.</div></div>`}
+            `).join("") : `<div class="wr-empty-card" style="max-width:980px;margin:0 auto"><div class="wr-empty-title">Ingen efterlysninger fundet</div><div class="wr-empty-text">Prøv en anden søgning, et andet filter eller skift mellem personer og køretøjer.</div></div>`}
           </div>
         </div>
       </div>
@@ -10691,12 +10709,20 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     document.getElementById("wanted-person-btn")?.addEventListener("click", () => {
       window._wantedMode = "person";
       window._wantedSearch = "";
+      window._wantedGradFilter = "Alle";
       renderWantedSearch(container);
     });
     document.getElementById("wanted-vehicle-btn")?.addEventListener("click", () => {
       window._wantedMode = "vehicle";
       window._wantedSearch = "";
+      window._wantedGradFilter = "Alle";
       renderWantedSearch(container);
+    });
+    document.querySelectorAll("#wanted-grad-filter .wr-grad-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        window._wantedGradFilter = btn.getAttribute("data-grad") || "Alle";
+        renderWantedSearch(container);
+      });
     });
   }
 
