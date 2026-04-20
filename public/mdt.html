@@ -6108,7 +6108,11 @@ async function renderSagEditor(container, data) {
         if (pf.titel) sag.titel = pf.titel;
         if (pf.haendelsesforloeb) sag.rapport.haendelsesforloeb = pf.haendelsesforloeb;
         if (pf.mistaenktPersonId) {
-          const person = personer.find(p => p.id === pf.mistaenktPersonId);
+          let person = personer.find(p => String(p.id) === String(pf.mistaenktPersonId));
+          if (!person && window.appState && Array.isArray(window.appState.personer)) {
+            person = window.appState.personer.find(p => String(p.id) === String(pf.mistaenktPersonId));
+          }
+          console.log("[renderSagEditor prefill] mistaenkt person:", person, "fra id:", pf.mistaenktPersonId);
           if (person) {
             const sigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
             const totalBoede = sigtelser.reduce((s, b) => s + (Number(b.beloeb || b.boede) || 0), 0);
@@ -6128,8 +6132,9 @@ async function renderSagEditor(container, data) {
               behandlet: false,
               tilkendegivelseAfgivet: false
             });
-            // Sæt også involveret borger og titel hvis ikke sat
             if (!sag.titel) sag.titel = `Sag mod ${person.fornavn} ${person.efternavn}`;
+          } else {
+            console.warn("[renderSagEditor prefill] kunne ikke finde mistænkt person med id:", pf.mistaenktPersonId);
           }
         }
         if (currentUser) {
@@ -10948,23 +10953,52 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
   };
 
   // Helper: Opret sag fra efterlysning — åbner sagen som en hændelse i sag-editoren
-  window.opretSagFraEfterlysning = function(personId) {
-    const efts = (window.appState && window.appState.efterlysninger) || [];
-    const eft = efts.find(e => e && e.personId === personId);
-    let boeder = [];
-    if (eft && eft.boeder) {
-      try { const parsed = typeof eft.boeder === "string" ? JSON.parse(eft.boeder) : eft.boeder; if (Array.isArray(parsed)) boeder = parsed; } catch(e){}
-    }
-    const personer = (window.appState && window.appState.personer) || [];
-    const person = personer.find(p => p && p.id === personId);
-    const personNavn = person ? (person.fornavn + " " + person.efternavn) : "ukendt";
-    const aarsag = eft ? (eft.begrundelse || eft.aarsag || eft.reason || "") : "";
-    const haendelse = aarsag
-      ? ("Hændelse oprettet fra efterlysning af " + personNavn + ".\n\nBegrundelse: " + aarsag)
-      : ("Hændelse oprettet fra efterlysning af " + personNavn + ".");
-    const titel = "Hændelse — " + personNavn;
-    if (typeof window.openTab === "function") {
-      window.openTab("sag", {
+  window.opretSagFraEfterlysning = async function(personId) {
+    console.log("[opretSagFraEfterlysning] called with personId:", personId);
+    try {
+      // 1. Hent efterlysninger — først fra appState, fallback til API
+      let efts = (window.appState && window.appState.efterlysninger) || [];
+      if ((!efts || efts.length === 0) && window.efterlysningerApi) {
+        try { efts = await window.efterlysningerApi.getAll(); } catch(e){ console.warn("[opretSag] kunne ikke hente efterlysninger fra API", e); }
+      }
+      console.log("[opretSagFraEfterlysning] efterlysninger:", efts);
+      const eft = (efts || []).find(e => e && String(e.personId) === String(personId));
+      console.log("[opretSagFraEfterlysning] fundet eft:", eft);
+
+      // 2. Parse bøder
+      let boeder = [];
+      if (eft && eft.boeder) {
+        try {
+          const parsed = typeof eft.boeder === "string" ? JSON.parse(eft.boeder) : eft.boeder;
+          if (Array.isArray(parsed)) boeder = parsed;
+        } catch(e) { console.warn("[opretSag] parse fejl boeder", e); }
+      }
+      console.log("[opretSagFraEfterlysning] boeder:", boeder);
+
+      // 3. Hent person — først fra appState, fallback til API
+      let personer = (window.appState && window.appState.personer) || [];
+      if ((!personer || personer.length === 0) && window.personerApi) {
+        try { personer = await window.personerApi.getAll(); window.appState = window.appState || {}; window.appState.personer = personer; } catch(e){ console.warn("[opretSag] kunne ikke hente personer fra API", e); }
+      }
+      const person = (personer || []).find(p => p && String(p.id) === String(personId));
+      console.log("[opretSagFraEfterlysning] fundet person:", person);
+
+      const personNavn = person ? (person.fornavn + " " + person.efternavn) : (eft ? eft.personNavn : "ukendt");
+      const aarsag = eft ? (eft.begrundelse || eft.aarsag || eft.reason || "") : "";
+      const haendelse = aarsag
+        ? ("Hændelse oprettet fra efterlysning af " + personNavn + ".\n\nBegrundelse: " + aarsag)
+        : ("Hændelse oprettet fra efterlysning af " + personNavn + ".");
+      const titel = "Hændelse — " + personNavn;
+
+      if (typeof window.openTab !== "function") {
+        console.error("[opretSag] openTab er ikke defineret");
+        if (typeof window.showToast === "function") window.showToast("Kunne ikke åbne sag");
+        return;
+      }
+
+      // 4. Åbn ALTID i en ny tab så vi ikke overskriver Efterlysninger-tabben
+      console.log("[opretSagFraEfterlysning] åbner sag-tab med prefill");
+      await window.openTab("sag", {
         label: titel,
         prefill: {
           titel: titel,
@@ -10973,9 +11007,13 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           haendelsesforloeb: haendelse,
           kilde: "efterlysning"
         }
-      });
-    } else {
-      if (typeof window.showToast === "function") window.showToast("Kunne ikke åbne sag");
+      }, true);
+      if (typeof window.showToast === "function") {
+        window.showToast(boeder.length > 0 ? `Sag oprettet med ${boeder.length} sigtelse(r)` : "Sag oprettet (ingen sigtelser på efterlysningen)");
+      }
+    } catch (err) {
+      console.error("[opretSagFraEfterlysning] uventet fejl:", err);
+      if (typeof window.showToast === "function") window.showToast("Fejl: " + (err && err.message ? err.message : "ukendt"));
     }
   };
 })();
