@@ -6111,10 +6111,12 @@ async function renderSagEditor(container, data) {
           const person = personer.find(p => p.id === pf.mistaenktPersonId);
           if (person) {
             const sigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
-            const totalBoede = sigtelser.reduce((s, b) => s + (Number(b.boede) || 0), 0);
-            const totalFaengsel = sigtelser.reduce((s, b) => s + (Number(b.faengsel) || 0), 0);
+            const totalBoede = sigtelser.reduce((s, b) => s + (Number(b.beloeb || b.boede) || 0), 0);
+            const totalFaengsel = sigtelser.reduce((s, b) => s + (Number(b.faengselMaaneder || b.faengsel) || 0), 0);
             sag.mistaenkte.push({
               id: person.id,
+              personId: person.id,
+              personNavn: `${person.fornavn} ${person.efternavn}`,
               fornavn: person.fornavn,
               efternavn: person.efternavn,
               personCpr: person.cpr,
