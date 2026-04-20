@@ -6101,6 +6101,42 @@ async function renderSagEditor(container, data) {
         noter: [],
         aktivitetslog: []
       };
+
+      // Prefill fra efterlysning eller andre kilder
+      if (data?.prefill) {
+        const pf = data.prefill;
+        if (pf.titel) sag.titel = pf.titel;
+        if (pf.haendelsesforloeb) sag.rapport.haendelsesforloeb = pf.haendelsesforloeb;
+        if (pf.mistaenktPersonId) {
+          const person = personer.find(p => p.id === pf.mistaenktPersonId);
+          if (person) {
+            const sigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
+            const totalBoede = sigtelser.reduce((s, b) => s + (Number(b.boede) || 0), 0);
+            const totalFaengsel = sigtelser.reduce((s, b) => s + (Number(b.faengsel) || 0), 0);
+            sag.mistaenkte.push({
+              id: person.id,
+              fornavn: person.fornavn,
+              efternavn: person.efternavn,
+              personCpr: person.cpr,
+              sigtelser: sigtelser,
+              totalBoede: totalBoede,
+              totalFaengsel: totalFaengsel,
+              fratagKoerekort: false,
+              erkender: null,
+              behandlet: false,
+              tilkendegivelseAfgivet: false
+            });
+            // Sæt også involveret borger og titel hvis ikke sat
+            if (!sag.titel) sag.titel = `Sag mod ${person.fornavn} ${person.efternavn}`;
+          }
+        }
+        if (currentUser) {
+          sag.involveretBetjente.push({ id: currentUser.id, navn: `${currentUser.fornavn} ${currentUser.efternavn}`, badgeNr: currentUser.badgeNr });
+        }
+        if (pf.kilde) {
+          sag.aktivitetslog.push({ tid: new Date().toISOString(), tekst: `Hændelse oprettet fra ${pf.kilde}` });
+        }
+      }
     }
 
     sag.haendelser = sag.haendelser || [];
@@ -10909,7 +10945,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     `;
   };
 
-  // Helper: Opret sag fra efterlysning — åbner sigtelse-dialog med præudfyldte bøder
+  // Helper: Opret sag fra efterlysning — åbner sagen som en hændelse i sag-editoren
   window.opretSagFraEfterlysning = function(personId) {
     const efts = (window.appState && window.appState.efterlysninger) || [];
     const eft = efts.find(e => e && e.personId === personId);
@@ -10917,12 +10953,27 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
     if (eft && eft.boeder) {
       try { const parsed = typeof eft.boeder === "string" ? JSON.parse(eft.boeder) : eft.boeder; if (Array.isArray(parsed)) boeder = parsed; } catch(e){}
     }
+    const personer = (window.appState && window.appState.personer) || [];
+    const person = personer.find(p => p && p.id === personId);
+    const personNavn = person ? (person.fornavn + " " + person.efternavn) : "ukendt";
     const aarsag = eft ? (eft.begrundelse || eft.aarsag || eft.reason || "") : "";
-    const haendelse = aarsag ? ("Sag oprettet fra efterlysning. Begrundelse: " + aarsag) : "Sag oprettet fra efterlysning.";
-    if (typeof window.showOpretSigtelseDialog === "function") {
-      window.showOpretSigtelseDialog(personId, boeder, haendelse);
+    const haendelse = aarsag
+      ? ("Hændelse oprettet fra efterlysning af " + personNavn + ".\n\nBegrundelse: " + aarsag)
+      : ("Hændelse oprettet fra efterlysning af " + personNavn + ".");
+    const titel = "Hændelse — " + personNavn;
+    if (typeof window.openTab === "function") {
+      window.openTab("sag", {
+        label: titel,
+        prefill: {
+          titel: titel,
+          mistaenktPersonId: personId,
+          sigtelser: boeder,
+          haendelsesforloeb: haendelse,
+          kilde: "efterlysning"
+        }
+      });
     } else {
-      if (typeof window.showToast === "function") window.showToast("Kunne ikke åbne sigtelse-dialog");
+      if (typeof window.showToast === "function") window.showToast("Kunne ikke åbne sag");
     }
   };
 })();
