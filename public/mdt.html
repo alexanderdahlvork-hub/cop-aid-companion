@@ -5332,6 +5332,19 @@ window.showEfterlysningDialog = async function(personId) {
         try { await efterlysningerApi.remove(row.id); } catch {}
       }
       await personerApi.update(personId, {status:"aktiv"});
+      // Synkroniser lokal cache så status opdateres med det samme i KR og dashboards
+      if (Array.isArray(window._krPersoner)) {
+        const cp = window._krPersoner.find(pp => pp.id === personId);
+        if (cp) cp.status = "aktiv";
+      }
+      if (window.appState && Array.isArray(window.appState.personer)) {
+        const ap = window.appState.personer.find(pp => pp.id === personId);
+        if (ap) ap.status = "aktiv";
+      }
+      if (window.appState && Array.isArray(window.appState.efterlysninger)) {
+        window.appState.efterlysninger = window.appState.efterlysninger.filter(e => e && e.personId !== personId);
+      }
+      p.status = "aktiv";
       showToast("Efterlysning fjernet");
       renderPage(activeTabId);
     } catch(e) { showToast("Fejl: "+e.message); }
@@ -10696,6 +10709,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           kind: "person",
           id: `person-${p.id}`,
           sourceId: p.id,
+          recordId: eft.id || "",
           title: `${p.fornavn || ""} ${p.efternavn || ""}`.trim() || "Ukendt person",
           subtitle: p.cpr || "Ingen CPR",
           image: p.mugshotUrl || p.mugshot || p.billede || "",
@@ -10710,18 +10724,22 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
 
     const vehicles = getVehicleStoreWanted()
       .filter(v => v.efterlyst || v.wanted || v.status === "eftersøgt")
-      .map(v => ({
-        kind: "vehicle",
-        id: `vehicle-${v.id}`,
-        sourceId: v.id,
-        title: vehicleNameWanted(v),
-        subtitle: v.nummerplade || v.plate || "Ingen nummerplade",
-        owner: v.ejer || v.owner || "Ukendt",
-        reason: v.efterlysningAarsag || v.wantedReason || "Efterlyst køretøj",
-        level: v.efterlysningGrad || v.level || "Aktiv",
-        notes: v.noter || "",
-        icon: "🚘"
-      }));
+      .map(v => {
+        const eft = (efterlysninger || []).find(e => e && (String(e.koeretoejId) === String(v.id) || String(e.vehicleId) === String(v.id))) || {};
+        return {
+          kind: "vehicle",
+          id: `vehicle-${v.id}`,
+          sourceId: v.id,
+          recordId: eft.id || "",
+          title: vehicleNameWanted(v),
+          subtitle: v.nummerplade || v.plate || "Ingen nummerplade",
+          owner: v.ejer || v.owner || "Ukendt",
+          reason: eft.aarsag || eft.begrundelse || v.efterlysningAarsag || v.wantedReason || "Efterlyst køretøj",
+          level: eft.grad || eft.level || v.efterlysningGrad || v.level || "Aktiv",
+          notes: eft.kommentar || v.noter || "",
+          icon: "🚘"
+        };
+      });
 
     return { persons, vehicles };
   }
@@ -10883,7 +10901,9 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
               <div class="wr-main-top">
                 <div class="wr-name">${escWanted(item.title)}</div>
                 <div class="wr-actions">
-                  ${item.kind === "person" ? `<button class="btn btn-primary btn-sm" onclick="window.opretSagFraEfterlysning('${item.sourceId}')">📁 Opret sag</button> <button class="btn btn-outline btn-sm" onclick="openTab('kr'); setTimeout(()=>selectPerson('${item.sourceId}'), 80)">👤 Åbn person</button>` : `<button class="btn btn-outline btn-sm" onclick="openTab('koeretoej'); setTimeout(()=>selectVehicle('${item.sourceId}'), 80)">🚘 Åbn køretøj</button>`}
+                  ${item.kind === "person"
+                    ? `<button class="btn btn-primary btn-sm" onclick="window.opretSagFraEfterlysning('${item.sourceId}')">📁 Opret sag</button> <button class="btn btn-outline btn-sm" onclick="openTab('kr'); setTimeout(()=>selectPerson('${item.sourceId}'), 80)">👤 Åbn person</button> <button class="btn btn-outline btn-sm" style="border-color:rgba(239,68,68,.4);color:#ef4444" onclick="window.fjernEfterlysningFraListe('${item.sourceId}','person','${item.recordId || ''}')">✕ Fjern efterlysning</button>`
+                    : `<button class="btn btn-outline btn-sm" onclick="openTab('koeretoej'); setTimeout(()=>selectVehicle('${item.sourceId}'), 80)">🚘 Åbn køretøj</button> <button class="btn btn-outline btn-sm" style="border-color:rgba(239,68,68,.4);color:#ef4444" onclick="window.fjernEfterlysningFraListe('${item.sourceId}','vehicle','${item.recordId || ''}')">✕ Fjern efterlysning</button>`}
                 </div>
               </div>
 
@@ -11013,6 +11033,65 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       }
     } catch (err) {
       console.error("[opretSagFraEfterlysning] uventet fejl:", err);
+      if (typeof window.showToast === "function") window.showToast("Fejl: " + (err && err.message ? err.message : "ukendt"));
+    }
+  };
+
+  // Helper: Fjern efterlysning direkte fra Efterlysninger-listen og opdater person/køretøj-status
+  window.fjernEfterlysningFraListe = async function(sourceId, kind, recordId) {
+    if (!confirm("Fjern denne efterlysning?")) return;
+    try {
+      // 1. Fjern alle efterlysninger der matcher (både via recordId og personId/koeretoejId)
+      let efts = (window.appState && window.appState.efterlysninger) || [];
+      if ((!efts || efts.length === 0) && window.efterlysningerApi) {
+        try { efts = await window.efterlysningerApi.getAll(); } catch(e){}
+      }
+      const matches = (efts || []).filter(e => {
+        if (!e) return false;
+        if (recordId && String(e.id) === String(recordId)) return true;
+        if (kind === "person" && String(e.personId) === String(sourceId)) return true;
+        if ((kind === "koeretoej" || kind === "vehicle") && (String(e.koeretoejId) === String(sourceId) || String(e.vehicleId) === String(sourceId))) return true;
+        return false;
+      });
+      for (const row of matches) {
+        try { await window.efterlysningerApi.remove(row.id); } catch(e){ console.warn("fjern fejl", e); }
+      }
+
+      // 2. Opdater person-status i registeret tilbage til 'aktiv'
+      if (kind === "person" && window.personerApi) {
+        try { await window.personerApi.update(sourceId, { status: "aktiv" }); } catch(e){ console.warn("person update fejl", e); }
+        // Opdater lokal cache så Personregister viser korrekt status med det samme
+        if (Array.isArray(window._krPersoner)) {
+          const p = window._krPersoner.find(pp => String(pp.id) === String(sourceId));
+          if (p) p.status = "aktiv";
+        }
+        if (window.appState && Array.isArray(window.appState.personer)) {
+          const p = window.appState.personer.find(pp => String(pp.id) === String(sourceId));
+          if (p) p.status = "aktiv";
+        }
+      }
+
+      // 3. Opdater køretøj-flag
+      if ((kind === "koeretoej" || kind === "vehicle") && window.koeretoejerApi) {
+        try { await window.koeretoejerApi.update(sourceId, { efterlyst: false }); } catch(e){ console.warn("koeretoej update fejl", e); }
+        if (window.appState && Array.isArray(window.appState.koeretoejer)) {
+          const k = window.appState.koeretoejer.find(kk => String(kk.id) === String(sourceId));
+          if (k) k.efterlyst = false;
+        }
+      }
+
+      // 4. Opdater appState.efterlysninger lokalt
+      if (window.appState && Array.isArray(window.appState.efterlysninger)) {
+        window.appState.efterlysninger = window.appState.efterlysninger.filter(e => !matches.some(m => m.id === e.id));
+      }
+
+      if (typeof window.showToast === "function") window.showToast("Efterlysning fjernet");
+      // 5. Re-render aktuel side
+      if (typeof renderPage === "function" && typeof activeTabId !== "undefined") {
+        renderPage(activeTabId);
+      }
+    } catch (err) {
+      console.error("[fjernEfterlysningFraListe] fejl:", err);
       if (typeof window.showToast === "function") window.showToast("Fejl: " + (err && err.message ? err.message : "ukendt"));
     }
   };
