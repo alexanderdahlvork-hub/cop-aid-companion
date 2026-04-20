@@ -11018,6 +11018,65 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       if (typeof window.showToast === "function") window.showToast("Fejl: " + (err && err.message ? err.message : "ukendt"));
     }
   };
+
+  // Helper: Fjern efterlysning direkte fra Efterlysninger-listen og opdater person/køretøj-status
+  window.fjernEfterlysningFraListe = async function(sourceId, kind, recordId) {
+    if (!confirm("Fjern denne efterlysning?")) return;
+    try {
+      // 1. Fjern alle efterlysninger der matcher (både via recordId og personId/koeretoejId)
+      let efts = (window.appState && window.appState.efterlysninger) || [];
+      if ((!efts || efts.length === 0) && window.efterlysningerApi) {
+        try { efts = await window.efterlysningerApi.getAll(); } catch(e){}
+      }
+      const matches = (efts || []).filter(e => {
+        if (!e) return false;
+        if (recordId && String(e.id) === String(recordId)) return true;
+        if (kind === "person" && String(e.personId) === String(sourceId)) return true;
+        if (kind === "koeretoej" && (String(e.koeretoejId) === String(sourceId) || String(e.vehicleId) === String(sourceId))) return true;
+        return false;
+      });
+      for (const row of matches) {
+        try { await window.efterlysningerApi.remove(row.id); } catch(e){ console.warn("fjern fejl", e); }
+      }
+
+      // 2. Opdater person-status i registeret tilbage til 'aktiv'
+      if (kind === "person" && window.personerApi) {
+        try { await window.personerApi.update(sourceId, { status: "aktiv" }); } catch(e){ console.warn("person update fejl", e); }
+        // Opdater lokal cache så Personregister viser korrekt status med det samme
+        if (Array.isArray(window._krPersoner)) {
+          const p = window._krPersoner.find(pp => String(pp.id) === String(sourceId));
+          if (p) p.status = "aktiv";
+        }
+        if (window.appState && Array.isArray(window.appState.personer)) {
+          const p = window.appState.personer.find(pp => String(pp.id) === String(sourceId));
+          if (p) p.status = "aktiv";
+        }
+      }
+
+      // 3. Opdater køretøj-flag
+      if (kind === "koeretoej" && window.koeretoejerApi) {
+        try { await window.koeretoejerApi.update(sourceId, { efterlyst: false }); } catch(e){ console.warn("koeretoej update fejl", e); }
+        if (window.appState && Array.isArray(window.appState.koeretoejer)) {
+          const k = window.appState.koeretoejer.find(kk => String(kk.id) === String(sourceId));
+          if (k) k.efterlyst = false;
+        }
+      }
+
+      // 4. Opdater appState.efterlysninger lokalt
+      if (window.appState && Array.isArray(window.appState.efterlysninger)) {
+        window.appState.efterlysninger = window.appState.efterlysninger.filter(e => !matches.some(m => m.id === e.id));
+      }
+
+      if (typeof window.showToast === "function") window.showToast("Efterlysning fjernet");
+      // 5. Re-render aktuel side
+      if (typeof renderPage === "function" && typeof activeTabId !== "undefined") {
+        renderPage(activeTabId);
+      }
+    } catch (err) {
+      console.error("[fjernEfterlysningFraListe] fejl:", err);
+      if (typeof window.showToast === "function") window.showToast("Fejl: " + (err && err.message ? err.message : "ukendt"));
+    }
+  };
 })();
 </script>
 
