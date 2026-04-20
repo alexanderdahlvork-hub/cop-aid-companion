@@ -11050,7 +11050,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
         if (!e) return false;
         if (recordId && String(e.id) === String(recordId)) return true;
         if (kind === "person" && String(e.personId) === String(sourceId)) return true;
-        if (kind === "koeretoej" && (String(e.koeretoejId) === String(sourceId) || String(e.vehicleId) === String(sourceId))) return true;
+        if ((kind === "koeretoej" || kind === "vehicle") && (String(e.koeretoejId) === String(sourceId) || String(e.vehicleId) === String(sourceId))) return true;
         return false;
       });
       for (const row of matches) {
@@ -11072,7 +11072,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
       }
 
       // 3. Opdater køretøj-flag
-      if (kind === "koeretoej" && window.koeretoejerApi) {
+      if ((kind === "koeretoej" || kind === "vehicle") && window.koeretoejerApi) {
         try { await window.koeretoejerApi.update(sourceId, { efterlyst: false }); } catch(e){ console.warn("koeretoej update fejl", e); }
         if (window.appState && Array.isArray(window.appState.koeretoejer)) {
           const k = window.appState.koeretoejer.find(kk => String(kk.id) === String(sourceId));
