@@ -6108,7 +6108,11 @@ async function renderSagEditor(container, data) {
         if (pf.titel) sag.titel = pf.titel;
         if (pf.haendelsesforloeb) sag.rapport.haendelsesforloeb = pf.haendelsesforloeb;
         if (pf.mistaenktPersonId) {
-          const person = personer.find(p => p.id === pf.mistaenktPersonId);
+          let person = personer.find(p => String(p.id) === String(pf.mistaenktPersonId));
+          if (!person && window.appState && Array.isArray(window.appState.personer)) {
+            person = window.appState.personer.find(p => String(p.id) === String(pf.mistaenktPersonId));
+          }
+          console.log("[renderSagEditor prefill] mistaenkt person:", person, "fra id:", pf.mistaenktPersonId);
           if (person) {
             const sigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
             const totalBoede = sigtelser.reduce((s, b) => s + (Number(b.beloeb || b.boede) || 0), 0);
@@ -6128,8 +6132,9 @@ async function renderSagEditor(container, data) {
               behandlet: false,
               tilkendegivelseAfgivet: false
             });
-            // Sæt også involveret borger og titel hvis ikke sat
             if (!sag.titel) sag.titel = `Sag mod ${person.fornavn} ${person.efternavn}`;
+          } else {
+            console.warn("[renderSagEditor prefill] kunne ikke finde mistænkt person med id:", pf.mistaenktPersonId);
           }
         }
         if (currentUser) {
