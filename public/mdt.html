@@ -10709,6 +10709,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           kind: "person",
           id: `person-${p.id}`,
           sourceId: p.id,
+          recordId: eft.id || "",
           title: `${p.fornavn || ""} ${p.efternavn || ""}`.trim() || "Ukendt person",
           subtitle: p.cpr || "Ingen CPR",
           image: p.mugshotUrl || p.mugshot || p.billede || "",
@@ -10723,18 +10724,22 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
 
     const vehicles = getVehicleStoreWanted()
       .filter(v => v.efterlyst || v.wanted || v.status === "eftersøgt")
-      .map(v => ({
-        kind: "vehicle",
-        id: `vehicle-${v.id}`,
-        sourceId: v.id,
-        title: vehicleNameWanted(v),
-        subtitle: v.nummerplade || v.plate || "Ingen nummerplade",
-        owner: v.ejer || v.owner || "Ukendt",
-        reason: v.efterlysningAarsag || v.wantedReason || "Efterlyst køretøj",
-        level: v.efterlysningGrad || v.level || "Aktiv",
-        notes: v.noter || "",
-        icon: "🚘"
-      }));
+      .map(v => {
+        const eft = (efterlysninger || []).find(e => e && (String(e.koeretoejId) === String(v.id) || String(e.vehicleId) === String(v.id))) || {};
+        return {
+          kind: "vehicle",
+          id: `vehicle-${v.id}`,
+          sourceId: v.id,
+          recordId: eft.id || "",
+          title: vehicleNameWanted(v),
+          subtitle: v.nummerplade || v.plate || "Ingen nummerplade",
+          owner: v.ejer || v.owner || "Ukendt",
+          reason: eft.aarsag || eft.begrundelse || v.efterlysningAarsag || v.wantedReason || "Efterlyst køretøj",
+          level: eft.grad || eft.level || v.efterlysningGrad || v.level || "Aktiv",
+          notes: eft.kommentar || v.noter || "",
+          icon: "🚘"
+        };
+      });
 
     return { persons, vehicles };
   }
