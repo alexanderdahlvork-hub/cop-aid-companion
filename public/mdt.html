@@ -5467,7 +5467,14 @@ window.showEfterlysningDialog = async function(personId) {
     const besk = document.getElementById("eft-besk")?.value || "";
     const grad = window._eftValgtGrad || "Aktiv";
     const eft = { id: Date.now().toString(), personId:p.id, personNavn:`${p.fornavn} ${p.efternavn}`, personCpr:p.cpr, begrundelse:besk, aarsag:besk, reason:besk, grad:grad, level:grad, kommentar:"", boeder:JSON.stringify(valgteBoeder), oprettetAf:`${currentUser.fornavn} ${currentUser.efternavn}`, oprettetDato:new Date().toISOString().split("T")[0], status:"aktiv" };
-    try { await efterlysningerApi.create(eft); await personerApi.update(p.id,{status:"eftersøgt"}); showToast("Efterlysning oprettet"); overlay.remove(); window._eftValgtGrad = null; renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
+    try {
+      await efterlysningerApi.create(eft);
+      await personerApi.update(p.id,{status:"eftersøgt"});
+      p.status = "eftersøgt";
+      if (Array.isArray(window._krPersoner)) { const cp = window._krPersoner.find(pp => pp.id === p.id); if (cp) cp.status = "eftersøgt"; }
+      try { const raw = localStorage.getItem("copaid_offline_personer"); if (raw) { const rows = JSON.parse(raw); if (Array.isArray(rows)) { const idx = rows.findIndex(pp => String(pp.id) === String(p.id)); if (idx !== -1) { rows[idx].status = "eftersøgt"; localStorage.setItem("copaid_offline_personer", JSON.stringify(rows)); } } } } catch {}
+      showToast("Efterlysning oprettet"); overlay.remove(); window._eftValgtGrad = null; renderPage(activeTabId);
+    } catch(e) { showToast("Fejl: "+e.message); }
   };
   document.body.appendChild(overlay);
   renderEftDialog();
@@ -9047,7 +9054,17 @@ window.markEftersoegt = async function(id) {
   if (!p) return;
   const newStatus = p.status === "eftersøgt" ? "aktiv" : "eftersøgt";
   if (!confirm(`${newStatus==="eftersøgt"?"Efterlys":"Fjern efterlysning for"} ${p.fornavn} ${p.efternavn}?`)) return;
-  try { await personerApi.update(id, {status:newStatus}); showToast(newStatus==="eftersøgt"?"Person efterlyst":"Efterlysning fjernet"); renderPage(activeTabId); } catch(e) { showToast("Fejl: "+e.message); }
+  try {
+    await personerApi.update(id, {status:newStatus});
+    p.status = newStatus;
+    if (Array.isArray(window._krPersoner)) { const cp = window._krPersoner.find(pp => String(pp.id) === String(id)); if (cp) cp.status = newStatus; }
+    try { const raw = localStorage.getItem("copaid_offline_personer"); if (raw) { const rows = JSON.parse(raw); if (Array.isArray(rows)) { const idx = rows.findIndex(pp => String(pp.id) === String(id)); if (idx !== -1) { rows[idx].status = newStatus; localStorage.setItem("copaid_offline_personer", JSON.stringify(rows)); } } } } catch {}
+    if (newStatus === "aktiv") {
+      try { const alle = await efterlysningerApi.getAll().catch(() => []); for (const row of (alle||[]).filter(r => r && r.personId === id)) { try { await efterlysningerApi.remove(row.id); } catch {} } } catch {}
+      if (window.appState && Array.isArray(window.appState.efterlysninger)) window.appState.efterlysninger = window.appState.efterlysninger.filter(e => e && e.personId !== id);
+    }
+    showToast(newStatus==="eftersøgt"?"Person efterlyst":"Efterlysning fjernet"); renderPage(activeTabId);
+  } catch(e) { showToast("Fejl: "+e.message); }
 };
 </script>
 </body>
