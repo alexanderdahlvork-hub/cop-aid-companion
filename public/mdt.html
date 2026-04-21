@@ -12225,9 +12225,18 @@ Andre relevante oplysninger:`
             if (!alreadyAdded) {
               const person = personer.find(p => String(p.id) === pid);
               if (person) {
-                const sigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
-                const totalBoede = sigtelser.reduce((sum, b) => sum + (Number(b.boede) || 0), 0);
-                const totalFaengsel = sigtelser.reduce((sum, b) => sum + (Number(b.faengsel) || 0), 0);
+                // Normaliser sigtelser så feltnavnene matcher det sag-editoren forventer (boede, faengsel, klip)
+                const rawSigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
+                const sigtelser = rawSigtelser.map(b => ({
+                  paragraf: b.paragraf || b.paragraph || "",
+                  beskrivelse: b.beskrivelse || b.description || b.navn || "",
+                  boede: Number(b.boede ?? b.beloeb ?? b.fine ?? 0) || 0,
+                  faengsel: Number(b.faengsel ?? b.faengselMaaneder ?? b.faengselsTid ?? 0) || 0,
+                  klip: Number(b.klip ?? 0) || 0,
+                  kategori: b.kategori || ""
+                }));
+                const totalBoede = sigtelser.reduce((sum, b) => sum + b.boede, 0);
+                const totalFaengsel = sigtelser.reduce((sum, b) => sum + b.faengsel, 0);
                 sag.mistaenkte.push({
                   id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()),
                   personId: person.id,
@@ -12241,7 +12250,7 @@ Andre relevante oplysninger:`
                   tilkendegivelseAfgivet: false,
                   fratagKoerekort: false
                 });
-                console.log("[renderSagEditor prefill] tilføjet mistænkt:", person.fornavn, "med", sigtelser.length, "sigtelser");
+                console.log("[renderSagEditor prefill] tilføjet mistænkt:", person.fornavn, "med", sigtelser.length, "sigtelser, total:", totalBoede, "kr");
               } else {
                 console.warn("[renderSagEditor prefill] kunne ikke finde person med id:", pid);
               }
