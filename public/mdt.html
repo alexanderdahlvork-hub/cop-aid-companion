@@ -12206,6 +12206,64 @@ Andre relevante oplysninger:`
       sag.tags = sag.tags || [];
       sag.rapport = sag.rapport || { haendelsesforloeb: "", resume: "" };
 
+      // === Prefill fra efterlysning / andre kilder (kun for nye sager) ===
+      if (!isExisting && data && data.prefill) {
+        const pf = data.prefill;
+        try {
+          // Titel
+          if (pf.titel && !sag.titel) sag.titel = pf.titel;
+
+          // Hændelsesforløb
+          if (pf.haendelsesforloeb && !sag.rapport.haendelsesforloeb) {
+            sag.rapport.haendelsesforloeb = pf.haendelsesforloeb;
+          }
+
+          // Mistænkt person
+          if (pf.mistaenktPersonId) {
+            const pid = String(pf.mistaenktPersonId);
+            const alreadyAdded = sag.mistaenkte.some(m => String(m.personId) === pid);
+            if (!alreadyAdded) {
+              const person = personer.find(p => String(p.id) === pid);
+              if (person) {
+                const sigtelser = Array.isArray(pf.sigtelser) ? pf.sigtelser : [];
+                const totalBoede = sigtelser.reduce((sum, b) => sum + (Number(b.boede) || 0), 0);
+                const totalFaengsel = sigtelser.reduce((sum, b) => sum + (Number(b.faengsel) || 0), 0);
+                sag.mistaenkte.push({
+                  id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()),
+                  personId: person.id,
+                  personNavn: (person.fornavn || "") + " " + (person.efternavn || ""),
+                  personCpr: person.cpr || "",
+                  sigtelser: sigtelser,
+                  totalBoede: totalBoede,
+                  totalFaengsel: totalFaengsel,
+                  erkender: null,
+                  behandlet: false,
+                  tilkendegivelseAfgivet: false,
+                  fratagKoerekort: false
+                });
+                console.log("[renderSagEditor prefill] tilføjet mistænkt:", person.fornavn, "med", sigtelser.length, "sigtelser");
+              } else {
+                console.warn("[renderSagEditor prefill] kunne ikke finde person med id:", pid);
+              }
+            }
+          }
+
+          // Aktivitetslog
+          sag.aktivitetslog = sag.aktivitetslog || [];
+          sag.aktivitetslog.push({
+            id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()),
+            type: "oprettet",
+            beskrivelse: pf.kilde === "efterlysning"
+              ? "Sag oprettet fra efterlysning"
+              : "Sag oprettet",
+            bruger: (currentUser.fornavn || "") + " " + (currentUser.efternavn || ""),
+            tidspunkt: new Date().toISOString()
+          });
+        } catch (e) {
+          console.error("[renderSagEditor prefill] fejl:", e);
+        }
+      }
+
       window._currentSag = sag;
       window._sagExisting = isExisting;
       window._sagPersoner = personer;
