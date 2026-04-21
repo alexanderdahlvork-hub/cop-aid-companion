@@ -5403,6 +5403,20 @@ window.showEfterlysningDialog = async function(personId) {
         window.appState.efterlysninger = window.appState.efterlysninger.filter(e => e && e.personId !== personId);
       }
       p.status = "aktiv";
+      // Opdater også localStorage-cachen som personregister læser fra (copaid_offline_personer)
+      try {
+        const raw = localStorage.getItem("copaid_offline_personer");
+        if (raw) {
+          const rows = JSON.parse(raw);
+          if (Array.isArray(rows)) {
+            const idx = rows.findIndex(pp => String(pp.id) === String(personId));
+            if (idx !== -1) {
+              rows[idx].status = "aktiv";
+              localStorage.setItem("copaid_offline_personer", JSON.stringify(rows));
+            }
+          }
+        }
+      } catch {}
       showToast("Efterlysning fjernet");
       renderPage(activeTabId);
     } catch(e) { showToast("Fejl: "+e.message); }
