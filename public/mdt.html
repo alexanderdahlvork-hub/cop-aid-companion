@@ -5479,8 +5479,13 @@ window.showEfterlysningDialog = async function(personId) {
     html += `<div class="label">Begrundelse / Overtrædelser</div><button class="btn btn-outline btn-sm mb-2" onclick="window._eftAddBoede()">+ Tilføj overtrædelse</button>`;
     if (valgteBoeder.length > 0) {
       html += '<div class="card card-sm mb-3" style="padding:0;overflow:hidden">';
-      valgteBoeder.forEach((b,i) => { html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between"><span>${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`; });
-      html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalBoede)} kr</div></div>`;
+      valgteBoeder.forEach((b,i) => {
+        const antal = b.antal || 1;
+        const linjeTotal = b.beloeb * antal;
+        html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="flex:1">${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><div style="display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;overflow:hidden"><button style="border:none;background:transparent;cursor:pointer;color:var(--fg);padding:2px 8px;font-size:13px;line-height:1" onclick="window._eftSetAntal(${i}, ${antal-1})">−</button><span class="mono" style="padding:0 8px;font-size:11px;min-width:18px;text-align:center">${antal}</span><button style="border:none;background:transparent;cursor:pointer;color:var(--fg);padding:2px 8px;font-size:13px;line-height:1" onclick="window._eftSetAntal(${i}, ${antal+1})">+</button></div><span class="mono" style="color:var(--warning);min-width:70px;text-align:right">${formatDaDK(linjeTotal)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`;
+      });
+      const totalNew = valgteBoeder.reduce((s,b)=>s+b.beloeb*(b.antal||1),0);
+      html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalNew)} kr</div></div>`;
     }
     const grader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
     const valgtGrad = window._eftValgtGrad || "Aktiv";
@@ -5495,21 +5500,58 @@ window.showEfterlysningDialog = async function(personId) {
     overlay.innerHTML = html;
   }
   window._eftAddBoede = function() {
-    const keys = [...new Set(standardBoeder.map(b=>b.kategori))];
     const fo = el("div",{className:"dialog-overlay",style:{zIndex:100},onclick:e=>{if(e.target===fo)fo.remove();}});
-    let html = `<div class="dialog" style="max-width:500px;max-height:80vh;overflow-y:auto"><div class="dialog-title">Vælg overtrædelse</div>`;
-    keys.forEach(kat => {
-      html += `<div style="margin-bottom:8px"><div style="padding:6px 8px;background:rgba(37,42,53,.8);font-size:11px;font-weight:600;border-radius:4px">${kat}</div>`;
-      standardBoeder.filter(b=>b.kategori===kat).forEach(b => {
-        html += `<div style="padding:4px 12px;border-top:1px solid rgba(42,47,58,.3);display:flex;align-items:center;justify-content:space-between;font-size:11px;cursor:pointer" onclick="window._eftPickBoede('${b.id}');this.closest('.dialog-overlay').remove()"><span>${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)} kr</span></div>`;
+    window._eftPickerQuery = "";
+    function renderPicker() {
+      const q = (window._eftPickerQuery || "").toLowerCase().trim();
+      const filtered = standardBoeder.filter(b => {
+        if (!q) return true;
+        return (b.beskrivelse||"").toLowerCase().includes(q)
+          || (b.paragraf||"").toLowerCase().includes(q)
+          || (b.kategori||"").toLowerCase().includes(q);
       });
-      html += '</div>';
-    });
-    html += `<button class="btn btn-outline mt-2" onclick="this.closest('.dialog-overlay').remove()">Luk</button></div>`;
-    fo.innerHTML = html;
+      const keys = [...new Set(filtered.map(b=>b.kategori))];
+      let html = `<div class="dialog" style="max-width:520px;max-height:82vh;display:flex;flex-direction:column"><div class="dialog-title">Vælg overtrædelse</div>`;
+      html += `<input class="input mb-2" id="eft-picker-search" placeholder="Søg paragraf, beskrivelse eller kategori..." value="${(window._eftPickerQuery||'').replace(/"/g,'&quot;')}" oninput="window._eftPickerQuery=this.value;window._eftRenderPicker();">`;
+      html += `<div style="overflow-y:auto;flex:1;margin:0 -4px;padding:0 4px">`;
+      if (filtered.length === 0) {
+        html += `<div style="padding:24px;text-align:center;color:var(--muted-fg);font-size:12px">Ingen overtrædelser matcher</div>`;
+      } else {
+        keys.forEach(kat => {
+          html += `<div style="margin-bottom:8px"><div style="padding:6px 8px;background:rgba(37,42,53,.8);font-size:11px;font-weight:600;border-radius:4px">${kat}</div>`;
+          filtered.filter(b=>b.kategori===kat).forEach(b => {
+            const valgt = valgteBoeder.find(x => x.boedeId === b.id);
+            const antal = valgt ? (valgt.antal || 1) : 0;
+            const badge = antal > 0 ? `<span class="badge badge-primary" style="margin-right:6px">${antal}×</span>` : '';
+            html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);display:flex;align-items:center;justify-content:space-between;font-size:11px;cursor:pointer" onclick="window._eftPickBoede('${b.id}')"><span>${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><span style="display:flex;align-items:center">${badge}<span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)} kr</span></span></div>`;
+          });
+          html += '</div>';
+        });
+      }
+      html += `</div><div class="flex gap-2 mt-2"><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Færdig</button><span style="font-size:10px;color:var(--muted-fg);align-self:center">Klik flere gange for at tilføje samme sigtelse igen</span></div></div>`;
+      fo.innerHTML = html;
+      const search = document.getElementById("eft-picker-search");
+      if (search) { search.focus(); search.setSelectionRange(search.value.length, search.value.length); }
+    }
+    window._eftRenderPicker = renderPicker;
     document.body.appendChild(fo);
+    renderPicker();
   };
-  window._eftPickBoede = async function(id) { const b=standardBoeder.find(x=>x.id===id); if(b)valgteBoeder.push({boedeId:b.id,paragraf:b.paragraf,beskrivelse:b.beskrivelse,beloeb:b.beloeb,faengselMaaneder:b.faengselMaaneder||0}); renderEftDialog(); };
+  window._eftPickBoede = async function(id) {
+    const b=standardBoeder.find(x=>x.id===id);
+    if(!b) return;
+    const eks = valgteBoeder.find(x => x.boedeId === b.id);
+    if (eks) { eks.antal = (eks.antal || 1) + 1; }
+    else { valgteBoeder.push({boedeId:b.id,paragraf:b.paragraf,beskrivelse:b.beskrivelse,beloeb:b.beloeb,faengselMaaneder:b.faengselMaaneder||0,antal:1}); }
+    renderEftDialog();
+    if (typeof window._eftRenderPicker === "function") window._eftRenderPicker();
+  };
+  window._eftSetAntal = function(i, n) {
+    if (!valgteBoeder[i]) return;
+    if (n <= 0) { valgteBoeder.splice(i,1); }
+    else { valgteBoeder[i].antal = n; }
+    renderEftDialog();
+  };
   window._eftRemoveBoede = async function(i) { valgteBoeder.splice(i,1); renderEftDialog(); };
   window._eftSetGrad = function(g) { window._eftValgtGrad = g; renderEftDialog(); };
   window._eftSubmit = async function() {
