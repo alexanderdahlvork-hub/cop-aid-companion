@@ -7767,12 +7767,62 @@ async function renderAnsatte(container) {
 window.showAnsatForm = function() {
   const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
   const afdOptions = afdelinger.map(a=>`<option value="${a.label}">${a.label}</option>`).join("");
-  overlay.innerHTML = `<div class="dialog"><div class="dialog-title">Opret ny betjent</div><div class="grid grid-2 gap-2 mb-2"><div><div class="label">Badge nummer</div><input class="input" id="na-badge"></div><div><div class="label">Stilling</div><select class="select w-full" id="na-rang">${rangOrder.map(r=>`<option value="${r}">${r}</option>`).join("")}</select></div></div><div class="grid grid-2 gap-2 mb-2"><div><div class="label">Fornavn</div><input class="input" id="na-fornavn"></div><div><div class="label">Efternavn</div><input class="input" id="na-efternavn"></div></div><div class="label">Afdeling</div><select class="select w-full mb-2" id="na-afdeling"><option value="">Ingen</option>${afdOptions}</select><p style="font-size:11px;color:var(--muted-fg);margin-bottom:12px">Standardkodeord: 1234</p><div class="flex gap-2"><button class="btn btn-primary" id="na-submit">Opret</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+
+  // Byg gruppe-baseret chip-vælger ud fra sidebarSections + afdelinger
+  let kanalGroupsHtml = "";
+  sidebarSections.forEach(sec => {
+    kanalGroupsHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted-fg);margin-bottom:6px">${sec.label}</div><div class="na-chip-row" style="display:flex;flex-wrap:wrap;gap:6px">`;
+    sec.items.forEach(it => {
+      kanalGroupsHtml += `<button type="button" class="na-chip" data-kanal="${it.id}" onclick="window._naToggleKanal(this)" style="padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--fg);font-size:11px;cursor:pointer;transition:all .12s">${it.label}</button>`;
+    });
+    kanalGroupsHtml += `</div></div>`;
+  });
+  kanalGroupsHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted-fg);margin-bottom:6px">AFDELINGER</div><div class="na-chip-row" style="display:flex;flex-wrap:wrap;gap:6px">`;
+  afdelinger.forEach(a => {
+    kanalGroupsHtml += `<button type="button" class="na-chip" data-kanal="${a.id}" onclick="window._naToggleKanal(this)" style="padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--fg);font-size:11px;cursor:pointer;transition:all .12s">${a.label}</button>`;
+  });
+  kanalGroupsHtml += `</div></div>`;
+
+  overlay.innerHTML = `<div class="dialog" style="max-width:560px;max-height:88vh;overflow-y:auto"><div class="dialog-title">Opret ny betjent</div>
+    <div class="grid grid-2 gap-2 mb-2"><div><div class="label">Badge nummer</div><input class="input" id="na-badge"></div><div><div class="label">Stilling</div><select class="select w-full" id="na-rang">${rangOrder.map(r=>`<option value="${r}">${r}</option>`).join("")}</select></div></div>
+    <div class="grid grid-2 gap-2 mb-2"><div><div class="label">Fornavn</div><input class="input" id="na-fornavn"></div><div><div class="label">Efternavn</div><input class="input" id="na-efternavn"></div></div>
+    <div class="label">Primær afdeling</div><select class="select w-full mb-3" id="na-afdeling"><option value="">Ingen</option>${afdOptions}</select>
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-size:13px;font-weight:600">Adgang til kanaler</div><div style="font-size:10px;color:var(--muted-fg)">Vælg hvilke moduler og afdelinger betjenten kan tilgå (ud over standard for rangen)</div></div>
+        <div style="display:flex;gap:6px"><button type="button" class="btn btn-outline btn-sm" onclick="window._naAllKanaler(true)">Vælg alle</button><button type="button" class="btn btn-outline btn-sm" onclick="window._naAllKanaler(false)">Ryd</button></div>
+      </div>
+      ${kanalGroupsHtml}
+    </div>
+    <p style="font-size:11px;color:var(--muted-fg);margin-bottom:12px">Standardkodeord: 1234</p>
+    <div class="flex gap-2"><button class="btn btn-primary" id="na-submit">Opret</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
   document.body.appendChild(overlay);
+
+  window._naToggleKanal = function(btn) {
+    const active = btn.classList.toggle("na-chip-active");
+    if (active) {
+      btn.style.background = "rgba(59,130,246,.18)";
+      btn.style.borderColor = "rgba(59,130,246,.55)";
+      btn.style.color = "#9cc4ff";
+    } else {
+      btn.style.background = "transparent";
+      btn.style.borderColor = "var(--border)";
+      btn.style.color = "var(--fg)";
+    }
+  };
+  window._naAllKanaler = function(on) {
+    overlay.querySelectorAll(".na-chip").forEach(btn => {
+      const isActive = btn.classList.contains("na-chip-active");
+      if (on && !isActive) window._naToggleKanal(btn);
+      if (!on && isActive) window._naToggleKanal(btn);
+    });
+  };
+
   document.getElementById("na-submit").addEventListener("click", async ()=>{
-    const b = {id:String(Date.now()),badgeNr:document.getElementById("na-badge").value,fornavn:document.getElementById("na-fornavn").value,efternavn:document.getElementById("na-efternavn").value,rang:document.getElementById("na-rang").value,afdeling:document.getElementById("na-afdeling").value,uddannelser:[],tilladelser:[],kodeord:"1234",foersteLogin:true};
+    const valgteKanaler = Array.from(overlay.querySelectorAll(".na-chip-active")).map(b => b.getAttribute("data-kanal"));
+    const b = {id:String(Date.now()),badgeNr:document.getElementById("na-badge").value,fornavn:document.getElementById("na-fornavn").value,efternavn:document.getElementById("na-efternavn").value,rang:document.getElementById("na-rang").value,afdeling:document.getElementById("na-afdeling").value,uddannelser:[],tilladelser:valgteKanaler,kodeord:"1234",foersteLogin:true};
     if(!b.badgeNr||!b.fornavn||!b.efternavn){showToast("Udfyld alle felter");return;}
-    try{await betjenteApi.create(b);showToast("Betjent oprettet");overlay.remove();renderPage(activeTabId);}catch(e){showToast("Fejl: "+e.message);}
+    try{await betjenteApi.create(b);showToast("Betjent oprettet med "+valgteKanaler.length+" kanaler");overlay.remove();renderPage(activeTabId);}catch(e){showToast("Fejl: "+e.message);}
   });
 };
 
