@@ -5479,8 +5479,13 @@ window.showEfterlysningDialog = async function(personId) {
     html += `<div class="label">Begrundelse / Overtrædelser</div><button class="btn btn-outline btn-sm mb-2" onclick="window._eftAddBoede()">+ Tilføj overtrædelse</button>`;
     if (valgteBoeder.length > 0) {
       html += '<div class="card card-sm mb-3" style="padding:0;overflow:hidden">';
-      valgteBoeder.forEach((b,i) => { html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between"><span>${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`; });
-      html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalBoede)} kr</div></div>`;
+      valgteBoeder.forEach((b,i) => {
+        const antal = b.antal || 1;
+        const linjeTotal = b.beloeb * antal;
+        html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="flex:1">${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><div style="display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;overflow:hidden"><button style="border:none;background:transparent;cursor:pointer;color:var(--fg);padding:2px 8px;font-size:13px;line-height:1" onclick="window._eftSetAntal(${i}, ${antal-1})">−</button><span class="mono" style="padding:0 8px;font-size:11px;min-width:18px;text-align:center">${antal}</span><button style="border:none;background:transparent;cursor:pointer;color:var(--fg);padding:2px 8px;font-size:13px;line-height:1" onclick="window._eftSetAntal(${i}, ${antal+1})">+</button></div><span class="mono" style="color:var(--warning);min-width:70px;text-align:right">${formatDaDK(linjeTotal)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`;
+      });
+      const totalNew = valgteBoeder.reduce((s,b)=>s+b.beloeb*(b.antal||1),0);
+      html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalNew)} kr</div></div>`;
     }
     const grader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
     const valgtGrad = window._eftValgtGrad || "Aktiv";
