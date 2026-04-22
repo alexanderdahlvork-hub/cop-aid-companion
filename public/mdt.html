@@ -7926,17 +7926,108 @@ window.fireAnsatDialog = async function(id) {
 // ═══ PROFIL (KOMPLET) ═══
 function renderProfil(container) {
   const u = currentUser;
-  let html = `<div style="max-width:600px">
-    <div class="card mb-3"><div class="flex items-center gap-4"><div class="list-item-avatar" style="width:64px;height:64px;border-radius:16px;background:rgba(59,130,246,.1);color:var(--primary);font-size:24px;display:flex;align-items:center;justify-content:center;overflow:hidden">${u.profilBillede?`<img src="${u.profilBillede}" style="width:100%;height:100%;object-fit:cover">`:`${u.fornavn[0]}${u.efternavn[0]}`}</div><div><h2 style="font-size:20px;font-weight:700">${u.fornavn} ${u.efternavn}</h2><p class="mono" style="font-size:12px;color:var(--muted-fg)">Badge: ${u.badgeNr} · ${isAdmin?"Administrator":u.rang}</p>${u.afdeling?`<p style="font-size:11px;color:var(--muted-fg)">Afdeling: ${u.afdeling}</p>`:''}</div></div></div>
-    
-    <div class="card mb-3"><h3 style="font-size:14px;font-weight:600;margin-bottom:12px">${icons.camera} Profilbillede</h3><div class="flex gap-2"><input class="input flex-1" id="prof-img" value="${esc(u.profilBillede||'')}" placeholder="Billede URL..."><button class="btn btn-primary btn-sm" onclick="saveProfilBillede()">Gem</button></div></div>
-    
-    <div class="card mb-3"><h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Uddannelser (${u.uddannelser.length})</h3>`;
-  if (u.uddannelser.length>0) u.uddannelser.forEach(udd=>{html+=`<div style="font-size:12px;color:var(--fg);margin-bottom:4px;padding:4px 8px;background:var(--muted);border-radius:6px">✓ ${udd}</div>`;});
-  else html+='<p style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen uddannelser</p>';
+  const initialer = `${(u.fornavn||'?')[0]}${(u.efternavn||'')[0]||''}`.toUpperCase();
+  const rangVis = isAdmin ? "Administrator" : (u.rang || "—");
+  const afdVis = u.afdeling ? u.afdeling.split(",").map(s=>s.trim()).filter(Boolean) : [];
+  const udd = u.uddannelser || [];
+  const perms = (typeof getRolePermissions === "function") ? getRolePermissions(u) : [];
+  const isAll = perms.includes("*");
+  const kanalLabels = (typeof tabLabels !== "undefined") ? tabLabels : {};
+
+  let html = `<div style="max-width:880px;margin:0 auto">
+
+    <!-- HERO -->
+    <div style="position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(59,130,246,.18);margin-bottom:16px;background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(59,130,246,.04) 55%,rgba(15,23,42,.6));box-shadow:0 18px 40px rgba(0,0,0,.35)">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 85% 0%,rgba(59,130,246,.22),transparent 55%);pointer-events:none"></div>
+      <div style="position:relative;display:flex;align-items:center;gap:18px;padding:22px 24px">
+        <div style="width:78px;height:78px;border-radius:18px;background:linear-gradient(135deg,rgba(59,130,246,.35),rgba(59,130,246,.08));border:1px solid rgba(59,130,246,.35);display:flex;align-items:center;justify-content:center;color:#9cc4ff;font-size:26px;font-weight:700;overflow:hidden;flex-shrink:0;box-shadow:0 8px 24px rgba(59,130,246,.25)">
+          ${u.profilBillede?'<img src="'+esc(u.profilBillede)+'" style="width:100%;height:100%;object-fit:cover">':initialer}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <h2 style="font-size:22px;font-weight:700;color:var(--fg);margin:0">${esc(u.fornavn||'')} ${esc(u.efternavn||'')}</h2>
+            <span class="badge badge-primary" style="font-size:10px">${esc(rangVis)}</span>
+            ${isAdmin?'<span class="badge" style="background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3);font-size:10px">ADMIN</span>':''}
+          </div>
+          <div class="mono" style="font-size:11px;color:var(--muted-fg);margin-top:6px;letter-spacing:.5px">BADGE · ${esc(u.badgeNr||'—')}</div>
+          ${afdVis.length?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">'+afdVis.map(a=>'<span style="padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:10px;color:var(--fg);text-transform:capitalize">'+esc(a)+'</span>').join("")+'</div>':''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);font-size:10px;color:#86efac;font-weight:600">
+            <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite"></span>ONLINE
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEY METRICS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div class="card" style="padding:14px"><div style="font-size:10px;color:var(--muted-fg);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">Uddannelser</div><div style="font-size:22px;font-weight:700;color:var(--fg)">${udd.length}</div></div>
+      <div class="card" style="padding:14px"><div style="font-size:10px;color:var(--muted-fg);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">Afdelinger</div><div style="font-size:22px;font-weight:700;color:var(--fg)">${afdVis.length}</div></div>
+      <div class="card" style="padding:14px"><div style="font-size:10px;color:var(--muted-fg);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">Kanaler</div><div style="font-size:22px;font-weight:700;color:var(--fg)">${isAll?'Alle':perms.length}</div></div>
+    </div>
+
+    <!-- TWO-COLUMN GRID -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+
+      <div class="card" style="padding:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center;color:var(--primary)">${icons.camera}</div>
+          <h3 style="font-size:13px;font-weight:600;margin:0">Profilbillede</h3>
+        </div>
+        <input class="input mb-2" id="prof-img" value="${esc(u.profilBillede||'')}" placeholder="URL til profilbillede...">
+        <button class="btn btn-primary btn-sm" style="width:100%" onclick="saveProfilBillede()">${icons.check} Gem profilbillede</button>
+      </div>
+
+      <div class="card" style="padding:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center;color:var(--primary)">${icons.badge}</div>
+          <h3 style="font-size:13px;font-weight:600;margin:0">Skift kodeord</h3>
+        </div>
+        <input class="input mb-2" type="password" id="prof-old" placeholder="Nuværende kodeord">
+        <input class="input mb-2" type="password" id="prof-new" placeholder="Nyt kodeord (min. 4 tegn)">
+        <input class="input mb-2" type="password" id="prof-confirm" placeholder="Bekræft nyt kodeord">
+        <div id="prof-error" style="color:var(--destructive);font-size:11px;margin-bottom:8px;min-height:14px"></div>
+        <button class="btn btn-primary btn-sm" style="width:100%" onclick="changePassword()">Opdater kodeord</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;color:#22c55e">${icons.check}</div>
+          <h3 style="font-size:13px;font-weight:600;margin:0">Uddannelser</h3>
+        </div>
+        <span class="badge badge-muted">${udd.length}</span>
+      </div>`;
+  if (udd.length>0) {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    udd.forEach(u2 => { html += '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:#86efac;font-size:11px;font-weight:500"><span style="color:#22c55e">✓</span>'+esc(u2)+'</span>'; });
+    html += '</div>';
+  } else {
+    html += '<p style="font-size:12px;color:var(--muted-fg);font-style:italic;margin:0">Ingen uddannelser registreret endnu</p>';
+  }
   html += `</div>
-    
-    <div class="card"><h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Skift kodeord</h3><div class="label">Nuværende kodeord</div><input class="input mb-2" type="password" id="prof-old"><div class="label">Nyt kodeord</div><input class="input mb-2" type="password" id="prof-new"><div class="label">Bekræft nyt kodeord</div><input class="input mb-2" type="password" id="prof-confirm"><div id="prof-error" style="color:var(--destructive);font-size:11px;margin-bottom:8px"></div><button class="btn btn-primary" onclick="changePassword()">Skift kodeord</button></div>
+
+    <div class="card" style="padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(168,85,247,.12);display:flex;align-items:center;justify-content:center;color:#a855f7">${icons.target}</div>
+          <h3 style="font-size:13px;font-weight:600;margin:0">Adgang til kanaler</h3>
+        </div>
+        <span class="badge badge-muted">${isAll?'Alle moduler':perms.length+' kanaler'}</span>
+      </div>`;
+  if (isAll) {
+    html += '<div style="padding:10px 12px;border-radius:10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);font-size:12px;color:#fca5a5">⚡ Du har fuld adgang til alle moduler i MDT.</div>';
+  } else if (perms.length === 0) {
+    html += '<p style="font-size:12px;color:var(--muted-fg);font-style:italic;margin:0">Ingen kanaler tildelt</p>';
+  } else {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    perms.forEach(k => { html += '<span style="padding:5px 10px;border-radius:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);color:#9cc4ff;font-size:11px">'+esc(kanalLabels[k] || k)+'</span>'; });
+    html += '</div>';
+  }
+  html += `</div>
+
   </div>`;
   container.innerHTML = html;
 }
