@@ -11198,6 +11198,20 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           const p = window.appState.personer.find(pp => String(pp.id) === String(sourceId));
           if (p) p.status = "aktiv";
         }
+        // Synk localStorage-cachen som Personregister læser fra
+        try {
+          const raw = localStorage.getItem("copaid_offline_personer");
+          if (raw) {
+            const rows = JSON.parse(raw);
+            if (Array.isArray(rows)) {
+              const idx = rows.findIndex(pp => String(pp.id) === String(sourceId));
+              if (idx !== -1) {
+                rows[idx].status = "aktiv";
+                localStorage.setItem("copaid_offline_personer", JSON.stringify(rows));
+              }
+            }
+          }
+        } catch {}
       }
 
       // 3. Opdater køretøj-flag
