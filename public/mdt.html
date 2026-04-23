@@ -8052,7 +8052,16 @@ async function renderAnsoegninger(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
   try {
     const ansoegninger = await ansoeningerApi.getAll();
-    const canManage = isAdmin;
+    const userAfdLower = (currentUser.afdeling || "").toLowerCase();
+    // Afdelingsleder: admin, eller bruger hvis afdeling matcher ansøgningens modtager-afdeling.
+    const isLederFor = (a) => {
+      if (isAdmin) return true;
+      if (!userAfdLower) return false;
+      const target = (a.afdeling || "").toLowerCase();
+      if (!target) return false;
+      return target === userAfdLower || userAfdLower.includes(target) || target.includes(userAfdLower);
+    };
+    const canManageAny = isAdmin || ansoegninger.some(isLederFor);
     const userNavn = (currentUser.fornavn||"") + " " + (currentUser.efternavn||"");
     const userBadge = currentUser.badgeNr;
     const userAfd = currentUser.afdeling || "";
