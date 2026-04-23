@@ -8135,7 +8135,7 @@ async function renderAnsoegninger(container) {
     } else {
       const statusMap = { afventer: { lbl:"Afventer", color:"var(--warning)", bg:"var(--warning)" }, godkendt: { lbl:"Godkendt", color:"var(--success)", bg:"var(--success)" }, afvist: { lbl:"Afvist", color:"var(--destructive)", bg:"var(--destructive)" } };
       filtered.forEach(a => {
-        const status = a.status || "afventer";
+        const status = (a.status && statusMap[a.status]) ? a.status : "afventer";
         const sm = statusMap[status];
         const isMine = a.ansoegerBadge === userBadge;
         const initialer = ((a.ansoegerNavn||"?").split(" ").map(x=>x[0]).join("").substring(0,2)).toUpperCase();
