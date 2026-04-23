@@ -8052,7 +8052,16 @@ async function renderAnsoegninger(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
   try {
     const ansoegninger = await ansoeningerApi.getAll();
-    const canManage = isAdmin;
+    const userAfdLower = (currentUser.afdeling || "").toLowerCase();
+    // Afdelingsleder: admin, eller bruger hvis afdeling matcher ansøgningens modtager-afdeling.
+    const isLederFor = (a) => {
+      if (isAdmin) return true;
+      if (!userAfdLower) return false;
+      const target = (a.afdeling || "").toLowerCase();
+      if (!target) return false;
+      return target === userAfdLower || userAfdLower.includes(target) || target.includes(userAfdLower);
+    };
+    const canManageAny = isAdmin || ansoegninger.some(isLederFor);
     const userNavn = (currentUser.fornavn||"") + " " + (currentUser.efternavn||"");
     const userBadge = currentUser.badgeNr;
     const userAfd = currentUser.afdeling || "";
@@ -8156,7 +8165,7 @@ async function renderAnsoegninger(container) {
         if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Behandlet af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
         html += '</div></div>';
         html += '<div class="flex flex-col gap-2 shrink-0">';
-        if (canManage && (status === "afventer")) {
+        if (isLederFor(a) && (status === "afventer")) {
           html += '<button class="btn btn-sm" style="background:var(--success);color:#fff;border:none" onclick="behandlAnsoegning(\'' + a.id + '\',\'godkendt\')">Godkend</button>';
           html += '<button class="btn btn-sm btn-destructive" onclick="behandlAnsoegning(\'' + a.id + '\',\'afvist\')">Afvis</button>';
         }
