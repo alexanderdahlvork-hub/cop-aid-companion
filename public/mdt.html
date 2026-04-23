@@ -7987,7 +7987,219 @@ window.changePassword = async function() {
 };
 
 // ═══ ANSØGNINGER ═══
+// Afdelingsleder/admin opretter ansøgninger (spørgsmål/opgaver) til en afdeling.
+// Alle brugere kan svare (godkende/afvise) på en ansøgning.
+function isAfdelingsleder() {
+  if (isAdmin) return true;
+  const idx = getRangIndex(currentUser.rang || "");
+  // Top 6 ranks (index 0-5) regnes som afdelingsledere
+  return idx <= 5;
+}
 async function renderAnsoegninger(container) {
+  container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
+  try {
+    const ansoegninger = await ansoeningerApi.getAll();
+    const userBadge = currentUser.badgeNr;
+    const kanOprette = isAfdelingsleder();
+
+    // Sort newest first
+    ansoegninger.sort((a,b) => (b.oprettetDato||"").localeCompare(a.oprettetDato||""));
+
+    const stats = {
+      total: ansoegninger.length,
+      afventer: ansoegninger.filter(a => !a.status || a.status === "afventer").length,
+      godkendt: ansoegninger.filter(a => a.status === "godkendt").length,
+      afvist: ansoegninger.filter(a => a.status === "afvist").length,
+      mine: ansoegninger.filter(a => a.ansoegerBadge === userBadge).length,
+    };
+
+    if (window._ansoegFilter === undefined) window._ansoegFilter = "alle";
+    if (window._ansoegSearch === undefined) window._ansoegSearch = "";
+    if (window._ansoegAfd === undefined) window._ansoegAfd = "alle";
+
+    const tabs = [
+      { id: "alle", label: "Alle", count: stats.total, color: "var(--muted-fg)" },
+      { id: "afventer", label: "Afventer", count: stats.afventer, color: "var(--warning)" },
+      { id: "godkendt", label: "Godkendt", count: stats.godkendt, color: "var(--success)" },
+      { id: "afvist", label: "Afvist", count: stats.afvist, color: "var(--destructive)" },
+      { id: "mine", label: "Oprettet af mig", count: stats.mine, color: "var(--primary)" },
+    ];
+
+    const afdValg = ["alle", ...Array.from(new Set(ansoegninger.map(a => a.afdeling).filter(Boolean)))];
+
+    let html = '<div style="max-width:1100px;margin:0 auto">';
+
+    // Header
+    html += '<div class="flex items-center justify-between mb-4">';
+    html += '<div class="flex items-center gap-3">' + icons.file + '<div><h1 style="font-size:20px;font-weight:700;letter-spacing:-0.01em">Ansøgninger</h1><p style="font-size:11px;color:var(--muted-fg);margin-top:2px">Afdelingsledere opretter ansøgninger til en afdeling — alle kan godkende eller afvise.</p></div></div>';
+    if (kanOprette) {
+      html += '<button class="btn btn-primary" onclick="showAnsoegningForm()">' + icons.plus + ' Ny ansøgning</button>';
+    } else {
+      html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg)">Kun afdelingsledere kan oprette</span>';
+    }
+    html += '</div>';
+
+    // Stats row
+    html += '<div class="grid grid-cols-4 gap-3 mb-4">';
+    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value">' + stats.total + '</div><div class="stat-label">Ansøgninger i alt</div></div>';
+    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value" style="color:var(--warning)">' + stats.afventer + '</div><div class="stat-label">Afventer svar</div></div>';
+    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value" style="color:var(--success)">' + stats.godkendt + '</div><div class="stat-label">Godkendt</div></div>';
+    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--accent)"></div><div class="stat-value">' + stats.mine + '</div><div class="stat-label">Mine oprettelser</div></div>';
+    html += '</div>';
+
+    // Filter tabs + search
+    html += '<div class="card" style="padding:12px;margin-bottom:12px">';
+    html += '<div class="flex items-center gap-2 flex-wrap mb-3">';
+    tabs.forEach(t => {
+      const active = window._ansoegFilter === t.id;
+      html += '<button onclick="setAnsoegFilter(\'' + t.id + '\')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid ' + (active ? t.color : 'var(--border)') + ';background:' + (active ? t.color + '20' : 'transparent') + ';color:' + (active ? t.color : 'var(--fg)') + ';cursor:pointer;transition:all .15s">' + t.label + '<span style="background:' + (active ? t.color : 'var(--muted)') + ';color:' + (active ? '#fff' : 'var(--muted-fg)') + ';padding:1px 7px;border-radius:999px;font-size:10px;font-weight:600">' + t.count + '</span></button>';
+    });
+    html += '</div>';
+    html += '<div class="flex items-center gap-2">';
+    html += '<div style="position:relative;flex:1"><input id="ansoeg-search" class="input" placeholder="Søg efter titel, afdeling, navn eller indhold..." value="' + (window._ansoegSearch || "") + '" style="padding-left:34px"/><div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg)">' + (icons.search || '') + '</div></div>';
+    if (afdValg.length > 1) {
+      html += '<select class="select" id="ansoeg-afd-filter" style="max-width:220px">';
+      afdValg.forEach(v => { html += '<option value="' + v + '"' + (window._ansoegAfd === v ? ' selected' : '') + '>' + (v === "alle" ? "Alle afdelinger" : v) + '</option>'; });
+      html += '</select>';
+    }
+    html += '</div></div>';
+
+    // List
+    const filtered = ansoegninger.filter(a => {
+      const status = a.status || "afventer";
+      if (window._ansoegFilter === "mine") { if (a.ansoegerBadge !== userBadge) return false; }
+      else if (window._ansoegFilter !== "alle" && status !== window._ansoegFilter) return false;
+      if (window._ansoegAfd !== "alle" && a.afdeling !== window._ansoegAfd) return false;
+      if (window._ansoegSearch) {
+        const q = window._ansoegSearch.toLowerCase();
+        const blob = ((a.titel||"") + " " + (a.afdeling||"") + " " + (a.ansoegerNavn||"") + " " + (a.ansoegerBadge||"") + " " + (a.begrundelse||"")).toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      return true;
+    });
+
+    html += '<div id="ansoeg-list" style="display:flex;flex-direction:column;gap:10px">';
+    if (filtered.length === 0) {
+      html += '<div class="card" style="padding:48px;text-align:center"><div style="font-size:40px;opacity:.3;margin-bottom:8px">' + icons.file + '</div><p style="color:var(--muted-fg);font-size:13px">Ingen ansøgninger matcher dine filtre</p>' + (kanOprette ? '<button class="btn btn-primary btn-sm mt-3" onclick="showAnsoegningForm()">' + icons.plus + ' Opret ansøgning</button>' : '') + '</div>';
+    } else {
+      const statusMap = { afventer: { lbl:"Afventer", color:"var(--warning)", bg:"var(--warning)" }, godkendt: { lbl:"Godkendt", color:"var(--success)", bg:"var(--success)" }, afvist: { lbl:"Afvist", color:"var(--destructive)", bg:"var(--destructive)" } };
+      filtered.forEach(a => {
+        const status = (a.status && statusMap[a.status]) ? a.status : "afventer";
+        const sm = statusMap[status];
+        const isMine = a.ansoegerBadge === userBadge;
+        const initialer = ((a.ansoegerNavn||"?").split(" ").map(x=>x[0]).join("").substring(0,2)).toUpperCase();
+        html += '<div class="card ansoeg-card" style="padding:0;overflow:hidden;border-left:3px solid ' + sm.color + '">';
+        html += '<div style="padding:14px 16px">';
+        html += '<div class="flex items-start justify-between gap-3">';
+        html += '<div class="flex items-start gap-3" style="flex:1;min-width:0">';
+        html += '<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">' + initialer + '</div>';
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div class="flex items-center gap-2 flex-wrap"><span style="font-size:14px;font-weight:600">' + (a.titel || "Ansøgning") + '</span>';
+        html += '<span class="badge" style="background:' + sm.bg + '20;color:' + sm.color + ';border:1px solid ' + sm.color + '40">' + sm.lbl + '</span>';
+        if (a.afdeling) html += '<span class="badge" style="background:var(--accent)20;color:var(--accent)">' + a.afdeling + '</span>';
+        if (isMine) html += '<span class="badge" style="background:var(--primary)20;color:var(--primary)">Oprettet af mig</span>';
+        html += '</div>';
+        html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Oprettet af ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' · Badge ' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
+        if (a.begrundelse) html += '<p style="font-size:12.5px;color:var(--fg);margin-top:8px;white-space:pre-line;line-height:1.5">' + a.begrundelse + '</p>';
+        if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Besvaret af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
+        html += '</div></div>';
+        html += '<div class="flex flex-col gap-2 shrink-0">';
+        // Alle brugere kan svare på afventende ansøgninger
+        if (status === "afventer") {
+          html += '<button class="btn btn-sm" style="background:var(--success);color:#fff;border:none" onclick="behandlAnsoegning(\'' + a.id + '\',\'godkendt\')">Godkend</button>';
+          html += '<button class="btn btn-sm btn-destructive" onclick="behandlAnsoegning(\'' + a.id + '\',\'afvist\')">Afvis</button>';
+        }
+        // Opretter (eller admin) kan trække tilbage / slette
+        if ((isMine || isAdmin) && status === "afventer") {
+          html += '<button class="btn btn-sm btn-outline" onclick="sletEgenAnsoegning(\'' + a.id + '\')">Træk tilbage</button>';
+        }
+        html += '</div></div></div></div>';
+      });
+    }
+    html += '</div></div>';
+    container.innerHTML = html;
+
+    // Wire up search/afdeling
+    const searchInput = document.getElementById("ansoeg-search");
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        window._ansoegSearch = e.target.value;
+        renderPage(activeTabId);
+        setTimeout(() => { const s = document.getElementById("ansoeg-search"); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); } }, 0);
+      });
+    }
+    const afdFilter = document.getElementById("ansoeg-afd-filter");
+    if (afdFilter) afdFilter.addEventListener("change", (e) => { window._ansoegAfd = e.target.value; renderPage(activeTabId); });
+  } catch (err) { container.innerHTML = '<p style="color:var(--destructive)">Fejl: ' + err.message + '</p>'; }
+}
+window.setAnsoegFilter = function(f) { window._ansoegFilter = f; renderPage(activeTabId); };
+window.sletEgenAnsoegning = async function(id) {
+  if (!confirm("Træk denne ansøgning tilbage?")) return;
+  try { await ansoeningerApi.remove(id); showToast("Ansøgning trukket tilbage"); renderPage(activeTabId); } catch (e) { showToast("Fejl: " + e.message); }
+};
+window.showAnsoegningForm = function() {
+  if (!isAfdelingsleder()) { showToast("Kun afdelingsledere kan oprette ansøgninger"); return; }
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  const userAfd = currentUser.afdeling || "";
+
+  // Saml afdelinger til dropdown — egen afdeling først
+  const afdOptions = [];
+  if (userAfd) afdOptions.push('<option value="' + userAfd + '" selected>' + userAfd + ' (din afdeling)</option>');
+  (typeof afdelinger !== "undefined" ? afdelinger : []).filter(a => a.label !== userAfd).forEach(a => {
+    afdOptions.push('<option value="' + a.label + '">' + a.label + '</option>');
+  });
+  afdOptions.push('<option value="Ledelsen">Ledelsen</option>');
+  afdOptions.push('<option value="HR">HR</option>');
+  afdOptions.push('<option value="Alle ansatte">Alle ansatte</option>');
+
+  overlay.innerHTML = '<div class="dialog" style="max-width:600px;width:95%"><div class="dialog-title" style="font-size:16px">Ny ansøgning</div>' +
+    '<p style="font-size:12px;color:var(--muted-fg);margin-bottom:16px">Opret en ansøgning til en afdeling. Alle ansatte kan svare med Godkend eller Afvis.</p>' +
+
+    '<div class="grid grid-cols-2 gap-3 mb-3">' +
+      '<div><div class="label">Titel</div><input class="input" id="ans-titel" placeholder="Kort titel..."/></div>' +
+      '<div><div class="label">Modtagende afdeling</div><select class="select w-full" id="ans-afdeling">' + afdOptions.join("") + '</select></div>' +
+    '</div>' +
+
+    '<div class="label">Indhold</div>' +
+    '<textarea class="textarea mb-3" id="ans-begrundelse" rows="7" placeholder="Skriv indholdet af ansøgningen — hvad skal afdelingen tage stilling til?"></textarea>' +
+    '<div style="font-size:11px;color:var(--muted-fg);margin-top:-8px;margin-bottom:14px"><span id="ans-charcount">0</span> tegn (mindst 10)</div>' +
+
+    '<div class="flex justify-end gap-2"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button><button class="btn btn-primary" id="ans-submit">' + icons.plus + ' Opret ansøgning</button></div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  const txt = document.getElementById("ans-begrundelse");
+  const cc = document.getElementById("ans-charcount");
+  if (txt && cc) txt.addEventListener("input", () => { cc.textContent = txt.value.length; });
+
+  document.getElementById("ans-submit").addEventListener("click", async () => {
+    const titel = document.getElementById("ans-titel").value.trim();
+    const afdeling = document.getElementById("ans-afdeling").value;
+    const begrundelse = document.getElementById("ans-begrundelse").value.trim();
+    if (!titel) { showToast("Udfyld titel"); return; }
+    if (!afdeling) { showToast("Vælg modtagende afdeling"); return; }
+    if (!begrundelse) { showToast("Udfyld indhold"); return; }
+    if (begrundelse.length < 10) { showToast("Indhold skal være mindst 10 tegn"); return; }
+    const a = {
+      id: Date.now().toString(),
+      titel: titel,
+      afdeling: afdeling,
+      begrundelse: begrundelse,
+      ansoegerNavn: (currentUser.fornavn || "") + " " + (currentUser.efternavn || ""),
+      ansoegerBadge: currentUser.badgeNr,
+      ansoegerAfdeling: userAfd,
+      oprettetDato: new Date().toISOString().split("T")[0],
+      status: "afventer",
+    };
+    try { await ansoeningerApi.create(a); showToast("Ansøgning oprettet"); overlay.remove(); renderPage(activeTabId); }
+    catch (e) { showToast("Fejl: " + e.message); }
+  });
+};
+window.behandlAnsoegning = async function(id, status) {
+  try{await ansoeningerApi.update(id,{status,behandletAf:`${currentUser.fornavn} ${currentUser.efternavn}`,behandletDato:new Date().toISOString().split("T")[0]});showToast(status==="godkendt"?"Godkendt":"Afvist");renderPage(activeTabId);}catch(e){showToast("Fejl: "+e.message);}
+};
+
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
   try {
     const ansoegninger = await ansoeningerApi.getAll();
