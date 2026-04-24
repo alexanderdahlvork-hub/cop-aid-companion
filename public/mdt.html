@@ -8055,24 +8055,17 @@ async function renderAnsoegninger(container) {
 
     // Header
     html += '<div class="flex items-center justify-between mb-4">';
-    html += '<div class="flex items-center gap-3">' + icons.file + '<div><h1 style="font-size:20px;font-weight:700;letter-spacing:-0.01em">Ansøgninger</h1><p style="font-size:11px;color:var(--muted-fg);margin-top:2px">Du ser dine egne ansøgninger og dem, du som afdelingsleder kan behandle.</p></div></div>';
+    html += '<div><h1 style="font-size:20px;font-weight:700;letter-spacing:-0.01em;margin:0">Ansøgninger</h1><p style="font-size:11px;color:var(--muted-fg);margin-top:4px">Mine ansøgninger og formularer til din afdeling.</p></div>';
     if (kanOprette) {
-      html += '<button class="btn btn-primary" onclick="showAnsoegningForm()">' + icons.plus + ' Ny ansøgning</button>';
+      html += '<button class="btn btn-primary btn-sm" onclick="showAnsoegningForm()">' + icons.plus + ' Ny formular</button>';
     } else {
-      html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg)">Kun afdelingsledere kan oprette</span>';
+      html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg)">Betjent</span>';
     }
     html += '</div>';
 
-    // Stats row
-    html += '<div class="grid grid-cols-4 gap-3 mb-4">';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value">' + stats.total + '</div><div class="stat-label">Ansøgninger i alt</div></div>';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value" style="color:var(--warning)">' + stats.afventer + '</div><div class="stat-label">Afventer svar</div></div>';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value" style="color:var(--success)">' + stats.godkendt + '</div><div class="stat-label">Godkendt</div></div>';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--accent)"></div><div class="stat-value">' + stats.mine + '</div><div class="stat-label">Mine ansøgninger</div></div>';
-    html += '</div>';
-
     // Filter tabs + search
-    html += '<div class="card" style="padding:12px;margin-bottom:12px">';
+    html += '<div class="card" style="padding:12px;margin-bottom:14px">';
+    html += '<div class="flex items-center gap-2 mb-3" style="font-size:11px;color:var(--muted-fg)"><span>' + stats.total + ' i alt</span><span>•</span><span>' + stats.afventer + ' afventer</span><span>•</span><span>' + stats.mine + ' mine</span></div>';
     html += '<div class="flex items-center gap-2 flex-wrap mb-3">';
     tabs.forEach(t => {
       const active = window._ansoegFilter === t.id;
@@ -8112,42 +8105,41 @@ async function renderAnsoegninger(container) {
         const sm = statusMap[status];
         const isMine = a.ansoegerBadge === userBadge;
         const initialer = ((a.ansoegerNavn||"?").split(" ").map(x=>x[0]).join("").substring(0,2)).toUpperCase();
-        html += '<div class="card ansoeg-card" style="padding:0;overflow:hidden;border-left:3px solid ' + sm.color + '">';
-        html += '<div style="padding:14px 16px">';
+        html += '<div class="card ansoeg-card" style="padding:0;overflow:hidden;border:1px solid var(--border)">';
+        html += '<div style="padding:16px">';
         html += '<div class="flex items-start justify-between gap-3">';
         html += '<div class="flex items-start gap-3" style="flex:1;min-width:0">';
-        html += '<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">' + initialer + '</div>';
+        html += '<div style="width:34px;height:34px;border-radius:8px;background:var(--muted);color:var(--fg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">' + initialer + '</div>';
         html += '<div style="flex:1;min-width:0">';
         html += '<div class="flex items-center gap-2 flex-wrap"><span style="font-size:14px;font-weight:600">' + (a.titel || "Ansøgning") + '</span>';
-        html += '<span class="badge" style="background:' + sm.bg + '20;color:' + sm.color + ';border:1px solid ' + sm.color + '40">' + sm.lbl + '</span>';
-        if (a.afdeling) html += '<span class="badge" style="background:var(--accent)20;color:var(--accent)">' + a.afdeling + '</span>';
+        html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg);border:1px solid var(--border)">' + sm.lbl + '</span>';
+        if (a.afdeling) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + a.afdeling + '</span>';
         const erFormular = a.formular === true;
         const antalSvar = Array.isArray(a.svar) ? a.svar.length : 0;
         const harSvaret = harSvaretAnsoegning(a);
         const kanBesvare = erLederForAnsoegning(a);
         const kanIndsendeSvar = erFormular && erAnsoegningTilBruger(a) && !harSvaret && a.ansoegerBadge !== userBadge;
-        if (isMine) html += '<span class="badge" style="background:var(--primary)20;color:var(--primary)">Min ansøgning</span>';
-        if (erFormular) html += '<span class="badge" style="background:var(--accent)20;color:var(--accent)">Formular · ' + antalSvar + ' svar</span>';
-        if (kanBesvare && !isMine && !erFormular) html += '<span class="badge" style="background:var(--success)20;color:var(--success)">Kan besvares</span>';
-        if (harSvaret) html += '<span class="badge" style="background:var(--success)20;color:var(--success)">Besvaret</span>';
+        if (isMine) html += '<span class="badge" style="background:transparent;color:var(--primary);border:1px solid var(--primary)">Min</span>';
+        if (erFormular) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + antalSvar + ' svar</span>';
+        if (harSvaret) html += '<span class="badge" style="background:transparent;color:var(--success);border:1px solid var(--success)">Besvaret</span>';
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Oprettet af ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' · Badge ' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
         if (a.begrundelse) html += '<p style="font-size:12.5px;color:var(--fg);margin-top:8px;white-space:pre-line;line-height:1.5">' + a.begrundelse + '</p>';
         if (erFormular && Array.isArray(a.spoergsmaal) && a.spoergsmaal.length) {
           html += '<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">';
-          a.spoergsmaal.forEach((q, qi) => { html += '<div style="padding:7px 9px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Spørgsmål ' + (qi + 1) + ':</b> ' + (q || '') + '</div>'; });
+          a.spoergsmaal.forEach((q, qi) => { html += '<div style="padding:7px 0;border-top:1px solid var(--border);font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">' + (qi + 1) + '.</b> ' + (q || '') + '</div>'; });
           html += '</div>';
         }
         if (erFormular && kanBesvare && antalSvar) html += '<button class="btn btn-sm btn-outline" style="margin-top:10px" onclick="visAnsoegSvar(\'' + a.id + '\')">Se indsendte svar (' + antalSvar + ')</button>';
         if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Besvaret af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
         html += '</div></div>';
-        html += '<div class="flex flex-col gap-2 shrink-0">';
+        html += '<div class="flex flex-col gap-2 shrink-0" style="min-width:112px">';
         // Kun relevante afdelingsledere/admin kan svare på afventende ansøgninger
         if (status === "afventer" && kanBesvare && !erFormular) {
-          html += '<button class="btn btn-sm" style="background:var(--success);color:#fff;border:none" onclick="behandlAnsoegning(\'' + a.id + '\',\'godkendt\')">Godkend</button>';
+          html += '<button class="btn btn-sm" style="background:var(--success);color:var(--success-foreground);border:none" onclick="behandlAnsoegning(\'' + a.id + '\',\'godkendt\')">Godkend</button>';
           html += '<button class="btn btn-sm btn-destructive" onclick="behandlAnsoegning(\'' + a.id + '\',\'afvist\')">Afvis</button>';
         }
-        if (kanIndsendeSvar) html += '<button class="btn btn-sm btn-primary" onclick="showAnsoegSvarForm(\'' + a.id + '\')">Svar på formular</button>';
+        if (kanIndsendeSvar) html += '<button class="btn btn-sm btn-primary" onclick="showAnsoegSvarForm(\'' + a.id + '\')">Svar</button>';
         // Opretter (eller admin) kan trække tilbage / slette
         if ((isMine || isAdmin) && status === "afventer") {
           html += '<button class="btn btn-sm btn-outline" onclick="sletEgenAnsoegning(\'' + a.id + '\')">Træk tilbage</button>';
