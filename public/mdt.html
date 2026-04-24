@@ -8067,23 +8067,18 @@ async function renderAnsoegninger(container) {
     }
     html += '</div>';
 
-    // Filter tabs + search
-    html += '<div class="card" style="padding:12px;margin-bottom:14px">';
-    html += '<div class="flex items-center gap-2 mb-3" style="font-size:11px;color:var(--muted-fg)"><span>' + stats.total + ' i alt</span><span>•</span><span>' + stats.afventer + ' afventer</span><span>•</span><span>' + stats.mine + ' mine</span></div>';
-    html += '<div class="flex items-center gap-2 flex-wrap mb-3">';
-    tabs.forEach(t => {
-      const active = window._ansoegFilter === t.id;
-      html += '<button onclick="setAnsoegFilter(\'' + t.id + '\')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid ' + (active ? t.color : 'var(--border)') + ';background:' + (active ? t.color + '20' : 'transparent') + ';color:' + (active ? t.color : 'var(--fg)') + ';cursor:pointer;transition:all .15s">' + t.label + '<span style="background:' + (active ? t.color : 'var(--muted)') + ';color:' + (active ? '#fff' : 'var(--muted-fg)') + ';padding:1px 7px;border-radius:999px;font-size:10px;font-weight:600">' + t.count + '</span></button>';
-    });
-    html += '</div>';
-    html += '<div class="flex items-center gap-2">';
-    html += '<div style="position:relative;flex:1"><input id="ansoeg-search" class="input" placeholder="Søg efter titel, afdeling, navn eller indhold..." value="' + (window._ansoegSearch || "") + '" style="padding-left:34px"/><div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg)">' + (icons.search || '') + '</div></div>';
+    // Simple toolbar
+    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">';
+    html += '<div style="position:relative;flex:1"><input id="ansoeg-search" class="input" placeholder="Søg i ansøgninger..." value="' + (window._ansoegSearch || "") + '" style="height:36px;padding-left:34px"/><div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted-fg)">' + (icons.search || '') + '</div></div>';
+    html += '<select class="select" id="ansoeg-status-filter" style="height:36px;min-width:150px">';
+    tabs.forEach(t => { html += '<option value="' + t.id + '"' + (window._ansoegFilter === t.id ? ' selected' : '') + '>' + t.label + ' (' + t.count + ')</option>'; });
+    html += '</select>';
     if (afdValg.length > 1) {
-      html += '<select class="select" id="ansoeg-afd-filter" style="max-width:220px">';
+      html += '<select class="select" id="ansoeg-afd-filter" style="height:36px;max-width:220px">';
       afdValg.forEach(v => { html += '<option value="' + v + '"' + (window._ansoegAfd === v ? ' selected' : '') + '>' + (v === "alle" ? "Alle afdelinger" : v) + '</option>'; });
       html += '</select>';
     }
-    html += '</div></div>';
+    html += '</div>';
 
     // List
     const filtered = synligeAnsoegninger.filter(a => {
@@ -8101,7 +8096,7 @@ async function renderAnsoegninger(container) {
 
     html += '<div id="ansoeg-list" style="display:flex;flex-direction:column;gap:10px">';
     if (filtered.length === 0) {
-      html += '<div class="card" style="padding:48px;text-align:center"><div style="font-size:40px;opacity:.3;margin-bottom:8px">' + icons.file + '</div><p style="color:var(--muted-fg);font-size:13px">Ingen ansøgninger matcher dine filtre</p>' + (kanOprette ? '<button class="btn btn-primary btn-sm mt-3" onclick="showAnsoegningForm()">' + icons.plus + ' Opret ansøgning</button>' : '') + '</div>';
+      html += '<div style="padding:42px 12px;text-align:center;border:1px dashed var(--border);border-radius:10px"><p style="color:var(--muted-fg);font-size:13px">Ingen ansøgninger matcher dine filtre</p>' + (kanOprette ? '<button class="btn btn-primary btn-sm mt-3" onclick="showAnsoegningForm()">' + icons.plus + ' Opret ansøgning</button>' : '') + '</div>';
     } else {
       const statusMap = { afventer: { lbl:"Afventer", color:"var(--warning)", bg:"var(--warning)" }, godkendt: { lbl:"Godkendt", color:"var(--success)", bg:"var(--success)" }, afvist: { lbl:"Afvist", color:"var(--destructive)", bg:"var(--destructive)" } };
       filtered.forEach(a => {
@@ -8109,15 +8104,12 @@ async function renderAnsoegninger(container) {
         const sm = statusMap[status];
         const isMine = a.ansoegerBadge === userBadge;
         const initialer = ((a.ansoegerNavn||"?").split(" ").map(x=>x[0]).join("").substring(0,2)).toUpperCase();
-        html += '<div class="card ansoeg-card" style="padding:0;overflow:hidden;border:1px solid var(--border)">';
-        html += '<div style="padding:16px">';
+        html += '<div class="ansoeg-card" style="padding:14px 0;border-bottom:1px solid var(--border)">';
         html += '<div class="flex items-start justify-between gap-3">';
         html += '<div class="flex items-start gap-3" style="flex:1;min-width:0">';
-        html += '<div style="width:34px;height:34px;border-radius:8px;background:var(--muted);color:var(--fg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">' + initialer + '</div>';
         html += '<div style="flex:1;min-width:0">';
         html += '<div class="flex items-center gap-2 flex-wrap"><span style="font-size:14px;font-weight:600">' + (a.titel || "Ansøgning") + '</span>';
-        html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg);border:1px solid var(--border)">' + sm.lbl + '</span>';
-        if (a.afdeling) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + a.afdeling + '</span>';
+        html += '<span style="font-size:11px;color:' + sm.color + '">' + sm.lbl + '</span>';
         const erFormular = a.formular === true;
         const antalSvar = Array.isArray(a.svar) ? a.svar.length : 0;
         const egetSvar = getEgetAnsoegSvar(a);
@@ -8125,21 +8117,15 @@ async function renderAnsoegninger(container) {
         const kanBesvare = erLederForAnsoegning(a);
         const kanIndsendeSvar = erFormular && erAnsoegningTilBruger(a) && !harSvaret && a.ansoegerBadge !== userBadge;
         const egetSvarStatus = (egetSvar && egetSvar.status) ? egetSvar.status : "afventer";
-        if (isMine) html += '<span class="badge" style="background:transparent;color:var(--primary);border:1px solid var(--primary)">Min</span>';
-        if (erFormular) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + antalSvar + ' svar</span>';
+        if (erFormular) html += '<span style="font-size:11px;color:var(--muted-fg)">' + antalSvar + ' svar</span>';
         if (harSvaret) {
           const egetSvarLbl = egetSvarStatus === "godkendt" ? "Godkendt" : (egetSvarStatus === "afvist" ? "Afvist" : "Afventer svar");
           const egetSvarColor = egetSvarStatus === "godkendt" ? "var(--success)" : (egetSvarStatus === "afvist" ? "var(--destructive)" : "var(--warning)");
-          html += '<span class="badge" style="background:transparent;color:' + egetSvarColor + ';border:1px solid ' + egetSvarColor + '">' + egetSvarLbl + '</span>';
+          html += '<span style="font-size:11px;color:' + egetSvarColor + '">' + egetSvarLbl + '</span>';
         }
         html += '</div>';
-        html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Oprettet af ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' · Badge ' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
-        if (a.begrundelse) html += '<p style="font-size:12.5px;color:var(--fg);margin-top:8px;white-space:pre-line;line-height:1.5">' + a.begrundelse + '</p>';
-        if (erFormular && Array.isArray(a.spoergsmaal) && a.spoergsmaal.length) {
-          html += '<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">';
-          a.spoergsmaal.forEach((q, qi) => { html += '<div style="padding:7px 0;border-top:1px solid var(--border);font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">' + (qi + 1) + '.</b> ' + (q || '') + '</div>'; });
-          html += '</div>';
-        }
+        html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">' + (a.afdeling || "Ingen afdeling") + ' · ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' #' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
+        if (a.begrundelse) html += '<p style="font-size:12px;color:var(--muted-fg);margin-top:8px;white-space:pre-line;line-height:1.45;max-width:760px">' + a.begrundelse + '</p>';
         if (erFormular && kanBesvare && antalSvar) html += '<button class="btn btn-sm btn-outline" style="margin-top:10px" onclick="visAnsoegSvar(\'' + a.id + '\')">Se indsendte svar (' + antalSvar + ')</button>';
         if (egetSvar && egetSvar.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Behandlet af:</b> ' + egetSvar.behandletAf + (egetSvar.behandletDato ? ' · ' + egetSvar.behandletDato : '') + '</div>';
         if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Besvaret af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
@@ -8155,7 +8141,7 @@ async function renderAnsoegninger(container) {
         if ((isMine || isAdmin) && status === "afventer") {
           html += '<button class="btn btn-sm btn-outline" onclick="sletEgenAnsoegning(\'' + a.id + '\')">Træk tilbage</button>';
         }
-        html += '</div></div></div></div>';
+        html += '</div></div></div>';
       });
     }
     html += '</div></div>';
@@ -8172,6 +8158,8 @@ async function renderAnsoegninger(container) {
     }
     const afdFilter = document.getElementById("ansoeg-afd-filter");
     if (afdFilter) afdFilter.addEventListener("change", (e) => { window._ansoegAfd = e.target.value; renderPage(activeTabId); });
+    const statusFilter = document.getElementById("ansoeg-status-filter");
+    if (statusFilter) statusFilter.addEventListener("change", (e) => { window._ansoegFilter = e.target.value; renderPage(activeTabId); });
   } catch (err) { container.innerHTML = '<p style="color:var(--destructive)">Fejl: ' + err.message + '</p>'; }
 }
 window.setAnsoegFilter = function(f) { window._ansoegFilter = f; renderPage(activeTabId); };
