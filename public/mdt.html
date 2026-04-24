@@ -8167,7 +8167,7 @@ window.showAnsoegningForm = function() {
   afdOptions.push('<option value="Alle ansatte">Alle ansatte</option>');
 
   overlay.innerHTML = '<div class="dialog" style="max-width:600px;width:95%"><div class="dialog-title" style="font-size:16px">Ny ansøgning</div>' +
-    '<p style="font-size:12px;color:var(--muted-fg);margin-bottom:16px">Opret en ansøgning til en afdeling. Alle ansatte kan svare med Godkend eller Afvis.</p>' +
+    '<p style="font-size:12px;color:var(--muted-fg);margin-bottom:16px">Opret en ansøgning til en afdeling. Kun afdelingens ledere kan godkende eller afvise.</p>' +
 
     '<div class="grid grid-cols-2 gap-3 mb-3">' +
       '<div><div class="label">Titel</div><input class="input" id="ans-titel" placeholder="Kort titel..."/></div>' +
@@ -8211,7 +8211,12 @@ window.showAnsoegningForm = function() {
   });
 };
 window.behandlAnsoegning = async function(id, status) {
-  try{await ansoeningerApi.update(id,{status,behandletAf:`${currentUser.fornavn} ${currentUser.efternavn}`,behandletDato:new Date().toISOString().split("T")[0]});showToast(status==="godkendt"?"Godkendt":"Afvist");renderPage(activeTabId);}catch(e){showToast("Fejl: "+e.message);}
+  try{
+    const alle = await ansoeningerApi.getAll();
+    const a = alle.find(x => x.id === id);
+    if (!a || !erLederForAnsoegning(a)) { showToast("Kun afdelingsledere kan besvare denne ansøgning"); return; }
+    await ansoeningerApi.update(id,{status,behandletAf:`${currentUser.fornavn} ${currentUser.efternavn}`,behandletDato:new Date().toISOString().split("T")[0]});showToast(status==="godkendt"?"Godkendt":"Afvist");renderPage(activeTabId);
+  }catch(e){showToast("Fejl: "+e.message);}
 };
 
 
