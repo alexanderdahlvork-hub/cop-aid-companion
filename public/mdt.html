@@ -8006,6 +8006,18 @@ function erLederForAnsoegning(a) {
   if (!userAfd || !targetAfd) return false;
   return userAfd === targetAfd || userAfd.includes(targetAfd) || targetAfd.includes(userAfd);
 }
+function erAnsoegningTilBruger(a) {
+  if (!a || !a.formular) return false;
+  const targetAfd = normaliserAfdelingNavn(a.afdeling || "");
+  const userAfd = normaliserAfdelingNavn(currentUser.afdeling || "");
+  if (targetAfd === "alleansatte" || targetAfd === "alle") return true;
+  if (!targetAfd || !userAfd) return false;
+  return userAfd === targetAfd || userAfd.includes(targetAfd) || targetAfd.includes(userAfd);
+}
+function harSvaretAnsoegning(a) {
+  const svar = Array.isArray(a && a.svar) ? a.svar : [];
+  return svar.some(s => s.badgeNr === currentUser.badgeNr);
+}
 async function renderAnsoegninger(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
   try {
@@ -8016,7 +8028,7 @@ async function renderAnsoegninger(container) {
     // Sort newest first
     ansoegninger.sort((a,b) => (b.oprettetDato||"").localeCompare(a.oprettetDato||""));
 
-    const synligeAnsoegninger = ansoegninger.filter(a => isAdmin || erLederForAnsoegning(a) || a.ansoegerBadge === userBadge);
+    const synligeAnsoegninger = ansoegninger.filter(a => isAdmin || erLederForAnsoegning(a) || a.ansoegerBadge === userBadge || erAnsoegningTilBruger(a));
     const stats = {
       total: synligeAnsoegninger.length,
       afventer: synligeAnsoegninger.filter(a => !a.status || a.status === "afventer").length,
@@ -8109,20 +8121,33 @@ async function renderAnsoegninger(container) {
         html += '<div class="flex items-center gap-2 flex-wrap"><span style="font-size:14px;font-weight:600">' + (a.titel || "Ansøgning") + '</span>';
         html += '<span class="badge" style="background:' + sm.bg + '20;color:' + sm.color + ';border:1px solid ' + sm.color + '40">' + sm.lbl + '</span>';
         if (a.afdeling) html += '<span class="badge" style="background:var(--accent)20;color:var(--accent)">' + a.afdeling + '</span>';
+        const erFormular = a.formular === true;
+        const antalSvar = Array.isArray(a.svar) ? a.svar.length : 0;
+        const harSvaret = harSvaretAnsoegning(a);
         const kanBesvare = erLederForAnsoegning(a);
+        const kanIndsendeSvar = erFormular && erAnsoegningTilBruger(a) && !harSvaret && a.ansoegerBadge !== userBadge;
         if (isMine) html += '<span class="badge" style="background:var(--primary)20;color:var(--primary)">Min ansøgning</span>';
-        if (kanBesvare && !isMine) html += '<span class="badge" style="background:var(--success)20;color:var(--success)">Kan besvares</span>';
+        if (erFormular) html += '<span class="badge" style="background:var(--accent)20;color:var(--accent)">Formular · ' + antalSvar + ' svar</span>';
+        if (kanBesvare && !isMine && !erFormular) html += '<span class="badge" style="background:var(--success)20;color:var(--success)">Kan besvares</span>';
+        if (harSvaret) html += '<span class="badge" style="background:var(--success)20;color:var(--success)">Besvaret</span>';
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Oprettet af ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' · Badge ' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
         if (a.begrundelse) html += '<p style="font-size:12.5px;color:var(--fg);margin-top:8px;white-space:pre-line;line-height:1.5">' + a.begrundelse + '</p>';
+        if (erFormular && Array.isArray(a.spoergsmaal) && a.spoergsmaal.length) {
+          html += '<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">';
+          a.spoergsmaal.forEach((q, qi) => { html += '<div style="padding:7px 9px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Spørgsmål ' + (qi + 1) + ':</b> ' + (q || '') + '</div>'; });
+          html += '</div>';
+        }
+        if (erFormular && kanBesvare && antalSvar) html += '<button class="btn btn-sm btn-outline" style="margin-top:10px" onclick="visAnsoegSvar(\'' + a.id + '\')">Se indsendte svar (' + antalSvar + ')</button>';
         if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Besvaret af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
         html += '</div></div>';
         html += '<div class="flex flex-col gap-2 shrink-0">';
         // Kun relevante afdelingsledere/admin kan svare på afventende ansøgninger
-        if (status === "afventer" && kanBesvare) {
+        if (status === "afventer" && kanBesvare && !erFormular) {
           html += '<button class="btn btn-sm" style="background:var(--success);color:#fff;border:none" onclick="behandlAnsoegning(\'' + a.id + '\',\'godkendt\')">Godkend</button>';
           html += '<button class="btn btn-sm btn-destructive" onclick="behandlAnsoegning(\'' + a.id + '\',\'afvist\')">Afvis</button>';
         }
+        if (kanIndsendeSvar) html += '<button class="btn btn-sm btn-primary" onclick="showAnsoegSvarForm(\'' + a.id + '\')">Svar på formular</button>';
         // Opretter (eller admin) kan trække tilbage / slette
         if ((isMine || isAdmin) && status === "afventer") {
           html += '<button class="btn btn-sm btn-outline" onclick="sletEgenAnsoegning(\'' + a.id + '\')">Træk tilbage</button>';
@@ -8174,9 +8199,15 @@ window.showAnsoegningForm = function() {
       '<div><div class="label">Modtagende afdeling</div><select class="select w-full" id="ans-afdeling">' + afdOptions.join("") + '</select></div>' +
     '</div>' +
 
-    '<div class="label">Indhold</div>' +
-    '<textarea class="textarea mb-3" id="ans-begrundelse" rows="7" placeholder="Skriv indholdet af ansøgningen — hvad skal afdelingen tage stilling til?"></textarea>' +
+    '<div class="label">Beskrivelse</div>' +
+    '<textarea class="textarea mb-3" id="ans-begrundelse" rows="4" placeholder="Skriv kort hvad formularen handler om..."></textarea>' +
     '<div style="font-size:11px;color:var(--muted-fg);margin-top:-8px;margin-bottom:14px"><span id="ans-charcount">0</span> tegn (mindst 10)</div>' +
+
+    '<div class="label">Spørgsmål til betjentene</div>' +
+    '<div id="ans-spoergsmaal" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">' +
+      '<input class="input ans-question" placeholder="Spørgsmål 1..."/>' +
+    '</div>' +
+    '<button class="btn btn-sm btn-outline mb-4" id="ans-add-question" type="button">' + icons.plus + ' Tilføj spørgsmål</button>' +
 
     '<div class="flex justify-end gap-2"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button><button class="btn btn-primary" id="ans-submit">' + icons.plus + ' Opret ansøgning</button></div>' +
     '</div>';
@@ -8187,6 +8218,17 @@ window.showAnsoegningForm = function() {
   const cc = document.getElementById("ans-charcount");
   if (txt && cc) txt.addEventListener("input", () => { cc.textContent = txt.value.length; });
 
+  document.getElementById("ans-add-question").addEventListener("click", () => {
+    const wrap = document.getElementById("ans-spoergsmaal");
+    const count = wrap.querySelectorAll(".ans-question").length + 1;
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.innerHTML = '<input class="input ans-question" placeholder="Spørgsmål ' + count + '..." style="flex:1"/><button class="btn btn-sm btn-outline" type="button">Fjern</button>';
+    row.querySelector("button").addEventListener("click", () => row.remove());
+    wrap.appendChild(row);
+  });
+
   document.getElementById("ans-submit").addEventListener("click", async () => {
     const titel = document.getElementById("ans-titel").value.trim();
     const afdeling = document.getElementById("ans-afdeling").value;
@@ -8195,6 +8237,8 @@ window.showAnsoegningForm = function() {
     if (!afdeling) { showToast("Vælg modtagende afdeling"); return; }
     if (!begrundelse) { showToast("Udfyld indhold"); return; }
     if (begrundelse.length < 10) { showToast("Indhold skal være mindst 10 tegn"); return; }
+    const spoergsmaal = Array.from(document.querySelectorAll(".ans-question")).map(x => x.value.trim()).filter(Boolean);
+    if (!spoergsmaal.length) { showToast("Tilføj mindst ét spørgsmål"); return; }
     const a = {
       id: Date.now().toString(),
       titel: titel,
@@ -8203,6 +8247,9 @@ window.showAnsoegningForm = function() {
       ansoegerNavn: (currentUser.fornavn || "") + " " + (currentUser.efternavn || ""),
       ansoegerBadge: currentUser.badgeNr,
       ansoegerAfdeling: userAfd,
+      formular: true,
+      spoergsmaal: spoergsmaal,
+      svar: [],
       oprettetDato: new Date().toISOString().split("T")[0],
       status: "afventer",
     };
@@ -8217,6 +8264,44 @@ window.behandlAnsoegning = async function(id, status) {
     if (!a || !erLederForAnsoegning(a)) { showToast("Kun afdelingsledere kan besvare denne ansøgning"); return; }
     await ansoeningerApi.update(id,{status,behandletAf:`${currentUser.fornavn} ${currentUser.efternavn}`,behandletDato:new Date().toISOString().split("T")[0]});showToast(status==="godkendt"?"Godkendt":"Afvist");renderPage(activeTabId);
   }catch(e){showToast("Fejl: "+e.message);}
+};
+window.showAnsoegSvarForm = async function(id) {
+  const alle = await ansoeningerApi.getAll();
+  const a = alle.find(x => x.id === id);
+  if (!a || !erAnsoegningTilBruger(a)) { showToast("Du kan ikke svare på denne formular"); return; }
+  if (harSvaretAnsoegning(a)) { showToast("Du har allerede svaret"); return; }
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  const qs = Array.isArray(a.spoergsmaal) ? a.spoergsmaal : [];
+  let html = '<div class="dialog" style="max-width:640px;width:95%"><div class="dialog-title" style="font-size:16px">' + (a.titel || 'Ansøgningsformular') + '</div>';
+  html += '<p style="font-size:12px;color:var(--muted-fg);margin-bottom:14px">Svar på spørgsmålene herunder. Dit svar sendes til afdelingslederne.</p>';
+  qs.forEach((q, i) => { html += '<div class="mb-3"><div class="label">' + (i + 1) + '. ' + q + '</div><textarea class="textarea ans-answer" rows="3" data-q="' + i + '" placeholder="Skriv dit svar..."></textarea></div>'; });
+  html += '<div class="flex justify-end gap-2"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button><button class="btn btn-primary" id="ans-send-svar">Send svar</button></div></div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+  document.getElementById("ans-send-svar").addEventListener("click", async () => {
+    const answers = Array.from(document.querySelectorAll(".ans-answer")).map((el, i) => ({ spoergsmaal: qs[i], svar: el.value.trim() }));
+    if (answers.some(x => !x.svar)) { showToast("Udfyld alle svar"); return; }
+    const nytSvar = { id: Date.now().toString(), navn: ((currentUser.fornavn || "") + " " + (currentUser.efternavn || "")).trim(), badgeNr: currentUser.badgeNr, afdeling: currentUser.afdeling || "", svar: answers, dato: new Date().toISOString().split("T")[0] };
+    const svar = Array.isArray(a.svar) ? a.svar : [];
+    try { await ansoeningerApi.update(id, { svar: [...svar, nytSvar] }); showToast("Svar sendt"); overlay.remove(); renderPage(activeTabId); } catch(e) { showToast("Fejl: " + e.message); }
+  });
+};
+window.visAnsoegSvar = async function(id) {
+  const alle = await ansoeningerApi.getAll();
+  const a = alle.find(x => x.id === id);
+  if (!a || !erLederForAnsoegning(a)) { showToast("Kun afdelingsledere kan se svar"); return; }
+  const svar = Array.isArray(a.svar) ? a.svar : [];
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  let html = '<div class="dialog" style="max-width:760px;width:95%;max-height:82vh;overflow:auto"><div class="dialog-title" style="font-size:16px">Indsendte svar</div>';
+  if (!svar.length) html += '<p style="font-size:12px;color:var(--muted-fg)">Der er ikke indsendt svar endnu.</p>';
+  svar.forEach(s => {
+    html += '<div class="card" style="padding:12px;margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:6px">' + (s.navn || 'Ukendt') + (s.badgeNr ? ' · Badge ' + s.badgeNr : '') + '</div>';
+    (s.svar || []).forEach((r, i) => { html += '<div style="padding:8px 0;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--muted-fg)">' + (i + 1) + '. ' + (r.spoergsmaal || '') + '</div><div style="font-size:12px;margin-top:3px;white-space:pre-line">' + (r.svar || '') + '</div></div>'; });
+    html += '</div>';
+  });
+  html += '<div class="flex justify-end"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Luk</button></div></div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
 };
 
 
