@@ -8158,6 +8158,8 @@ async function renderAnsoegninger(container) {
     }
     const afdFilter = document.getElementById("ansoeg-afd-filter");
     if (afdFilter) afdFilter.addEventListener("change", (e) => { window._ansoegAfd = e.target.value; renderPage(activeTabId); });
+    const statusFilter = document.getElementById("ansoeg-status-filter");
+    if (statusFilter) statusFilter.addEventListener("change", (e) => { window._ansoegFilter = e.target.value; renderPage(activeTabId); });
   } catch (err) { container.innerHTML = '<p style="color:var(--destructive)">Fejl: ' + err.message + '</p>'; }
 }
 window.setAnsoegFilter = function(f) { window._ansoegFilter = f; renderPage(activeTabId); };
