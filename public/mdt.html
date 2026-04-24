@@ -8265,6 +8265,44 @@ window.behandlAnsoegning = async function(id, status) {
     await ansoeningerApi.update(id,{status,behandletAf:`${currentUser.fornavn} ${currentUser.efternavn}`,behandletDato:new Date().toISOString().split("T")[0]});showToast(status==="godkendt"?"Godkendt":"Afvist");renderPage(activeTabId);
   }catch(e){showToast("Fejl: "+e.message);}
 };
+window.showAnsoegSvarForm = async function(id) {
+  const alle = await ansoeningerApi.getAll();
+  const a = alle.find(x => x.id === id);
+  if (!a || !erAnsoegningTilBruger(a)) { showToast("Du kan ikke svare på denne formular"); return; }
+  if (harSvaretAnsoegning(a)) { showToast("Du har allerede svaret"); return; }
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  const qs = Array.isArray(a.spoergsmaal) ? a.spoergsmaal : [];
+  let html = '<div class="dialog" style="max-width:640px;width:95%"><div class="dialog-title" style="font-size:16px">' + (a.titel || 'Ansøgningsformular') + '</div>';
+  html += '<p style="font-size:12px;color:var(--muted-fg);margin-bottom:14px">Svar på spørgsmålene herunder. Dit svar sendes til afdelingslederne.</p>';
+  qs.forEach((q, i) => { html += '<div class="mb-3"><div class="label">' + (i + 1) + '. ' + q + '</div><textarea class="textarea ans-answer" rows="3" data-q="' + i + '" placeholder="Skriv dit svar..."></textarea></div>'; });
+  html += '<div class="flex justify-end gap-2"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button><button class="btn btn-primary" id="ans-send-svar">Send svar</button></div></div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+  document.getElementById("ans-send-svar").addEventListener("click", async () => {
+    const answers = Array.from(document.querySelectorAll(".ans-answer")).map((el, i) => ({ spoergsmaal: qs[i], svar: el.value.trim() }));
+    if (answers.some(x => !x.svar)) { showToast("Udfyld alle svar"); return; }
+    const nytSvar = { id: Date.now().toString(), navn: ((currentUser.fornavn || "") + " " + (currentUser.efternavn || "")).trim(), badgeNr: currentUser.badgeNr, afdeling: currentUser.afdeling || "", svar: answers, dato: new Date().toISOString().split("T")[0] };
+    const svar = Array.isArray(a.svar) ? a.svar : [];
+    try { await ansoeningerApi.update(id, { svar: [...svar, nytSvar] }); showToast("Svar sendt"); overlay.remove(); renderPage(activeTabId); } catch(e) { showToast("Fejl: " + e.message); }
+  });
+};
+window.visAnsoegSvar = async function(id) {
+  const alle = await ansoeningerApi.getAll();
+  const a = alle.find(x => x.id === id);
+  if (!a || !erLederForAnsoegning(a)) { showToast("Kun afdelingsledere kan se svar"); return; }
+  const svar = Array.isArray(a.svar) ? a.svar : [];
+  const overlay = el("div", { className: "dialog-overlay", onclick: e => { if (e.target === overlay) overlay.remove(); } });
+  let html = '<div class="dialog" style="max-width:760px;width:95%;max-height:82vh;overflow:auto"><div class="dialog-title" style="font-size:16px">Indsendte svar</div>';
+  if (!svar.length) html += '<p style="font-size:12px;color:var(--muted-fg)">Der er ikke indsendt svar endnu.</p>';
+  svar.forEach(s => {
+    html += '<div class="card" style="padding:12px;margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:6px">' + (s.navn || 'Ukendt') + (s.badgeNr ? ' · Badge ' + s.badgeNr : '') + '</div>';
+    (s.svar || []).forEach((r, i) => { html += '<div style="padding:8px 0;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--muted-fg)">' + (i + 1) + '. ' + (r.spoergsmaal || '') + '</div><div style="font-size:12px;margin-top:3px;white-space:pre-line">' + (r.svar || '') + '</div></div>'; });
+    html += '</div>';
+  });
+  html += '<div class="flex justify-end"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Luk</button></div></div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+};
 
 
 // ═══ AFDELINGER (MED SUB-TABS) ═══
