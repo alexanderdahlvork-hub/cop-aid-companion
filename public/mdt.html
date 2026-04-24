@@ -8055,24 +8055,17 @@ async function renderAnsoegninger(container) {
 
     // Header
     html += '<div class="flex items-center justify-between mb-4">';
-    html += '<div class="flex items-center gap-3">' + icons.file + '<div><h1 style="font-size:20px;font-weight:700;letter-spacing:-0.01em">Ansøgninger</h1><p style="font-size:11px;color:var(--muted-fg);margin-top:2px">Du ser dine egne ansøgninger og dem, du som afdelingsleder kan behandle.</p></div></div>';
+    html += '<div><h1 style="font-size:20px;font-weight:700;letter-spacing:-0.01em;margin:0">Ansøgninger</h1><p style="font-size:11px;color:var(--muted-fg);margin-top:4px">Mine ansøgninger og formularer til din afdeling.</p></div>';
     if (kanOprette) {
-      html += '<button class="btn btn-primary" onclick="showAnsoegningForm()">' + icons.plus + ' Ny ansøgning</button>';
+      html += '<button class="btn btn-primary btn-sm" onclick="showAnsoegningForm()">' + icons.plus + ' Ny formular</button>';
     } else {
-      html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg)">Kun afdelingsledere kan oprette</span>';
+      html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg)">Betjent</span>';
     }
     html += '</div>';
 
-    // Stats row
-    html += '<div class="grid grid-cols-4 gap-3 mb-4">';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value">' + stats.total + '</div><div class="stat-label">Ansøgninger i alt</div></div>';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value" style="color:var(--warning)">' + stats.afventer + '</div><div class="stat-label">Afventer svar</div></div>';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value" style="color:var(--success)">' + stats.godkendt + '</div><div class="stat-label">Godkendt</div></div>';
-    html += '<div class="stat-card"><div class="accent-bar" style="background:var(--accent)"></div><div class="stat-value">' + stats.mine + '</div><div class="stat-label">Mine ansøgninger</div></div>';
-    html += '</div>';
-
     // Filter tabs + search
-    html += '<div class="card" style="padding:12px;margin-bottom:12px">';
+    html += '<div class="card" style="padding:12px;margin-bottom:14px">';
+    html += '<div class="flex items-center gap-2 mb-3" style="font-size:11px;color:var(--muted-fg)"><span>' + stats.total + ' i alt</span><span>•</span><span>' + stats.afventer + ' afventer</span><span>•</span><span>' + stats.mine + ' mine</span></div>';
     html += '<div class="flex items-center gap-2 flex-wrap mb-3">';
     tabs.forEach(t => {
       const active = window._ansoegFilter === t.id;
