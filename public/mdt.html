@@ -8104,15 +8104,12 @@ async function renderAnsoegninger(container) {
         const sm = statusMap[status];
         const isMine = a.ansoegerBadge === userBadge;
         const initialer = ((a.ansoegerNavn||"?").split(" ").map(x=>x[0]).join("").substring(0,2)).toUpperCase();
-        html += '<div class="card ansoeg-card" style="padding:0;overflow:hidden;border:1px solid var(--border)">';
-        html += '<div style="padding:16px">';
+        html += '<div class="ansoeg-card" style="padding:14px 0;border-bottom:1px solid var(--border)">';
         html += '<div class="flex items-start justify-between gap-3">';
         html += '<div class="flex items-start gap-3" style="flex:1;min-width:0">';
-        html += '<div style="width:34px;height:34px;border-radius:8px;background:var(--muted);color:var(--fg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">' + initialer + '</div>';
         html += '<div style="flex:1;min-width:0">';
         html += '<div class="flex items-center gap-2 flex-wrap"><span style="font-size:14px;font-weight:600">' + (a.titel || "Ansøgning") + '</span>';
-        html += '<span class="badge" style="background:var(--muted);color:var(--muted-fg);border:1px solid var(--border)">' + sm.lbl + '</span>';
-        if (a.afdeling) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + a.afdeling + '</span>';
+        html += '<span style="font-size:11px;color:' + sm.color + '">' + sm.lbl + '</span>';
         const erFormular = a.formular === true;
         const antalSvar = Array.isArray(a.svar) ? a.svar.length : 0;
         const egetSvar = getEgetAnsoegSvar(a);
@@ -8120,21 +8117,15 @@ async function renderAnsoegninger(container) {
         const kanBesvare = erLederForAnsoegning(a);
         const kanIndsendeSvar = erFormular && erAnsoegningTilBruger(a) && !harSvaret && a.ansoegerBadge !== userBadge;
         const egetSvarStatus = (egetSvar && egetSvar.status) ? egetSvar.status : "afventer";
-        if (isMine) html += '<span class="badge" style="background:transparent;color:var(--primary);border:1px solid var(--primary)">Min</span>';
-        if (erFormular) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + antalSvar + ' svar</span>';
+        if (erFormular) html += '<span style="font-size:11px;color:var(--muted-fg)">' + antalSvar + ' svar</span>';
         if (harSvaret) {
           const egetSvarLbl = egetSvarStatus === "godkendt" ? "Godkendt" : (egetSvarStatus === "afvist" ? "Afvist" : "Afventer svar");
           const egetSvarColor = egetSvarStatus === "godkendt" ? "var(--success)" : (egetSvarStatus === "afvist" ? "var(--destructive)" : "var(--warning)");
-          html += '<span class="badge" style="background:transparent;color:' + egetSvarColor + ';border:1px solid ' + egetSvarColor + '">' + egetSvarLbl + '</span>';
+          html += '<span style="font-size:11px;color:' + egetSvarColor + '">' + egetSvarLbl + '</span>';
         }
         html += '</div>';
-        html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Oprettet af ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' · Badge ' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
-        if (a.begrundelse) html += '<p style="font-size:12.5px;color:var(--fg);margin-top:8px;white-space:pre-line;line-height:1.5">' + a.begrundelse + '</p>';
-        if (erFormular && Array.isArray(a.spoergsmaal) && a.spoergsmaal.length) {
-          html += '<div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">';
-          a.spoergsmaal.forEach((q, qi) => { html += '<div style="padding:7px 0;border-top:1px solid var(--border);font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">' + (qi + 1) + '.</b> ' + (q || '') + '</div>'; });
-          html += '</div>';
-        }
+        html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">' + (a.afdeling || "Ingen afdeling") + ' · ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' #' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
+        if (a.begrundelse) html += '<p style="font-size:12px;color:var(--muted-fg);margin-top:8px;white-space:pre-line;line-height:1.45;max-width:760px">' + a.begrundelse + '</p>';
         if (erFormular && kanBesvare && antalSvar) html += '<button class="btn btn-sm btn-outline" style="margin-top:10px" onclick="visAnsoegSvar(\'' + a.id + '\')">Se indsendte svar (' + antalSvar + ')</button>';
         if (egetSvar && egetSvar.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Behandlet af:</b> ' + egetSvar.behandletAf + (egetSvar.behandletDato ? ' · ' + egetSvar.behandletDato : '') + '</div>';
         if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Besvaret af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
@@ -8150,7 +8141,7 @@ async function renderAnsoegninger(container) {
         if ((isMine || isAdmin) && status === "afventer") {
           html += '<button class="btn btn-sm btn-outline" onclick="sletEgenAnsoegning(\'' + a.id + '\')">Træk tilbage</button>';
         }
-        html += '</div></div></div></div>';
+        html += '</div></div></div>';
       });
     }
     html += '</div></div>';
