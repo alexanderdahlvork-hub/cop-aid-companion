@@ -8199,9 +8199,15 @@ window.showAnsoegningForm = function() {
       '<div><div class="label">Modtagende afdeling</div><select class="select w-full" id="ans-afdeling">' + afdOptions.join("") + '</select></div>' +
     '</div>' +
 
-    '<div class="label">Indhold</div>' +
-    '<textarea class="textarea mb-3" id="ans-begrundelse" rows="7" placeholder="Skriv indholdet af ansøgningen — hvad skal afdelingen tage stilling til?"></textarea>' +
+    '<div class="label">Beskrivelse</div>' +
+    '<textarea class="textarea mb-3" id="ans-begrundelse" rows="4" placeholder="Skriv kort hvad formularen handler om..."></textarea>' +
     '<div style="font-size:11px;color:var(--muted-fg);margin-top:-8px;margin-bottom:14px"><span id="ans-charcount">0</span> tegn (mindst 10)</div>' +
+
+    '<div class="label">Spørgsmål til betjentene</div>' +
+    '<div id="ans-spoergsmaal" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">' +
+      '<input class="input ans-question" placeholder="Spørgsmål 1..."/>' +
+    '</div>' +
+    '<button class="btn btn-sm btn-outline mb-4" id="ans-add-question" type="button">' + icons.plus + ' Tilføj spørgsmål</button>' +
 
     '<div class="flex justify-end gap-2"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Annuller</button><button class="btn btn-primary" id="ans-submit">' + icons.plus + ' Opret ansøgning</button></div>' +
     '</div>';
@@ -8212,6 +8218,17 @@ window.showAnsoegningForm = function() {
   const cc = document.getElementById("ans-charcount");
   if (txt && cc) txt.addEventListener("input", () => { cc.textContent = txt.value.length; });
 
+  document.getElementById("ans-add-question").addEventListener("click", () => {
+    const wrap = document.getElementById("ans-spoergsmaal");
+    const count = wrap.querySelectorAll(".ans-question").length + 1;
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.innerHTML = '<input class="input ans-question" placeholder="Spørgsmål ' + count + '..." style="flex:1"/><button class="btn btn-sm btn-outline" type="button">Fjern</button>';
+    row.querySelector("button").addEventListener("click", () => row.remove());
+    wrap.appendChild(row);
+  });
+
   document.getElementById("ans-submit").addEventListener("click", async () => {
     const titel = document.getElementById("ans-titel").value.trim();
     const afdeling = document.getElementById("ans-afdeling").value;
@@ -8220,6 +8237,8 @@ window.showAnsoegningForm = function() {
     if (!afdeling) { showToast("Vælg modtagende afdeling"); return; }
     if (!begrundelse) { showToast("Udfyld indhold"); return; }
     if (begrundelse.length < 10) { showToast("Indhold skal være mindst 10 tegn"); return; }
+    const spoergsmaal = Array.from(document.querySelectorAll(".ans-question")).map(x => x.value.trim()).filter(Boolean);
+    if (!spoergsmaal.length) { showToast("Tilføj mindst ét spørgsmål"); return; }
     const a = {
       id: Date.now().toString(),
       titel: titel,
@@ -8228,6 +8247,9 @@ window.showAnsoegningForm = function() {
       ansoegerNavn: (currentUser.fornavn || "") + " " + (currentUser.efternavn || ""),
       ansoegerBadge: currentUser.badgeNr,
       ansoegerAfdeling: userAfd,
+      formular: true,
+      spoergsmaal: spoergsmaal,
+      svar: [],
       oprettetDato: new Date().toISOString().split("T")[0],
       status: "afventer",
     };
