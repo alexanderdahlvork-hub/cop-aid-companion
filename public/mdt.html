@@ -8284,7 +8284,7 @@ window.showAnsoegSvarForm = async function(id) {
   document.getElementById("ans-send-svar").addEventListener("click", async () => {
     const answers = Array.from(document.querySelectorAll(".ans-answer")).map((el, i) => ({ spoergsmaal: qs[i], svar: el.value.trim() }));
     if (answers.some(x => !x.svar)) { showToast("Udfyld alle svar"); return; }
-    const nytSvar = { id: Date.now().toString(), navn: ((currentUser.fornavn || "") + " " + (currentUser.efternavn || "")).trim(), badgeNr: currentUser.badgeNr, afdeling: currentUser.afdeling || "", svar: answers, dato: new Date().toISOString().split("T")[0] };
+    const nytSvar = { id: Date.now().toString(), navn: ((currentUser.fornavn || "") + " " + (currentUser.efternavn || "")).trim(), badgeNr: currentUser.badgeNr, afdeling: currentUser.afdeling || "", svar: answers, dato: new Date().toISOString().split("T")[0], status: "afventer" };
     const svar = Array.isArray(a.svar) ? a.svar : [];
     try { await ansoeningerApi.update(id, { svar: [...svar, nytSvar] }); showToast("Svar sendt"); overlay.remove(); renderPage(activeTabId); } catch(e) { showToast("Fejl: " + e.message); }
   });
@@ -8298,13 +8298,34 @@ window.visAnsoegSvar = async function(id) {
   let html = '<div class="dialog" style="max-width:760px;width:95%;max-height:82vh;overflow:auto"><div class="dialog-title" style="font-size:16px">Indsendte svar</div>';
   if (!svar.length) html += '<p style="font-size:12px;color:var(--muted-fg)">Der er ikke indsendt svar endnu.</p>';
   svar.forEach(s => {
-    html += '<div class="card" style="padding:12px;margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:6px">' + (s.navn || 'Ukendt') + (s.badgeNr ? ' · Badge ' + s.badgeNr : '') + '</div>';
+    const sStatus = s.status || "afventer";
+    const sStatusLbl = sStatus === "godkendt" ? "Godkendt" : (sStatus === "afvist" ? "Afvist" : "Afventer");
+    const sStatusColor = sStatus === "godkendt" ? "var(--success)" : (sStatus === "afvist" ? "var(--destructive)" : "var(--warning)");
+    html += '<div class="card" style="padding:12px;margin-bottom:10px"><div class="flex items-start justify-between gap-3" style="margin-bottom:6px"><div><div style="font-size:12px;font-weight:700">' + (s.navn || 'Ukendt') + (s.badgeNr ? ' · Badge ' + s.badgeNr : '') + '</div><div style="font-size:10px;color:var(--muted-fg);margin-top:2px">Indsendt ' + (s.dato || '—') + '</div></div><span class="badge" style="background:transparent;color:' + sStatusColor + ';border:1px solid ' + sStatusColor + '">' + sStatusLbl + '</span></div>';
     (s.svar || []).forEach((r, i) => { html += '<div style="padding:8px 0;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--muted-fg)">' + (i + 1) + '. ' + (r.spoergsmaal || '') + '</div><div style="font-size:12px;margin-top:3px;white-space:pre-line">' + (r.svar || '') + '</div></div>'; });
+    if (s.behandletAf) html += '<div style="margin-top:8px;font-size:11px;color:var(--muted-fg)">Behandlet af ' + s.behandletAf + (s.behandletDato ? ' · ' + s.behandletDato : '') + '</div>';
+    if (sStatus === "afventer") html += '<div class="flex justify-end gap-2" style="margin-top:10px"><button class="btn btn-sm" style="background:var(--success);color:var(--success-foreground);border:none" onclick="behandlAnsoegSvar(\'' + a.id + '\',\'' + s.id + '\',\'godkendt\')">Godkend</button><button class="btn btn-sm btn-destructive" onclick="behandlAnsoegSvar(\'' + a.id + '\',\'' + s.id + '\',\'afvist\')">Afvis</button></div>';
     html += '</div>';
   });
   html += '<div class="flex justify-end"><button class="btn btn-outline" onclick="this.closest(\'.dialog-overlay\').remove()">Luk</button></div></div>';
   overlay.innerHTML = html;
   document.body.appendChild(overlay);
+};
+window.behandlAnsoegSvar = async function(id, svarId, status) {
+  try {
+    const alle = await ansoeningerApi.getAll();
+    const a = alle.find(x => x.id === id);
+    if (!a || !erLederForAnsoegning(a)) { showToast("Kun ansøgningsansvarlige kan behandle svar"); return; }
+    const svar = Array.isArray(a.svar) ? a.svar : [];
+    const idx = svar.findIndex(s => String(s.id) === String(svarId));
+    if (idx === -1) { showToast("Svar ikke fundet"); return; }
+    const behandler = ((currentUser.fornavn || "") + " " + (currentUser.efternavn || "")).trim();
+    const opdateredeSvar = svar.map(s => String(s.id) === String(svarId) ? { ...s, status: status, behandletAf: behandler, behandletBadge: currentUser.badgeNr, behandletDato: new Date().toISOString().split("T")[0] } : s);
+    await ansoeningerApi.update(id, { svar: opdateredeSvar });
+    showToast(status === "godkendt" ? "Ansøgning godkendt" : "Ansøgning afvist");
+    document.querySelectorAll(".dialog-overlay").forEach(x => x.remove());
+    renderPage(activeTabId);
+  } catch(e) { showToast("Fejl: " + e.message); }
 };
 
 
