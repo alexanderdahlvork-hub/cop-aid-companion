@@ -8018,6 +8018,10 @@ function harSvaretAnsoegning(a) {
   const svar = Array.isArray(a && a.svar) ? a.svar : [];
   return svar.some(s => s.badgeNr === currentUser.badgeNr);
 }
+function getEgetAnsoegSvar(a) {
+  const svar = Array.isArray(a && a.svar) ? a.svar : [];
+  return svar.find(s => s.badgeNr === currentUser.badgeNr) || null;
+}
 async function renderAnsoegninger(container) {
   container.innerHTML = '<div class="loading-center"><div class="spinner"></div><span>Indlæser ansøgninger...</span></div>';
   try {
@@ -8116,12 +8120,18 @@ async function renderAnsoegninger(container) {
         if (a.afdeling) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + a.afdeling + '</span>';
         const erFormular = a.formular === true;
         const antalSvar = Array.isArray(a.svar) ? a.svar.length : 0;
-        const harSvaret = harSvaretAnsoegning(a);
+        const egetSvar = getEgetAnsoegSvar(a);
+        const harSvaret = !!egetSvar;
         const kanBesvare = erLederForAnsoegning(a);
         const kanIndsendeSvar = erFormular && erAnsoegningTilBruger(a) && !harSvaret && a.ansoegerBadge !== userBadge;
+        const egetSvarStatus = (egetSvar && egetSvar.status) ? egetSvar.status : "afventer";
         if (isMine) html += '<span class="badge" style="background:transparent;color:var(--primary);border:1px solid var(--primary)">Min</span>';
         if (erFormular) html += '<span class="badge" style="background:transparent;color:var(--muted-fg);border:1px solid var(--border)">' + antalSvar + ' svar</span>';
-        if (harSvaret) html += '<span class="badge" style="background:transparent;color:var(--success);border:1px solid var(--success)">Besvaret</span>';
+        if (harSvaret) {
+          const egetSvarLbl = egetSvarStatus === "godkendt" ? "Godkendt" : (egetSvarStatus === "afvist" ? "Afvist" : "Afventer svar");
+          const egetSvarColor = egetSvarStatus === "godkendt" ? "var(--success)" : (egetSvarStatus === "afvist" ? "var(--destructive)" : "var(--warning)");
+          html += '<span class="badge" style="background:transparent;color:' + egetSvarColor + ';border:1px solid ' + egetSvarColor + '">' + egetSvarLbl + '</span>';
+        }
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--muted-fg);margin-top:4px">Oprettet af ' + (a.ansoegerNavn || "Ukendt") + (a.ansoegerBadge ? ' · Badge ' + a.ansoegerBadge : '') + ' · ' + (a.oprettetDato || "—") + '</div>';
         if (a.begrundelse) html += '<p style="font-size:12.5px;color:var(--fg);margin-top:8px;white-space:pre-line;line-height:1.5">' + a.begrundelse + '</p>';
@@ -8131,6 +8141,7 @@ async function renderAnsoegninger(container) {
           html += '</div>';
         }
         if (erFormular && kanBesvare && antalSvar) html += '<button class="btn btn-sm btn-outline" style="margin-top:10px" onclick="visAnsoegSvar(\'' + a.id + '\')">Se indsendte svar (' + antalSvar + ')</button>';
+        if (egetSvar && egetSvar.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Behandlet af:</b> ' + egetSvar.behandletAf + (egetSvar.behandletDato ? ' · ' + egetSvar.behandletDato : '') + '</div>';
         if (a.behandletAf) html += '<div style="margin-top:8px;padding:8px 10px;background:var(--muted);border-radius:6px;font-size:11px;color:var(--muted-fg)"><b style="color:var(--fg)">Besvaret af:</b> ' + a.behandletAf + (a.behandletDato ? ' · ' + a.behandletDato : '') + '</div>';
         html += '</div></div>';
         html += '<div class="flex flex-col gap-2 shrink-0" style="min-width:112px">';
