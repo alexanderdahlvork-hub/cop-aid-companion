@@ -5323,6 +5323,8 @@ function renderSidebar() {
 // ═══ TAB MANAGEMENT ═══
 
 async function openTab(type, data = {}, forceNew = false) {
+  // Always close sidebar popup when navigating to a new tab
+  document.getElementById("sidebar-popup")?.classList.add("hidden");
   const label = (data && data.label) || tabLabels[type] || type;
 
   if (!forceNew) {
