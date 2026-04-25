@@ -3721,6 +3721,268 @@ body.theme-light .penalty-head{background:rgba(15,23,42,.02)!important;border-co
   .penalty-row .penalty-cell:first-of-type{display:block}
 }
 
+/* ==========================================================
+   GLOBAL LIGHT THEME POLISH
+   Sidste blok i <style> — har højest specificity og overrider
+   alle tidligere theme-light-regler samt hardcoded rgba(255,255,255,...)
+   overlays, så hele tabletten ser ren og professionel ud i lyst tema.
+   ========================================================== */
+body.theme-light{
+  --bg:#f1f5fb !important;
+  --card:#ffffff !important;
+  --card-fg:#0f172a !important;
+  --card-2:#f8fafc !important;
+  --fg:#0f172a !important;
+  --secondary:#eef2f7 !important;
+  --secondary-fg:#1e293b !important;
+  --muted:#f1f5f9 !important;
+  --muted-fg:#64748b !important;
+  --border:#e2e8f0 !important;
+  --input:#e2e8f0 !important;
+  --sidebar-bg:#ffffff !important;
+  --sidebar-fg:#475569 !important;
+  --sidebar-border:#e2e8f0 !important;
+  background:#e7edf6 !important;
+  color:#0f172a !important;
+  color-scheme: light !important;
+}
+
+/* App shell og hovedflader */
+body.theme-light .app-shell{
+  background:#f5f7fb !important;
+  border:1px solid #d8dee8 !important;
+  box-shadow:0 0 0 1px rgba(15,23,42,.04), 0 10px 40px rgba(15,23,42,.08) !important;
+}
+
+/* Sidebar */
+body.theme-light .sidebar{
+  background:#ffffff !important;
+  border-right:1px solid #e2e8f0 !important;
+  color:#475569 !important;
+}
+body.theme-light .sidebar-item{ color:#64748b !important; }
+body.theme-light .sidebar-item:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
+body.theme-light .sidebar-item.active{ background:#eff6ff !important; color:#1d4ed8 !important; border-color:#bfdbfe !important; }
+body.theme-light .sidebar-logo-text{ color:#0f172a !important; }
+body.theme-light .sidebar-user-name{ color:#0f172a !important; }
+body.theme-light .sidebar-user-rank{ color:#64748b !important; }
+body.theme-light .sidebar-user-btn{ background:#f8fafc !important; border:1px solid #e2e8f0 !important; }
+body.theme-light .sidebar-user-btn:hover{ background:#f1f5f9 !important; }
+
+/* Top header + tabs bar */
+body.theme-light .top-header{
+  background:#ffffff !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  color:#0f172a !important;
+}
+body.theme-light .top-header-search input{
+  background:#f8fafc !important;
+  border:1px solid #e2e8f0 !important;
+  color:#0f172a !important;
+}
+body.theme-light .top-header-search svg{ color:#64748b !important; }
+body.theme-light .top-header-status,
+body.theme-light .top-header-date{ color:#64748b !important; }
+
+body.theme-light .tabs-bar,
+body.theme-light #tabs-bar{
+  background:#f8fafc !important;
+  border-bottom:1px solid #e2e8f0 !important;
+}
+body.theme-light .tab-btn{ color:#64748b !important; }
+body.theme-light .tab-btn:hover{ background:#eef2f7 !important; color:#0f172a !important; }
+body.theme-light .tab-btn.active{
+  background:#ffffff !important;
+  color:#0f172a !important;
+  border-color:#e2e8f0 !important;
+}
+body.theme-light .tab-close{ color:#64748b !important; }
+body.theme-light .tab-close:hover{ background:#fee2e2 !important; color:#b91c1c !important; }
+
+/* Generelle kort, paneler, dialoger */
+body.theme-light .card,
+body.theme-light .card-sm,
+body.theme-light .stat-card,
+body.theme-light .dialog,
+body.theme-light .sidebar-popup,
+body.theme-light .split-left,
+body.theme-light .split-right{
+  background:#ffffff !important;
+  color:#0f172a !important;
+  border:1px solid #e2e8f0 !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06) !important;
+}
+body.theme-light .dialog-overlay{ background:rgba(15,23,42,.45) !important; }
+body.theme-light .card-title,
+body.theme-light .dialog-title,
+body.theme-light .list-item-title,
+body.theme-light .info-field .info-value{ color:#0f172a !important; }
+body.theme-light .section-title,
+body.theme-light .list-item-sub,
+body.theme-light .info-field .info-label,
+body.theme-light .label,
+body.theme-light .app-meta{ color:#64748b !important; }
+
+/* Inputs, selects, textareas */
+body.theme-light .input,
+body.theme-light .select,
+body.theme-light .textarea{
+  background:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  color:#0f172a !important;
+}
+body.theme-light .input::placeholder,
+body.theme-light .textarea::placeholder{ color:#94a3b8 !important; }
+body.theme-light .input:focus,
+body.theme-light .select:focus,
+body.theme-light .textarea:focus{
+  border-color:#3b82f6 !important;
+  box-shadow:0 0 0 3px rgba(59,130,246,.15) !important;
+}
+
+/* Knapper */
+body.theme-light .btn-outline{
+  background:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  color:#0f172a !important;
+}
+body.theme-light .btn-outline:hover{ background:#f1f5f9 !important; }
+body.theme-light .btn-ghost{ color:#64748b !important; background:transparent !important; }
+body.theme-light .btn-ghost:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
+
+/* Badges (behold accentfarver, men ret muted) */
+body.theme-light .badge-muted{
+  background:#f1f5f9 !important;
+  color:#475569 !important;
+  border:1px solid #e2e8f0 !important;
+}
+
+/* Lister og tabeller */
+body.theme-light .list-item:hover,
+body.theme-light .table-row:hover{
+  background:#f1f5f9 !important;
+}
+body.theme-light .table-header{
+  background:#f8fafc !important;
+  color:#64748b !important;
+  border-bottom:1px solid #e2e8f0 !important;
+}
+
+/* Toast og spinner */
+body.theme-light .toast{
+  background:#ffffff !important;
+  color:#0f172a !important;
+  border:1px solid #e2e8f0 !important;
+  box-shadow:0 10px 30px rgba(15,23,42,.12) !important;
+}
+body.theme-light .spinner{ border-color:#e2e8f0 !important; border-top-color:#3b82f6 !important; }
+body.theme-light .loading-center{ color:#64748b !important; }
+
+/* ===== Modul-specifikke flader: vend hvide overlays til mørke ===== */
+/* Ansøgninger, ansatte, personregister, profil osv. bruger mange
+   rgba(255,255,255,.02–.08) baggrunde + borders. Vi neutraliserer dem
+   til lyse paneler. */
+body.theme-light .app-side-card,
+body.theme-light .app-main-card,
+body.theme-light .app-app-card,
+body.theme-light .app-dep-btn,
+body.theme-light .app-chip,
+body.theme-light .app-simple-row,
+body.theme-light .staff-admin-icon,
+body.theme-light .staff-rank-head,
+body.theme-light .staff-rank-body,
+body.theme-light .pr-sidebar,
+body.theme-light .pr-main,
+body.theme-light .pr-side-card,
+body.theme-light .pr-stat-card,
+body.theme-light .pr-notes-card,
+body.theme-light .pr-empty-card,
+body.theme-light .pr-mugshot,
+body.theme-light .pr-info,
+body.theme-light .pr-item,
+body.theme-light .pr-search-page,
+body.theme-light .pr-search-result{
+  background:#ffffff !important;
+  color:#0f172a !important;
+  border-color:#e2e8f0 !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.04) !important;
+}
+body.theme-light .app-dep-btn:hover,
+body.theme-light .app-app-card:hover,
+body.theme-light .pr-item:hover,
+body.theme-light .app-simple-row:hover{
+  background:#f8fafc !important;
+  border-color:#cbd5e1 !important;
+}
+body.theme-light .app-dep-btn.active,
+body.theme-light .pr-item.active,
+body.theme-light .app-chip.active{
+  background:#eff6ff !important;
+  border-color:#bfdbfe !important;
+  color:#1d4ed8 !important;
+}
+body.theme-light .pr-search-page,
+body.theme-light .pr-main{
+  background:
+    radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 28%),
+    #ffffff !important;
+}
+body.theme-light .pr-search-row-big .input{
+  background:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+}
+
+/* Tab dropdown og plus-knap */
+body.theme-light .tabs-dropdown{
+  background:#ffffff !important;
+  border:1px solid #e2e8f0 !important;
+  color:#0f172a !important;
+  box-shadow:0 10px 30px rgba(15,23,42,.12) !important;
+}
+body.theme-light .tabs-dropdown-item{ color:#0f172a !important; }
+body.theme-light .tabs-dropdown-item:hover{ background:#eff6ff !important; }
+body.theme-light .tabs-plus{
+  background:#ffffff !important;
+  border:1px solid #cbd5e1 !important;
+  color:#0f172a !important;
+}
+body.theme-light .tabs-plus:hover{ background:#f1f5f9 !important; }
+body.theme-light .tab-item{
+  background:#f8fafc !important;
+  border:1px solid #e2e8f0 !important;
+  color:#475569 !important;
+}
+body.theme-light .tab-item:hover{ background:#eef2f7 !important; color:#0f172a !important; }
+body.theme-light .tab-item.active{
+  background:#ffffff !important;
+  color:#0f172a !important;
+  border-color:#bfdbfe !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.05) !important;
+}
+
+/* Profil tabs */
+body.theme-light .pr-top-tabs{ border-bottom:1px solid #e2e8f0 !important; }
+body.theme-light .pr-tab{ color:#64748b !important; }
+body.theme-light .pr-tab.active{ color:#0f172a !important; border-color:#2563eb !important; }
+body.theme-light .pr-info-label,
+body.theme-light .pr-stat-label{ color:#64748b !important; }
+
+/* Scrollbars */
+body.theme-light ::-webkit-scrollbar-thumb{ background:#cbd5e1 !important; }
+body.theme-light ::-webkit-scrollbar-thumb:hover{ background:#94a3b8 !important; }
+body.theme-light ::-webkit-scrollbar-track{ background:transparent !important; }
+
+/* Sidebar popup items */
+body.theme-light .sidebar-popup-item{ color:#0f172a !important; }
+body.theme-light .sidebar-popup-item:hover{ background:#eff6ff !important; }
+body.theme-light .sidebar-popup-name{ color:#0f172a !important; }
+body.theme-light .sidebar-popup-rank{ color:#64748b !important; }
+body.theme-light .sidebar-popup-divider{ border-top:1px solid #e2e8f0 !important; }
+body.theme-light .sidebar-popup-item.logout{ border-top:1px solid #e2e8f0 !important; }
+body.theme-light .sidebar-popup-item.logout:hover{ background:#fee2e2 !important; color:#b91c1c !important; }
+
+/* Login (behold mørk for atmosfære) — ingen ændringer */
+
 </style>
 </head>
 <body>
