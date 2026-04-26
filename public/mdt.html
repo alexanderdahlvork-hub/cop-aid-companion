@@ -10963,7 +10963,7 @@ document.getElementById("person-save-btn").addEventListener("click", async () =>
           </div>
           <div class="pd-header-actions">
             <button class="btn btn-outline btn-sm" onclick="editPerson('${p.id}')">✎ Rediger</button>
-            <button class="btn btn-primary btn-sm" onclick="showOpretSigtelseDialog('${p.id}')">+ Sigtelse</button>
+            <button class="btn btn-primary btn-sm" onclick="void openTab('haendelser')">+ Sigtelse</button>
             <button class="btn btn-outline btn-sm" onclick="showEfterlysningDialog('${p.id}')">${p.status === 'eftersøgt' ? '✕ Fjern efterlysning' : '△ Efterlys'}</button>
           </div>
         </div>
