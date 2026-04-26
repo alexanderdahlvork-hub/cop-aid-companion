@@ -78,7 +78,7 @@ input, textarea, select, button { font-family: inherit; }
 .sidebar-user-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
-.sidebar-popup { position: absolute; bottom: 56px; left: 4px; right: 4px; background: var(--card); border: 1px solid rgba(59,130,246,.15); border-radius: 12px; padding: 10px; z-index: 50; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.sidebar-popup { position: fixed; bottom: 72px; left: 12px; width: 248px; background: var(--card); border: 1px solid rgba(59,130,246,.18); border-radius: 14px; padding: 10px; z-index: 2147483000; box-shadow: 0 20px 50px rgba(0,0,0,.55); }
 .sidebar-popup-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 12px; color: var(--fg); cursor: pointer; width: 100%; background: transparent; border: none; text-align: left; }
 .sidebar-popup-item:hover { background: var(--muted); }
 .sidebar-popup-item.logout:hover { color: var(--destructive); }
