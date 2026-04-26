@@ -10,24 +10,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Deep Ocean palette — dyb navy med cyan accent */
-  --bg: #0a1628; --fg: #e2e8f0; --card: #11243e; --card-fg: #e2e8f0;
-  --primary: #22d3ee; --primary-fg: #04131f; --secondary: #1c3556; --secondary-fg: #cbd5e1;
-  --muted: #122339; --muted-fg: #7d93b0; --accent: #22d3ee; --accent-fg: #04131f;
-  --destructive: #ef4444; --destructive-fg: #fff; --border: #1c3556; --input: #1c3556;
-  --ring: #22d3ee; --radius: 0.5rem; --warning: #f59e0b; --warning-fg: #1f1500;
-  --success: #34d399; --success-fg: #04221a;
-  --sidebar-bg: #081222; --sidebar-fg: #94a8c4; --sidebar-border: #1c3556;
+  /* Dansk Politi — officielt look: hvid baggrund, politiblå accent, rød advarsel */
+  --bg: #f4f6f9; --fg: #1a1f2b; --card: #ffffff; --card-fg: #1a1f2b;
+  --primary: #003d7a; --primary-fg: #ffffff; --secondary: #e9eef5; --secondary-fg: #1a1f2b;
+  --muted: #f1f3f6; --muted-fg: #5b6776; --accent: #003d7a; --accent-fg: #ffffff;
+  --destructive: #c8102e; --destructive-fg: #ffffff; --border: #d4dae3; --input: #d4dae3;
+  --ring: #003d7a; --radius: 0.375rem; --warning: #b8860b; --warning-fg: #ffffff;
+  --success: #1f7a3d; --success-fg: #ffffff;
+  --sidebar-bg: #003d7a; --sidebar-fg: #d6e1ef; --sidebar-border: #002a55;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
-body { font-family: 'Space Grotesk', sans-serif; background: #000; color: var(--fg); min-height: 100vh; display: block; }
+body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: block; -webkit-font-smoothing: antialiased; }
 input, textarea, select, button { font-family: inherit; }
-.mono { font-family: 'IBM Plex Mono', monospace; }
+.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-feature-settings: "tnum"; }
 
 /* ── Layout ── */
 #app { width: 100vw; height: 100vh; padding: 0; }
-.app-shell { width: 100%; height: 100%; border-radius: 0; background: var(--bg); overflow: hidden; border: 1px solid rgba(59,130,246,.2); display: flex; position: relative; box-shadow: 0 0 20px rgba(59,130,246,.15), 0 0 60px rgba(59,130,246,.05); }
+.app-shell { width: 100%; height: 100%; border-radius: 0; background: var(--bg); overflow: hidden; border: none; display: flex; position: relative; box-shadow: none; }
 .app-shell::before { content:""; position:absolute; top:0; left:0; width:64px; height:1px; background:linear-gradient(to right,rgba(59,130,246,.6),transparent); z-index:10; }
 .app-shell::after { content:""; position:absolute; top:0; left:0; width:1px; height:64px; background:linear-gradient(to bottom,rgba(59,130,246,.6),transparent); z-index:10; }
 
@@ -4301,6 +4301,231 @@ body.theme-light .sidebar-popup-item.logout{ border-top:1px solid #e2e8f0 !impor
 body.theme-light .sidebar-popup-item.logout:hover{ background:#fee2e2 !important; color:#b91c1c !important; }
 
 /* Login (behold mørk for atmosfære) — ingen ændringer */
+
+/* ════════════════════════════════════════════════════════════════
+   DANSK POLITI OVERRIDE — neutraliserer glow/AI-effekter
+   Officielt myndighedslook: hvid baggrund, politiblå, klare linjer
+   ════════════════════════════════════════════════════════════════ */
+
+/* Body & shell — fjern alle glødende kanter/skygger */
+body { background: var(--bg) !important; color: var(--fg) !important; }
+.app-shell {
+  background: var(--bg) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Sidebar — ensfarvet politiblå, hvid tekst (som politi.dk) */
+.sidebar {
+  background: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--sidebar-border) !important;
+  box-shadow: none !important;
+  color: var(--sidebar-fg) !important;
+}
+.sidebar-item, .sidebar-link, .sidebar-nav-item {
+  color: rgba(255,255,255,.78) !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  transition: background .12s ease, color .12s ease !important;
+}
+.sidebar-item:hover, .sidebar-link:hover, .sidebar-nav-item:hover {
+  background: rgba(255,255,255,.08) !important;
+  color: #fff !important;
+}
+.sidebar-item.active, .sidebar-link.active, .sidebar-nav-item.active {
+  background: rgba(255,255,255,.14) !important;
+  color: #fff !important;
+  border-left: 3px solid #fff !important;
+}
+
+/* Top header — ren hvid med tynd bundkant */
+.top-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  color: var(--fg) !important;
+}
+.top-header-search input {
+  background: var(--muted) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--fg) !important;
+  border-radius: 4px !important;
+}
+.top-header-search input:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,61,122,.15) !important;
+}
+
+/* Cards — hvide, tynd kant, ingen glow */
+.card, .card-sm, .stat-card, .split-left, .split-right, .dialog {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  color: var(--card-fg) !important;
+}
+.card:hover, .card-sm:hover {
+  border-color: #b8c2d1 !important;
+}
+
+/* Knapper — flade, myndighedslook */
+.btn {
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  transition: background .12s ease, border-color .12s ease !important;
+  box-shadow: none !important;
+}
+.btn-primary {
+  background: var(--primary) !important;
+  color: var(--primary-fg) !important;
+  border: 1px solid var(--primary) !important;
+}
+.btn-primary:hover {
+  background: #002a55 !important;
+  border-color: #002a55 !important;
+}
+.btn-outline {
+  background: #ffffff !important;
+  color: var(--fg) !important;
+  border: 1px solid var(--border) !important;
+}
+.btn-outline:hover {
+  background: var(--muted) !important;
+  border-color: #b8c2d1 !important;
+}
+.btn-destructive {
+  background: var(--destructive) !important;
+  color: #fff !important;
+  border: 1px solid var(--destructive) !important;
+}
+
+/* Inputs */
+.input, .select, .textarea, input[type=text], input[type=search], input[type=number], input[type=email], input[type=password], select, textarea {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  color: var(--fg) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+.input:focus, .select:focus, .textarea:focus, input:focus, select:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,61,122,.15) !important;
+}
+
+/* Badges — mere ensartet og dæmpet */
+.badge {
+  border-radius: 3px !important;
+  font-weight: 600 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+  font-size: 10px !important;
+  padding: 2px 7px !important;
+  box-shadow: none !important;
+}
+.badge-primary { background: rgba(0,61,122,.10) !important; color: var(--primary) !important; }
+.badge-success { background: rgba(31,122,61,.12) !important; color: var(--success) !important; }
+.badge-warning { background: rgba(184,134,11,.14) !important; color: var(--warning) !important; }
+.badge-destructive { background: rgba(200,16,46,.10) !important; color: var(--destructive) !important; }
+.badge-muted { background: var(--muted) !important; color: var(--muted-fg) !important; }
+
+/* Tabs (top-tabsbar) */
+.tab-nav, .tabs-bar {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+.tab-item {
+  border-radius: 4px 4px 0 0 !important;
+  border: 1px solid transparent !important;
+  border-bottom: none !important;
+  color: var(--muted-fg) !important;
+}
+.tab-item.active {
+  background: var(--card) !important;
+  color: var(--primary) !important;
+  border-color: var(--border) !important;
+  border-bottom: 2px solid var(--primary) !important;
+}
+
+/* Dialog overlay */
+.dialog-overlay {
+  background: rgba(15,23,42,.45) !important;
+  backdrop-filter: blur(2px) !important;
+}
+.dialog {
+  border-radius: 6px !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Lister & tabeller */
+.list-item, .table-row {
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent !important;
+  transition: background .1s ease !important;
+}
+.list-item:hover, .table-row:hover {
+  background: var(--muted) !important;
+}
+table { border-collapse: collapse !important; }
+table th {
+  background: var(--muted) !important;
+  color: var(--muted-fg) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 10px !important;
+  letter-spacing: .04em !important;
+  border-bottom: 1px solid var(--border) !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+}
+table td {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--muted); }
+::-webkit-scrollbar-thumb { background: #b8c2d1; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #8a96a8; }
+
+/* Sidebar popup — hvid kort med tynd kant */
+.sidebar-popup {
+  background: #ffffff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,.18) !important;
+  backdrop-filter: none !important;
+}
+.sidebar-popup-item { color: var(--fg) !important; border-radius: 4px !important; }
+.sidebar-popup-item:hover { background: var(--muted) !important; color: var(--primary) !important; }
+.sidebar-popup-item.logout:hover { background: rgba(200,16,46,.08) !important; color: var(--destructive) !important; }
+.sidebar-popup-name { color: var(--fg) !important; }
+.sidebar-popup-rank { color: var(--muted-fg) !important; }
+.sidebar-popup-avatar {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* Fjern animationer/glow på alle steder */
+.stat-card, .accent-bar, .pd-avatar, .list-item-avatar {
+  animation: none !important;
+  filter: none !important;
+}
+.stat-card .accent-bar { box-shadow: none !important; }
+
+/* Headings — solide, ikke gradient */
+h1, h2, h3, h4 {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--fg) !important;
+  letter-spacing: -0.01em !important;
+}
 
 </style>
 </head>
