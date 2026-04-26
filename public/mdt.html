@@ -5184,6 +5184,10 @@ async function initApp() {
       document.addEventListener("click", e => {
         if (!userBtn.contains(e.target) && !popup.contains(e.target)) popup.classList.add("hidden");
       });
+      // Luk popup ved scroll i alle scroll-containere
+      const closeOnScroll = () => popup.classList.add("hidden");
+      document.addEventListener("scroll", closeOnScroll, true);
+      window.addEventListener("resize", closeOnScroll);
     }
   } catch (err) {
     console.error("Appen crashede under login:", err);
