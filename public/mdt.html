@@ -4527,6 +4527,63 @@ h1, h2, h3, h4 {
   letter-spacing: -0.01em !important;
 }
 
+/* ── Ikoner: Dansk Politi-stil ── */
+/* Standard ikoner følger tekstfarve, men strammere stroke for myndighedslook */
+svg {
+  stroke-width: 1.75 !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Ikoner i sidebar — hvid/lysblå for at matche den blå baggrund */
+.sidebar svg, .sidebar-item svg, .sidebar-link svg, .sidebar-nav-item svg {
+  color: rgba(255,255,255,.85) !important;
+  stroke: currentColor !important;
+}
+.sidebar-item.active svg, .sidebar-link.active svg, .sidebar-nav-item.active svg {
+  color: #ffffff !important;
+}
+
+/* Ikoner i primære knapper — hvid */
+.btn-primary svg { color: #ffffff !important; stroke: currentColor !important; }
+.btn-destructive svg { color: #ffffff !important; stroke: currentColor !important; }
+
+/* Ikoner i outline-knapper — politiblå */
+.btn-outline svg { color: var(--primary) !important; stroke: currentColor !important; }
+
+/* Stat-card ikoner — politiblå som standard, rød ved alarm */
+.stat-card svg { color: var(--primary) !important; stroke: currentColor !important; }
+
+/* Top header ikoner */
+.top-header svg { color: var(--muted-fg) !important; stroke: currentColor !important; }
+.top-header-search svg { color: var(--muted-fg) !important; }
+
+/* Liste-ikoner — politiblå accent */
+.list-item svg, .pd-pill svg, .card svg:not(.no-tint) {
+  stroke: currentColor !important;
+}
+
+/* Advarsel-ikoner (alert, warning) — politirød */
+svg.icon-alert, svg.icon-warning, .alert-banner svg, .badge-destructive svg, .badge-warning svg {
+  color: var(--destructive) !important;
+}
+
+/* Avatar/initialer */
+.list-item-avatar, .pd-avatar, .sidebar-popup-avatar {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+/* Status-prikker */
+.dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.dot-success { background: var(--success) !important; box-shadow: none !important; }
+.dot-warning { background: var(--destructive) !important; box-shadow: none !important; }
+.dot-primary { background: var(--primary) !important; box-shadow: none !important; }
+.dot-muted { background: var(--muted-fg) !important; box-shadow: none !important; }
+
+/* Accent-bar på stat-cards — solid politiblå */
+.accent-bar { background: var(--primary) !important; box-shadow: none !important; }
+
 </style>
 </head>
 <body>
