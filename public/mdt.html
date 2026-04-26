@@ -6056,64 +6056,149 @@ async function renderNSKRegister(container) {
 async function renderDashboard(container) {
   const now = new Date();
   const dagNavn = ["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"];
-  const maaned = ["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec"];
+  const maaneder = ["januar","februar","marts","april","maj","juni","juli","august","september","oktober","november","december"];
+  const tid = now.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" });
+  const dato = `${dagNavn[now.getDay()]} d. ${now.getDate()}. ${maaneder[now.getMonth()]} ${now.getFullYear()}`;
+  const initialer = (currentUser.fornavn?.[0] || "") + (currentUser.efternavn?.[0] || "");
+
   container.innerHTML = `
-    <div class="card" style="position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--primary);border-radius:12px 0 0 12px"></div>
-      <div style="position:absolute;top:0;right:0;width:128px;height:128px;background:rgba(59,130,246,.05);border-radius:50%;transform:translate(50%,-50%)"></div>
-      <h1 style="font-size:16px;font-weight:700;color:var(--fg);padding-left:8px;position:relative">Velkommen, ${currentUser.fornavn}</h1>
-      <p class="mono" style="font-size:12px;color:var(--muted-fg);padding-left:8px;margin-top:4px;position:relative">${dagNavn[now.getDay()]} d. ${now.getDate()}. ${maaned[now.getMonth()]} — Badge: ${currentUser.badgeNr}</p>
-    </div>
-    <div class="grid grid-4" style="margin-top:16px">
-      <div class="stat-card"><div class="accent-bar" style="background:var(--primary)"></div><div class="stat-value mono">${currentUser.badgeNr}</div><div class="stat-label">Badge</div></div>
-      <div class="stat-card"><div class="accent-bar" style="background:var(--success)"></div><div class="stat-value">${currentUser.rang}</div><div class="stat-label">Rang</div></div>
-      <div class="stat-card" onclick="void openTab('kr')" style="cursor:pointer"><div class="accent-bar" style="background:var(--accent)"></div><div class="stat-value">Personer</div><div class="stat-label">Åbn personregister</div></div>
-      <div class="stat-card" onclick="void openTab('sag',{label:'Ny Sag'})" style="cursor:pointer"><div class="accent-bar" style="background:var(--warning)"></div><div class="stat-value">Ny sag</div><div class="stat-label">Åbn i ny tab</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px">
-      <div>
-        <div class="card mb-3" style="cursor:pointer;position:relative;overflow:hidden" onclick="void openTab('efterlysninger')">
-          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--warning);border-radius:12px 0 0 12px"></div>
-          <div class="flex items-center justify-between" style="position:relative"><div class="flex items-center gap-2">${icons.alert}<h3 style="font-size:14px;font-weight:600">Efterlyste Personer</h3></div><span style="color:var(--muted-fg)">→</span></div>
-          <div class="flex items-center gap-3" style="margin-top:12px;position:relative"><div style="width:44px;height:44px;border-radius:12px;background:rgba(224,100,42,.1);border:1px solid rgba(224,100,42,.15);display:flex;align-items:center;justify-content:center"><span class="mono" style="font-size:18px;font-weight:700;color:var(--warning)" id="dash-efterlyste">0</span></div><p style="font-size:12px;color:var(--muted-fg)">aktive efterlysninger</p></div>
-        </div>
-        <div class="card" style="position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent);border-radius:12px 0 0 12px"></div>
-          <div class="flex items-center gap-2 mb-2" style="position:relative">${icons.radio}<h3 style="font-size:14px;font-weight:600">Seneste Aktivitet</h3></div>
-          <p style="font-size:12px;color:var(--muted-fg);font-style:italic;position:relative">Ingen aktivitet i denne session.</p>
-        </div>
-      </div>
-      <div>
-        <div class="card mb-3" style="position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--primary);border-radius:12px 0 0 12px"></div>
-          <div class="flex items-center gap-2 mb-3" style="position:relative"><span style="color:var(--success)">${icons.radio}</span><h3 style="font-size:14px;font-weight:600">Din Status</h3></div>
-          <div style="font-size:12px;position:relative">
-            <div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Rang</span><span class="mono" style="font-weight:500">${isAdmin?"Administrator":currentUser.rang}</span></div>
-            ${currentUser.afdeling?`<div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Afdeling</span><span class="mono" style="font-weight:500">${currentUser.afdeling}</span></div>`:''}
-            <div class="flex items-center justify-between" style="margin-bottom:8px"><span style="color:var(--muted-fg)">Uddannelser</span><span class="mono" style="font-weight:500">${currentUser.uddannelser.length}</span></div>
-            <div class="flex items-center justify-between"><span style="color:var(--muted-fg)">Status</span><span class="mono flex items-center gap-1" style="font-size:11px;font-weight:500;color:var(--success)"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite"></span> I TJENESTE</span></div>
+    <div style="max-width:1200px;margin:0 auto">
+
+      <!-- Tjeneste-banner -->
+      <div style="background:var(--primary);color:#fff;border-radius:6px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:16px;min-width:0">
+          <div style="width:52px;height:52px;border-radius:6px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;letter-spacing:.5px;flex-shrink:0">${initialer}</div>
+          <div style="min-width:0">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.78;margin-bottom:3px">I tjeneste</div>
+            <div style="font-size:18px;font-weight:700;line-height:1.2">${currentUser.fornavn} ${currentUser.efternavn}</div>
+            <div style="font-size:12px;opacity:.85;margin-top:3px">${isAdmin ? "Administrator" : currentUser.rang}${currentUser.afdeling ? " · " + currentUser.afdeling : ""}</div>
           </div>
         </div>
-        <div class="card" style="position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:rgba(155,165,181,.2);border-radius:12px 0 0 12px"></div>
-          <h3 style="font-size:14px;font-weight:600;margin-bottom:12px;position:relative">Kollegaer <span class="mono" style="color:var(--muted-fg);font-weight:400" id="dash-kol-count">(0)</span></h3>
-          <div id="dash-kollegaer" style="position:relative"><p style="font-size:12px;color:var(--muted-fg);font-style:italic">Indlæser...</p></div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="mono" style="font-size:24px;font-weight:700;letter-spacing:.5px;line-height:1">${tid}</div>
+          <div style="font-size:11px;opacity:.85;margin-top:4px;text-transform:capitalize">${dato}</div>
+          <div class="mono" style="font-size:10px;opacity:.78;margin-top:6px;letter-spacing:.08em">BADGE ${currentUser.badgeNr}</div>
+        </div>
+      </div>
+
+      <!-- Operative nøgletal -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);margin-bottom:6px">Aktive efterlysninger</div>
+          <div class="mono" style="font-size:26px;font-weight:700;color:var(--destructive);line-height:1" id="dash-efterlyste">—</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);margin-bottom:6px">Åbne sager</div>
+          <div class="mono" style="font-size:26px;font-weight:700;color:var(--primary);line-height:1" id="dash-sager">—</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);margin-bottom:6px">Personer i register</div>
+          <div class="mono" style="font-size:26px;font-weight:700;color:var(--fg);line-height:1" id="dash-personer">—</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);margin-bottom:6px">Kollegaer på vagt</div>
+          <div class="mono" style="font-size:26px;font-weight:700;color:var(--success);line-height:1" id="dash-kol-count">—</div>
+        </div>
+      </div>
+
+      <!-- Hurtige genveje -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted-fg);margin-bottom:10px">Hurtige funktioner</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <button class="btn btn-outline" style="padding:14px 12px;flex-direction:column;gap:8px;height:auto;justify-content:center" onclick="void openTab('kr')">${icons.users}<span style="font-size:12px;font-weight:600">Personregister</span></button>
+          <button class="btn btn-outline" style="padding:14px 12px;flex-direction:column;gap:8px;height:auto;justify-content:center" onclick="void openTab('haendelser')">${icons.alert}<span style="font-size:12px;font-weight:600">Hændelser</span></button>
+          <button class="btn btn-outline" style="padding:14px 12px;flex-direction:column;gap:8px;height:auto;justify-content:center" onclick="void openTab('koeretoej')">${icons.car || icons.folder}<span style="font-size:12px;font-weight:600">Køretøjsregister</span></button>
+          <button class="btn btn-outline" style="padding:14px 12px;flex-direction:column;gap:8px;height:auto;justify-content:center" onclick="void openTab('efterlysninger')">${icons.alert}<span style="font-size:12px;font-weight:600">Efterlysninger</span></button>
+        </div>
+      </div>
+
+      <!-- Hovedindhold: 2 kolonner -->
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px">
+
+        <!-- Venstre: Tjeneste & info -->
+        <div>
+          <div class="card" style="padding:18px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+              <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Tjenesteoplysninger</h3>
+              <span style="font-size:11px;color:var(--success);font-weight:600;display:inline-flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block"></span>I TJENESTE</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;font-size:13px">
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--muted-fg)">Badge</span><span class="mono" style="font-weight:600">${currentUser.badgeNr}</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--muted-fg)">Rang</span><span style="font-weight:600">${isAdmin ? "Administrator" : currentUser.rang}</span></div>
+              ${currentUser.afdeling ? `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--muted-fg)">Afdeling</span><span style="font-weight:600">${currentUser.afdeling}</span></div>` : ''}
+              <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--muted-fg)">Uddannelser</span><span class="mono" style="font-weight:600">${currentUser.uddannelser?.length || 0}</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0"><span style="color:var(--muted-fg)">Vagt påbegyndt</span><span class="mono" style="font-weight:600">${tid}</span></div>
+              <div style="display:flex;justify-content:space-between;padding:5px 0"><span style="color:var(--muted-fg)">System</span><span class="mono" style="font-weight:600;color:var(--success)">ONLINE</span></div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+              <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Seneste aktivitet</h3>
+            </div>
+            <div id="dash-aktivitet" style="font-size:13px;color:var(--muted-fg)">
+              <div style="text-align:center;padding:24px 0;font-style:italic">Ingen registreret aktivitet i denne session</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Højre: kollegaer -->
+        <div>
+          <div class="card" style="padding:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+              <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Kollegaer på vagt</h3>
+              <span class="mono" style="font-size:11px;color:var(--muted-fg)" id="dash-kol-label">—</span>
+            </div>
+            <div id="dash-kollegaer">
+              <div style="text-align:center;padding:24px 0;color:var(--muted-fg);font-style:italic;font-size:12px">Indlæser…</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>`;
+
   try {
-    const [personer, betjente] = await Promise.all([personerApi.getAll(), betjenteApi.getAll()]);
-    const eftEl = document.getElementById("dash-efterlyste");
-    if (eftEl) eftEl.textContent = personer.filter(p => p.status === "eftersøgt").length;
-    const kolleger = betjente.filter(b => b.id !== currentUser.id).slice(0, 4);
-    const kolCount = document.getElementById("dash-kol-count");
-    if (kolCount) kolCount.textContent = `(${kolleger.length})`;
+    const [personer, betjente, sager] = await Promise.all([
+      personerApi.getAll(),
+      betjenteApi.getAll(),
+      (typeof sagerApi !== "undefined" && sagerApi.getAll) ? sagerApi.getAll().catch(() => []) : Promise.resolve([])
+    ]);
+
+    const efterlyste = personer.filter(p => p.status === "eftersøgt").length;
+    const aabneSager = sager.filter(s => s.status !== "lukket").length;
+    const kolleger = betjente.filter(b => b.id !== currentUser.id);
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set("dash-efterlyste", efterlyste);
+    set("dash-sager", aabneSager);
+    set("dash-personer", personer.length);
+    set("dash-kol-count", kolleger.length);
+    set("dash-kol-label", `${kolleger.length} aktive`);
+
     const kolDiv = document.getElementById("dash-kollegaer");
     if (kolDiv) {
-      kolDiv.innerHTML = kolleger.length === 0 ? '<p style="font-size:12px;color:var(--muted-fg);font-style:italic">Ingen kolleger</p>' :
-        kolleger.map(k => `<div class="flex items-center gap-2" style="margin-bottom:10px"><div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center">${icons.shield}</div><div><p style="font-size:12px;font-weight:500">${k.fornavn} ${k.efternavn}</p><p class="mono" style="font-size:10px;color:var(--muted-fg)">${k.rang} · ${k.badgeNr}</p></div></div>`).join("");
+      if (kolleger.length === 0) {
+        kolDiv.innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--muted-fg);font-style:italic;font-size:12px">Ingen andre kolleger på vagt</div>';
+      } else {
+        kolDiv.innerHTML = kolleger.slice(0, 6).map(k => {
+          const ini = (k.fornavn?.[0] || "") + (k.efternavn?.[0] || "");
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="width:32px;height:32px;border-radius:4px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${ini}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k.fornavn} ${k.efternavn}</div>
+              <div class="mono" style="font-size:10px;color:var(--muted-fg)">${k.rang} · ${k.badgeNr}</div>
+            </div>
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0" title="I tjeneste"></span>
+          </div>`;
+        }).join("");
+        if (kolleger.length > 6) {
+          kolDiv.innerHTML += `<div style="text-align:center;padding:10px 0 0;font-size:11px;color:var(--muted-fg)">+ ${kolleger.length - 6} flere</div>`;
+        }
+      }
     }
-  } catch (err) { console.error(err); }
+  } catch (err) {
+    console.error("[renderDashboard]", err);
+  }
 }
 
 // ═══ OPSLAGSTAVLE ═══
