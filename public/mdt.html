@@ -5146,9 +5146,9 @@ function applyTheme(theme) {
 }
 
 function initTheme() {
-  let saved = "dark";
-  try { saved = localStorage.getItem("copaid_theme") || "dark"; } catch {}
-  applyTheme(saved);
+  // Tving altid mørk navy (Mikkel/VA/Stausi-mix). Nulstil tidligere "light" preference.
+  try { localStorage.setItem("copaid_theme", "dark"); } catch {}
+  applyTheme("dark");
 }
 
 function toggleTheme() {
