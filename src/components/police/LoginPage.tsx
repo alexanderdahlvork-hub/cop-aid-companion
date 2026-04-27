@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, BadgeCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { betjenteApi } from "@/lib/api";
 import { isAdmin as checkIsAdmin } from "@/lib/permissions";
@@ -66,17 +65,17 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
       {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/police-bg.webp')" }} />
-      
-      <div className="absolute inset-0 bg-black/60" />
+        style={{ backgroundImage: "url('/images/police-bg.webp')" }}
+      />
+      <div className="absolute inset-0 bg-black/70" />
 
       {/* Login card */}
-      <div className="relative z-10 w-full max-w-sm mx-4">
-        <div className="p-8">
-          {/* Logo & title */}
-          <div className="flex flex-col items-center gap-3 mb-6">
+      <div className="relative z-10 w-full max-w-[340px] mx-4">
+        <div className="px-6 py-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
             <div
-              className="w-20 h-20 border border-[hsl(217,91%,50%,0.2)] flex items-center justify-center cursor-pointer select-none overflow-hidden transition-all hover:border-[hsl(217,91%,50%,0.4)] bg-[#174ecf]/0 text-slate-100/0 rounded-none opacity-100"
+              className="w-16 h-16 flex items-center justify-center cursor-pointer select-none mb-4"
               onClick={() => {
                 const nowMs = Date.now();
                 if (nowMs - lastTap < 500) {
@@ -91,74 +90,59 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
                   setTapCount(0);
                 }
                 setLastTap(nowMs);
-              }}>
-              
+              }}
+            >
               <img
-                alt="AVLD Systems"
-                className="w-12 h-12 object-contain"
-                src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png" />
-              
+                alt="Politi"
+                className="w-16 h-16 object-contain"
+                src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png"
+              />
             </div>
-            <div className="text-center">
-              <h1 className="text-xl font-bold text-white tracking-wide">POLITI MDT</h1>
-              <p className="text-[10px] text-[hsl(217,91%,50%)] font-mono tracking-[0.3em] mt-1">MOBILE DATA TERMINAL</p>
-            </div>
-          </div>
-
-          {/* Matched user */}
-          {matchedBetjent &&
-          <div className="text-center mb-4">
-              <p className="text-white/80 text-sm font-medium">
+            <h1 className="text-base font-medium text-white tracking-wide">Politi MDT</h1>
+            {matchedBetjent && (
+              <p className="text-white/60 text-xs mt-2">
                 {matchedBetjent.fornavn} {matchedBetjent.efternavn}
               </p>
-              <p className="text-[hsl(217,91%,50%,0.6)] text-[11px] font-mono">{matchedBetjent.rang}</p>
-            </div>
-          }
+            )}
+          </div>
 
           {/* Fields */}
           <div className="space-y-3">
-            <div className="relative">
-              <BadgeCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(217,91%,50%,0.4)]" />
-              <Input
-                placeholder="BADGE NUMMER"
-                value={badgeNr}
-                onChange={(e) => {setBadgeNr(e.target.value);setError("");}}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="bg-transparent border-white/15 !text-white placeholder:text-white/30 pl-10 h-11 text-[13px] rounded-xl focus:border-[hsl(217,91%,50%,0.5)] text-center" />
-              
-            </div>
-
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(217,91%,50%,0.4)]" />
-              <Input
-                type="password"
-                placeholder="ADGANGSKODE"
-                value={kodeord}
-                onChange={(e) => {setKodeord(e.target.value);setError("");}}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="bg-transparent border-white/15 !text-white placeholder:text-white/30 pl-10 h-11 text-[13px] rounded-xl focus:border-[hsl(217,91%,50%,0.5)] text-center"
-                disabled={loading} />
-              
-            </div>
+            <Input
+              placeholder="Badge nummer"
+              value={badgeNr}
+              onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              className="bg-white/5 border-white/10 !text-white placeholder:text-white/40 h-11 text-sm rounded-md focus:border-white/30 focus-visible:ring-0"
+            />
+            <Input
+              type="password"
+              placeholder="Adgangskode"
+              value={kodeord}
+              onChange={(e) => { setKodeord(e.target.value); setError(""); }}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              className="bg-white/5 border-white/10 !text-white placeholder:text-white/40 h-11 text-sm rounded-md focus:border-white/30 focus-visible:ring-0"
+              disabled={loading}
+            />
           </div>
 
-          {error && <p className="text-[11px] text-red-400 text-center mt-3">{error}</p>}
+          {error && <p className="text-xs text-red-400 text-center mt-3">{error}</p>}
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full h-11 rounded-xl bg-[hsl(217,91%,50%)] text-white text-[13px] font-semibold hover:bg-[hsl(217,91%,55%)] transition-all disabled:opacity-50 tracking-wider mt-5">
-            
-            {loading ? "LOGGER IND..." : "LOG IND"}
+            className="w-full h-11 rounded-md bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors disabled:opacity-50 mt-4"
+          >
+            {loading ? "Logger ind..." : "Log ind"}
           </button>
 
-          <p className="text-white/20 text-[9px] font-mono text-center mt-4 tracking-wider">
-            AVLD SYSTEMS — SIKRET FORBINDELSE
+          <p className="text-white/30 text-[10px] text-center mt-6">
+            Sikret forbindelse
           </p>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default LoginPage;
