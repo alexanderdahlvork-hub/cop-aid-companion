@@ -61,21 +61,14 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/police-bg.webp')" }}
-      />
-      <div className="absolute inset-0 bg-black/70" />
-
+    <div className="min-h-screen flex items-center justify-center relative bg-[#0b1220]">
       {/* Login card */}
-      <div className="relative z-10 w-full max-w-[340px] mx-4">
+      <div className="relative z-10 w-full max-w-[320px] mx-4">
         <div className="px-6 py-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
             <div
-              className="w-16 h-16 flex items-center justify-center cursor-pointer select-none mb-4"
+              className="w-12 h-12 flex items-center justify-center cursor-pointer select-none mb-4"
               onClick={() => {
                 const nowMs = Date.now();
                 if (nowMs - lastTap < 500) {
@@ -94,7 +87,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             >
               <img
                 alt="Politi"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 object-contain"
                 src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png"
               />
             </div>
