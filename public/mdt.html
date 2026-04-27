@@ -4962,6 +4962,104 @@ body:not(.theme-light) [style*="06b6d4"]{
   /* lader inline-styles bestå men neutraliserer ikke runtime — best effort */
 }
 
+/* ─── Aktive markeringer: hvid tekst i stedet for cyan ─── */
+body:not(.theme-light) .sidebar-item.active,
+body:not(.theme-light) .sidebar-item.active *,
+body:not(.theme-light) .tab-btn.active,
+body:not(.theme-light) .tab-item.active,
+body:not(.theme-light) .pr-tab.active,
+body:not(.theme-light) .pr-item.active,
+body:not(.theme-light) .pr-item.active *,
+body:not(.theme-light) .list-item.active,
+body:not(.theme-light) .list-item.active *{
+  color:#ffffff !important;
+}
+body:not(.theme-light) .sidebar-item.active svg,
+body:not(.theme-light) .tab-item.active svg,
+body:not(.theme-light) .pr-item.active svg{
+  color:#ffffff !important;
+  stroke:#ffffff !important;
+}
+
+/* ─── Bruger-knap nederst i sidebar (Admin Bruger) — mørk navy ─── */
+body:not(.theme-light) .sidebar-bottom{
+  border-top:1px solid #16294a !important;
+  background: transparent !important;
+}
+body:not(.theme-light) .sidebar-user{
+  background: rgba(255,255,255,.02) !important;
+  border:1px solid #16294a !important;
+  border-radius: 8px !important;
+}
+body:not(.theme-light) .sidebar-user:hover{
+  background: rgba(59,130,246,.10) !important;
+  border-color: rgba(59,130,246,.35) !important;
+}
+body:not(.theme-light) .sidebar-user-avatar{
+  background: rgba(59,130,246,.12) !important;
+  border:1px solid rgba(59,130,246,.30) !important;
+  color:#93c5fd !important;
+}
+body:not(.theme-light) .sidebar-user-name{ color:#ffffff !important; }
+body:not(.theme-light) .sidebar-user-rank{ color:#8a9bb5 !important; }
+body:not(.theme-light) .sidebar-user-dot{
+  background:#22c55e !important;
+  box-shadow: 0 0 6px rgba(34,197,94,.55) !important;
+}
+
+/* ─── Sidebar popup-menu (konto) — mørk navy i stedet for hvid ─── */
+body:not(.theme-light) .sidebar-popup{
+  background: linear-gradient(180deg, #11203a 0%, #0c1a30 100%) !important;
+  border:1px solid #1e3354 !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 24px 60px rgba(0,0,0,.65),
+    0 0 0 1px rgba(59,130,246,.08) inset !important;
+  color:#e6edf7 !important;
+  backdrop-filter: blur(12px) !important;
+}
+body:not(.theme-light) .sidebar-popup-head{
+  border-bottom:1px solid #16294a !important;
+}
+body:not(.theme-light) .sidebar-popup-name{ color:#ffffff !important; }
+body:not(.theme-light) .sidebar-popup-rank{ color:#8a9bb5 !important; }
+body:not(.theme-light) .sidebar-popup-item{
+  color:#cfd8e8 !important;
+  background: transparent !important;
+}
+body:not(.theme-light) .sidebar-popup-item:hover{
+  background: rgba(59,130,246,.10) !important;
+  color:#ffffff !important;
+}
+body:not(.theme-light) .sidebar-popup-item:hover .spi-icon{
+  color:#93c5fd !important;
+}
+body:not(.theme-light) .sidebar-popup-item.logout:hover{
+  background: rgba(239,68,68,.12) !important;
+  color:#fca5a5 !important;
+}
+body:not(.theme-light) .sidebar-popup-item.logout:hover .spi-icon{
+  color:#fca5a5 !important;
+}
+body:not(.theme-light) .sidebar-popup-divider{
+  border-top:1px solid #16294a !important;
+}
+body:not(.theme-light) .sidebar-popup-avatar{
+  background: linear-gradient(135deg, rgba(59,130,246,.40), rgba(59,130,246,.15)) !important;
+  border:1px solid rgba(59,130,246,.40) !important;
+  color:#ffffff !important;
+}
+
+/* Tooltip ("Project preview" / lignende) — mørk navy */
+body:not(.theme-light) [role="tooltip"],
+body:not(.theme-light) .tooltip,
+body:not(.theme-light) .tippy-box{
+  background:#11203a !important;
+  color:#e6edf7 !important;
+  border:1px solid #1e3354 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.55) !important;
+}
+
 </style>
 </head>
 <body>
