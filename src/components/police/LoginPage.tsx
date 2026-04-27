@@ -87,7 +87,7 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             >
               <img
                 alt="Politi"
-                className="w-16 h-16 object-contain"
+                className="w-12 h-12 object-contain"
                 src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png"
               />
             </div>
