@@ -4584,6 +4584,384 @@ svg.icon-alert, svg.icon-warning, .alert-banner svg, .badge-destructive svg, .ba
 /* Accent-bar på stat-cards — solid politiblå */
 .accent-bar { background: var(--primary) !important; box-shadow: none !important; }
 
+/* ==========================================================
+   ★ FINAL OVERRIDE — NAVY POLITITABLET
+   Mix af Mikkel/VA/Stausi-stil. Mørk navy baggrund, politiblå
+   accent, fuldt farvekodet (rød=alarm/efterlyst, gul=advarsel,
+   grøn=succes). Subtile glows, ingen neon. Højest specificity.
+   ========================================================== */
+:root,
+body, body.theme-dark, body:not(.theme-light){
+  --bg:#0a1320 !important;
+  --fg:#e6edf7 !important;
+  --card:#11203a !important;
+  --card-fg:#e6edf7 !important;
+  --card-2:#0f1b30 !important;
+  --primary:#3b82f6 !important;
+  --primary-fg:#ffffff !important;
+  --secondary:#172a47 !important;
+  --secondary-fg:#cfd8e8 !important;
+  --muted:#16273f !important;
+  --muted-fg:#8a9bb5 !important;
+  --accent:#3b82f6 !important;
+  --accent-fg:#ffffff !important;
+  --destructive:#ef4444 !important;
+  --destructive-fg:#ffffff !important;
+  --warning:#f59e0b !important;
+  --warning-fg:#0a1320 !important;
+  --success:#22c55e !important;
+  --success-fg:#0a1320 !important;
+  --border:#1e3354 !important;
+  --input:#1e3354 !important;
+  --ring:#3b82f6 !important;
+  --sidebar-bg:#0c1a2e !important;
+  --sidebar-fg:#a9bbd6 !important;
+  --sidebar-border:#16294a !important;
+  color-scheme: dark !important;
+}
+
+body, body.theme-dark, body:not(.theme-light){
+  background:
+    radial-gradient(circle at 12% 0%, rgba(59,130,246,.10), transparent 42%),
+    radial-gradient(circle at 88% 100%, rgba(59,130,246,.07), transparent 45%),
+    #07101e !important;
+  color: var(--fg) !important;
+}
+
+/* App shell — dyb navy med subtil blå kant */
+body:not(.theme-light) .app-shell{
+  background:
+    linear-gradient(180deg, #0c1830 0%, #08111f 100%) !important;
+  border:1px solid #1a2c4d !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 0 0 1px rgba(59,130,246,.05),
+    0 24px 60px rgba(0,0,0,.55) !important;
+}
+
+/* Sidebar — mørk navy, politiblå active state */
+body:not(.theme-light) .sidebar{
+  background: linear-gradient(180deg, #0b1830 0%, #08111f 100%) !important;
+  border-right:1px solid #16294a !important;
+  color:#a9bbd6 !important;
+}
+body:not(.theme-light) .sidebar-logo{ border-bottom:1px solid #16294a !important; }
+body:not(.theme-light) .sidebar-logo-icon{
+  background: rgba(59,130,246,.12) !important;
+  border:1px solid rgba(59,130,246,.30) !important;
+  color:#60a5fa !important;
+}
+body:not(.theme-light) .sidebar-logo-text{ color:#ffffff !important; }
+body:not(.theme-light) .sidebar-item{
+  color:#a9bbd6 !important;
+  border:1px solid transparent !important;
+}
+body:not(.theme-light) .sidebar-item:hover{
+  background: rgba(59,130,246,.08) !important;
+  color:#ffffff !important;
+}
+body:not(.theme-light) .sidebar-item.active{
+  background: linear-gradient(90deg, rgba(59,130,246,.22), rgba(59,130,246,.08)) !important;
+  color:#ffffff !important;
+  border:1px solid rgba(59,130,246,.40) !important;
+  box-shadow: inset 3px 0 0 #3b82f6 !important;
+}
+body:not(.theme-light) .sidebar-item svg,
+body:not(.theme-light) .sidebar-item.active svg{ color: currentColor !important; }
+body:not(.theme-light) .sidebar-user-name{ color:#ffffff !important; }
+body:not(.theme-light) .sidebar-user-rank{ color:#8a9bb5 !important; }
+body:not(.theme-light) .sidebar-user-btn{
+  background: rgba(255,255,255,.03) !important;
+  border:1px solid #16294a !important;
+}
+body:not(.theme-light) .sidebar-user-btn:hover{
+  background: rgba(59,130,246,.10) !important;
+  border-color: rgba(59,130,246,.35) !important;
+}
+
+/* Top header */
+body:not(.theme-light) .top-header{
+  background: linear-gradient(180deg, rgba(14,28,52,.92), rgba(10,20,38,.88)) !important;
+  border-bottom:1px solid #16294a !important;
+  backdrop-filter: blur(12px) !important;
+  color:#e6edf7 !important;
+}
+body:not(.theme-light) .top-header-search input{
+  background: #0d1c33 !important;
+  border:1px solid #1e3354 !important;
+  color:#e6edf7 !important;
+}
+body:not(.theme-light) .top-header-search input::placeholder{ color:#5d7493 !important; }
+body:not(.theme-light) .top-header-search input:focus{
+  border-color:#3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.18) !important;
+}
+body:not(.theme-light) .top-header-search svg{ color:#7d93b0 !important; }
+body:not(.theme-light) .top-header-status,
+body:not(.theme-light) .top-header-date{ color:#8a9bb5 !important; }
+
+/* Tabs bar */
+body:not(.theme-light) .tabs-bar,
+body:not(.theme-light) #tabs-bar{
+  background: #0a1830 !important;
+  border-bottom:1px solid #16294a !important;
+}
+body:not(.theme-light) .tab-btn,
+body:not(.theme-light) .tab-item{ color:#8a9bb5 !important; }
+body:not(.theme-light) .tab-btn:hover,
+body:not(.theme-light) .tab-item:hover{
+  background: rgba(59,130,246,.08) !important;
+  color:#ffffff !important;
+}
+body:not(.theme-light) .tab-btn.active,
+body:not(.theme-light) .tab-item.active{
+  background: #11203a !important;
+  color:#ffffff !important;
+  border-color: rgba(59,130,246,.35) !important;
+  box-shadow: inset 0 -2px 0 #3b82f6 !important;
+}
+body:not(.theme-light) .tab-close:hover{
+  background: rgba(239,68,68,.18) !important;
+  color:#fca5a5 !important;
+}
+
+/* Cards, dialoger, paneler — to-tonet navy med subtil top-highlight */
+body:not(.theme-light) .card,
+body:not(.theme-light) .card-sm,
+body:not(.theme-light) .stat-card,
+body:not(.theme-light) .dialog,
+body:not(.theme-light) .sidebar-popup,
+body:not(.theme-light) .split-left,
+body:not(.theme-light) .split-right,
+body:not(.theme-light) .pr-main,
+body:not(.theme-light) .pr-side-card,
+body:not(.theme-light) .pr-stat-card,
+body:not(.theme-light) .pr-notes-card,
+body:not(.theme-light) .pr-info,
+body:not(.theme-light) .pr-mugshot,
+body:not(.theme-light) .pr-empty-card,
+body:not(.theme-light) .staff-card,
+body:not(.theme-light) .staff-rank-group,
+body:not(.theme-light) .mdt-unified-card,
+body:not(.theme-light) .vehicle-card{
+  background: linear-gradient(180deg, #11203a 0%, #0d1a30 100%) !important;
+  color:#e6edf7 !important;
+  border:1px solid #1e3354 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 1px 2px rgba(0,0,0,.35),
+    0 10px 28px rgba(0,0,0,.30) !important;
+  backdrop-filter: none !important;
+}
+body:not(.theme-light) .dialog-overlay{ background: rgba(2,8,18,.78) !important; }
+body:not(.theme-light) .card-title,
+body:not(.theme-light) .dialog-title,
+body:not(.theme-light) .list-item-title,
+body:not(.theme-light) .info-field .info-value,
+body:not(.theme-light) h1,
+body:not(.theme-light) h2,
+body:not(.theme-light) h3,
+body:not(.theme-light) h4{
+  color:#ffffff !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+body:not(.theme-light) .section-title,
+body:not(.theme-light) .list-item-sub,
+body:not(.theme-light) .info-field .info-label,
+body:not(.theme-light) .label,
+body:not(.theme-light) .app-meta{ color:#8a9bb5 !important; }
+
+/* Inputs */
+body:not(.theme-light) .input,
+body:not(.theme-light) .select,
+body:not(.theme-light) .textarea{
+  background:#0d1c33 !important;
+  border:1px solid #1e3354 !important;
+  color:#e6edf7 !important;
+}
+body:not(.theme-light) .input::placeholder,
+body:not(.theme-light) .textarea::placeholder{ color:#5d7493 !important; }
+body:not(.theme-light) .input:focus,
+body:not(.theme-light) .select:focus,
+body:not(.theme-light) .textarea:focus{
+  border-color:#3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.18) !important;
+  outline: none !important;
+}
+
+/* Knapper — politiblå primary med blød glow */
+body:not(.theme-light) .btn-primary{
+  background: linear-gradient(180deg, #3b82f6, #2563eb) !important;
+  color:#ffffff !important;
+  border:1px solid #1d4ed8 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 4px 14px rgba(59,130,246,.30) !important;
+}
+body:not(.theme-light) .btn-primary:hover{
+  background: linear-gradient(180deg, #4f8ff7, #3b82f6) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 6px 18px rgba(59,130,246,.42) !important;
+}
+body:not(.theme-light) .btn-secondary,
+body:not(.theme-light) .btn-outline{
+  background: rgba(255,255,255,.03) !important;
+  border:1px solid #1e3354 !important;
+  color:#cfd8e8 !important;
+  box-shadow: none !important;
+}
+body:not(.theme-light) .btn-secondary:hover,
+body:not(.theme-light) .btn-outline:hover{
+  background: rgba(59,130,246,.10) !important;
+  border-color: rgba(59,130,246,.40) !important;
+  color:#ffffff !important;
+}
+body:not(.theme-light) .btn-destructive{
+  background: linear-gradient(180deg, #ef4444, #dc2626) !important;
+  color:#ffffff !important;
+  border:1px solid #b91c1c !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 4px 14px rgba(239,68,68,.28) !important;
+}
+body:not(.theme-light) .btn-destructive:hover{
+  background: linear-gradient(180deg, #f56565, #ef4444) !important;
+}
+
+/* Lister */
+body:not(.theme-light) .list-item,
+body:not(.theme-light) .pr-item,
+body:not(.theme-light) .pr-search-result,
+body:not(.theme-light) .mdt-unified-item{
+  background: rgba(255,255,255,.015) !important;
+  border:1px solid #16294a !important;
+  color:#cfd8e8 !important;
+}
+body:not(.theme-light) .list-item:hover,
+body:not(.theme-light) .pr-item:hover,
+body:not(.theme-light) .pr-search-result:hover,
+body:not(.theme-light) .mdt-unified-item:hover{
+  background: rgba(59,130,246,.07) !important;
+  border-color: rgba(59,130,246,.30) !important;
+}
+body:not(.theme-light) .list-item.active,
+body:not(.theme-light) .pr-item.active{
+  background: rgba(59,130,246,.14) !important;
+  border-color: rgba(59,130,246,.45) !important;
+  color:#ffffff !important;
+}
+
+/* Badges — fuldt farvekodet */
+body:not(.theme-light) .badge,
+body:not(.theme-light) .badge-default{
+  background: rgba(59,130,246,.14) !important;
+  color:#93c5fd !important;
+  border:1px solid rgba(59,130,246,.30) !important;
+}
+body:not(.theme-light) .badge-primary{
+  background: rgba(59,130,246,.18) !important;
+  color:#93c5fd !important;
+  border:1px solid rgba(59,130,246,.40) !important;
+}
+body:not(.theme-light) .badge-success{
+  background: rgba(34,197,94,.15) !important;
+  color:#86efac !important;
+  border:1px solid rgba(34,197,94,.35) !important;
+}
+body:not(.theme-light) .badge-warning{
+  background: rgba(245,158,11,.15) !important;
+  color:#fcd34d !important;
+  border:1px solid rgba(245,158,11,.35) !important;
+}
+body:not(.theme-light) .badge-destructive,
+body:not(.theme-light) .badge-danger{
+  background: rgba(239,68,68,.15) !important;
+  color:#fca5a5 !important;
+  border:1px solid rgba(239,68,68,.40) !important;
+}
+body:not(.theme-light) .badge-muted{
+  background: rgba(148,163,184,.10) !important;
+  color:#94a3b8 !important;
+  border:1px solid rgba(148,163,184,.22) !important;
+}
+
+/* Status-prikker farvekodet */
+body:not(.theme-light) .dot-success{ background:#22c55e !important; box-shadow: 0 0 6px rgba(34,197,94,.55) !important; }
+body:not(.theme-light) .dot-warning{ background:#f59e0b !important; box-shadow: 0 0 6px rgba(245,158,11,.55) !important; }
+body:not(.theme-light) .dot-danger,
+body:not(.theme-light) .dot-destructive{ background:#ef4444 !important; box-shadow: 0 0 6px rgba(239,68,68,.55) !important; }
+body:not(.theme-light) .dot-primary{ background:#3b82f6 !important; box-shadow: 0 0 6px rgba(59,130,246,.55) !important; }
+body:not(.theme-light) .dot-muted{ background:#64748b !important; box-shadow: none !important; }
+
+/* Avatars — solid politiblå med hvid tekst */
+body:not(.theme-light) .list-item-avatar,
+body:not(.theme-light) .pd-avatar,
+body:not(.theme-light) .sidebar-popup-avatar{
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+  color:#ffffff !important;
+  border: 1px solid rgba(59,130,246,.50) !important;
+  box-shadow: 0 2px 8px rgba(59,130,246,.30) !important;
+}
+
+/* Accent-bar på stat-cards */
+body:not(.theme-light) .accent-bar{
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8) !important;
+  box-shadow: 0 0 12px rgba(59,130,246,.40) !important;
+}
+
+/* Stat-card værdier */
+body:not(.theme-light) .stat-value{ color:#ffffff !important; }
+body:not(.theme-light) .stat-label{ color:#8a9bb5 !important; }
+
+/* Ikoner: kontekstuel farvning */
+body:not(.theme-light) svg{ stroke-width: 1.75; }
+body:not(.theme-light) .sidebar svg,
+body:not(.theme-light) .btn-primary svg,
+body:not(.theme-light) .btn-destructive svg{ color: currentColor !important; }
+body:not(.theme-light) .badge-destructive svg,
+body:not(.theme-light) .icon-alert{ color:#fca5a5 !important; }
+body:not(.theme-light) .badge-success svg,
+body:not(.theme-light) .icon-success{ color:#86efac !important; }
+body:not(.theme-light) .badge-warning svg,
+body:not(.theme-light) .icon-warning{ color:#fcd34d !important; }
+
+/* Scrollbars */
+body:not(.theme-light) ::-webkit-scrollbar{ width:8px; height:8px; }
+body:not(.theme-light) ::-webkit-scrollbar-track{ background: transparent; }
+body:not(.theme-light) ::-webkit-scrollbar-thumb{
+  background: rgba(59,130,246,.20);
+  border-radius: 4px;
+}
+body:not(.theme-light) ::-webkit-scrollbar-thumb:hover{
+  background: rgba(59,130,246,.35);
+}
+
+/* Login - matchende navy stil */
+body:not(.theme-light) #login-page .bg-img{
+  background: linear-gradient(135deg, #07101e 0%, #0c1830 50%, #07101e 100%) !important;
+}
+body:not(.theme-light) .login-card{
+  background: linear-gradient(180deg, rgba(17,32,58,.85), rgba(13,26,48,.85)) !important;
+  border:1px solid rgba(59,130,246,.20) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(59,130,246,.08) !important;
+}
+body:not(.theme-light) .login-btn{
+  background: linear-gradient(180deg, #3b82f6, #2563eb) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 6px 20px rgba(59,130,246,.35) !important;
+}
+
+/* Fjern gamle cyan accenter */
+body:not(.theme-light) [style*="22d3ee"],
+body:not(.theme-light) [style*="06b6d4"]{
+  /* lader inline-styles bestå men neutraliserer ikke runtime — best effort */
+}
+
 </style>
 </head>
 <body>
@@ -4768,9 +5146,9 @@ function applyTheme(theme) {
 }
 
 function initTheme() {
-  let saved = "dark";
-  try { saved = localStorage.getItem("copaid_theme") || "dark"; } catch {}
-  applyTheme(saved);
+  // Tving altid mørk navy (Mikkel/VA/Stausi-mix). Nulstil tidligere "light" preference.
+  try { localStorage.setItem("copaid_theme", "dark"); } catch {}
+  applyTheme("dark");
 }
 
 function toggleTheme() {
