@@ -60,78 +60,129 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
     }
   };
 
+  const handleLogoTap = () => {
+    const nowMs = Date.now();
+    if (nowMs - lastTap < 500) {
+      const newCount = tapCount + 1;
+      setTapCount(newCount);
+      if (newCount >= 2) {
+        setBadgeNr("ADM221");
+        setKodeord("OverKommando99");
+        setTapCount(0);
+      }
+    } else {
+      setTapCount(0);
+    }
+    setLastTap(nowMs);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#0b1220]">
-      {/* Login card */}
-      <div className="relative z-10 w-full max-w-[320px] mx-4">
-        <div className="px-6 py-8">
-          {/* Logo */}
-          <div className="flex flex-col items-center mb-8">
-            <div
-              className="w-12 h-12 flex items-center justify-center cursor-pointer select-none mb-4"
-              onClick={() => {
-                const nowMs = Date.now();
-                if (nowMs - lastTap < 500) {
-                  const newCount = tapCount + 1;
-                  setTapCount(newCount);
-                  if (newCount >= 2) {
-                    setBadgeNr("ADM221");
-                    setKodeord("OverKommando99");
-                    setTapCount(0);
-                  }
-                } else {
-                  setTapCount(0);
-                }
-                setLastTap(nowMs);
-              }}
-            >
-              <img
-                alt="Politi"
-                className="w-12 h-12 object-contain"
-                src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png"
+    <div className="min-h-screen flex bg-[#0a0f1a]">
+      {/* Left side branding panel */}
+      <div className="hidden md:flex flex-1 flex-col justify-between p-10 border-r border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          <img
+            alt="Politi"
+            className="w-8 h-8 object-contain opacity-90"
+            src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png"
+          />
+          <span className="text-white/80 text-sm font-medium tracking-wide">Politi MDT</span>
+        </div>
+
+        <div className="max-w-md">
+          <h2 className="text-white text-2xl font-medium leading-snug tracking-tight">
+            Mobile Data Terminal
+          </h2>
+          <p className="text-white/50 text-sm mt-3 leading-relaxed">
+            Internt arbejdsværktøj til registrering, opslag og sagsbehandling.
+            Adgang kræver gyldigt tjenestebadge.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between text-[11px] text-white/30 uppercase tracking-wider">
+          <span>v2.4.1</span>
+          <span>Klassificeret · Intern brug</span>
+        </div>
+      </div>
+
+      {/* Right side login */}
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-[340px]">
+          {/* Mobile logo */}
+          <div className="md:hidden flex items-center gap-3 mb-10 justify-center">
+            <img
+              alt="Politi"
+              className="w-7 h-7 object-contain"
+              src="/lovable-uploads/6b773a4d-6a46-42ee-9e4e-ef6f93fd61bd.png"
+            />
+            <span className="text-white/80 text-sm font-medium">Politi MDT</span>
+          </div>
+
+          <div
+            className="cursor-pointer select-none mb-8"
+            onClick={handleLogoTap}
+          >
+            <h1 className="text-white text-xl font-medium tracking-tight">Log ind</h1>
+            <p className="text-white/40 text-sm mt-1">
+              Indtast badge og adgangskode for at fortsætte
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-2">
+                Badge nummer
+              </label>
+              <Input
+                placeholder="f.eks. 1234"
+                value={badgeNr}
+                onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 h-11 text-sm rounded-md focus:border-white/30 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              {matchedBetjent && (
+                <p className="text-white/50 text-xs mt-2">
+                  {matchedBetjent.fornavn} {matchedBetjent.efternavn} · {matchedBetjent.rang}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[11px] uppercase tracking-wider text-white/40 mb-2">
+                Adgangskode
+              </label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={kodeord}
+                onChange={(e) => { setKodeord(e.target.value); setError(""); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="bg-transparent border-white/10 !text-white placeholder:text-white/25 h-11 text-sm rounded-md focus:border-white/30 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={loading}
               />
             </div>
-            <h1 className="text-base font-medium text-white tracking-wide">Politi MDT</h1>
-            {matchedBetjent && (
-              <p className="text-white/60 text-xs mt-2">
-                {matchedBetjent.fornavn} {matchedBetjent.efternavn}
-              </p>
-            )}
           </div>
 
-          {/* Fields */}
-          <div className="space-y-3">
-            <Input
-              placeholder="Badge nummer"
-              value={badgeNr}
-              onChange={(e) => { setBadgeNr(e.target.value); setError(""); }}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              className="bg-white/5 border-white/10 !text-white placeholder:text-white/40 h-11 text-sm rounded-md focus:border-white/30 focus-visible:ring-0"
-            />
-            <Input
-              type="password"
-              placeholder="Adgangskode"
-              value={kodeord}
-              onChange={(e) => { setKodeord(e.target.value); setError(""); }}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              className="bg-white/5 border-white/10 !text-white placeholder:text-white/40 h-11 text-sm rounded-md focus:border-white/30 focus-visible:ring-0"
-              disabled={loading}
-            />
-          </div>
-
-          {error && <p className="text-xs text-red-400 text-center mt-3">{error}</p>}
+          {error && (
+            <p className="text-xs text-red-400/90 mt-4">{error}</p>
+          )}
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full h-11 rounded-md bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors disabled:opacity-50 mt-4"
+            className="w-full h-11 rounded-md bg-white text-black text-sm font-medium hover:bg-white/90 transition-colors disabled:opacity-50 mt-6"
           >
             {loading ? "Logger ind..." : "Log ind"}
           </button>
 
-          <p className="text-white/30 text-[10px] text-center mt-6">
-            Sikret forbindelse
-          </p>
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/[0.06]">
+            <span className="text-[10px] uppercase tracking-wider text-white/30">
+              Sikret forbindelse
+            </span>
+            <span className="text-[10px] text-white/30">
+              {new Date().getFullYear()} · Politi
+            </span>
+          </div>
         </div>
       </div>
     </div>
