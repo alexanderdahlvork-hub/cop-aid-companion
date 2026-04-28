@@ -5401,60 +5401,25 @@ body:not(.theme-light) .tippy-box{
   <div class="bg-img"></div>
   <div class="overlay"></div>
   <div class="login-card">
-    <section class="login-identity" aria-label="Systeminformation">
-      <div class="login-brand-row">
-        <div class="login-logo" id="login-logo-tap" title="Politi MDT">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="login-brand-copy">
-          <h1 class="login-title">POLITI MDT</h1>
-          <p class="login-sub mono">MOBILE DATA TERMINAL</p>
-        </div>
-      </div>
+    <div class="login-logo" id="login-logo-tap" title="Politi MDT">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h1 class="login-title">Politi MDT</h1>
+    <p class="login-sub mono">Mobile Data Terminal</p>
 
-      <div class="login-system-copy">
-        <p class="login-kicker mono">Adgangskontrol</p>
-        <h2 class="login-heading">Sikker adgang til tjenestesystemet.</h2>
-        <p class="login-description">Log ind med dit badge og adgangskode for at fortsætte til registre, sager og rapportering.</p>
+    <div class="login-fields">
+      <div class="login-field">
+        <input id="login-badge" placeholder="Badge nummer" autocomplete="off">
       </div>
-
-      <div class="login-meta mono">
-        <div class="login-meta-item">
-          <span class="login-meta-label">Status</span>
-          <span class="login-meta-value status">Online</span>
-        </div>
-        <div class="login-meta-item">
-          <span class="login-meta-label">Adgang</span>
-          <span class="login-meta-value">Autoriseret personale</span>
-        </div>
+      <div id="login-matched" class="login-matched hidden"></div>
+      <div class="login-field">
+        <input id="login-password" type="password" placeholder="Adgangskode">
       </div>
-    </section>
+    </div>
 
-    <section class="login-form-panel" aria-label="Log ind">
-      <div class="login-form-head">
-        <p class="login-form-eyebrow mono">Identifikation</p>
-        <h2 class="login-form-title">Log ind</h2>
-        <p class="login-form-subtitle">Indtast dine tjenesteoplysninger for at åbne MDT.</p>
-      </div>
-
-      <div class="login-fields">
-        <div class="login-field">
-          <label for="login-badge" class="mono">Badge nummer</label>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.77 4 4 0 0 1 0 6.76 4 4 0 0 1-4.78 4.77 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
-          <input id="login-badge" placeholder="Indtast badge" autocomplete="off">
-        </div>
-        <div id="login-matched" class="login-matched hidden"></div>
-        <div class="login-field">
-          <label for="login-password" class="mono">Adgangskode</label>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input id="login-password" type="password" placeholder="Indtast adgangskode">
-        </div>
-      </div>
-
-      <div id="login-error" class="login-error hidden"></div>
-      <button id="login-btn" class="login-btn" type="button">LOG IND</button>
-      <p class="login-footer mono">AVLD SYSTEMS · SIKKER FORBINDELSE · v2.4.1</p>
-    </section>
+    <div id="login-error" class="login-error hidden"></div>
+    <button id="login-btn" class="login-btn" type="button">Log ind</button>
+    <p class="login-footer mono">AVLD Systems · v2.4.1</p>
   </div>
 </div>
 
