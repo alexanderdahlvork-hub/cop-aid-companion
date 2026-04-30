@@ -4592,72 +4592,67 @@ svg.icon-alert, svg.icon-warning, .alert-banner svg, .badge-destructive svg, .ba
    ========================================================== */
 :root,
 body, body.theme-dark, body:not(.theme-light){
-  --bg:#0a1320 !important;
-  --fg:#e6edf7 !important;
-  --card:#11203a !important;
-  --card-fg:#e6edf7 !important;
-  --card-2:#0f1b30 !important;
-  --primary:#3b82f6 !important;
-  --primary-fg:#ffffff !important;
-  --secondary:#172a47 !important;
-  --secondary-fg:#cfd8e8 !important;
-  --muted:#16273f !important;
-  --muted-fg:#8a9bb5 !important;
-  --accent:#3b82f6 !important;
-  --accent-fg:#ffffff !important;
-  --destructive:#ef4444 !important;
+  --bg:#111418 !important;
+  --fg:#e8ecf1 !important;
+  --card:#1a1f26 !important;
+  --card-fg:#e8ecf1 !important;
+  --card-2:#161a20 !important;
+  --primary:#7dd3fc !important;
+  --primary-fg:#0a0d11 !important;
+  --secondary:#222831 !important;
+  --secondary-fg:#cfd6df !important;
+  --muted:#1c2128 !important;
+  --muted-fg:#8a93a0 !important;
+  --accent:#7dd3fc !important;
+  --accent-fg:#0a0d11 !important;
+  --destructive:#f87171 !important;
   --destructive-fg:#ffffff !important;
-  --warning:#f59e0b !important;
-  --warning-fg:#0a1320 !important;
-  --success:#22c55e !important;
-  --success-fg:#0a1320 !important;
-  --border:#1e3354 !important;
-  --input:#1e3354 !important;
-  --ring:#3b82f6 !important;
-  --sidebar-bg:#0c1a2e !important;
-  --sidebar-fg:#a9bbd6 !important;
-  --sidebar-border:#16294a !important;
+  --warning:#fbbf24 !important;
+  --warning-fg:#111418 !important;
+  --success:#4ade80 !important;
+  --success-fg:#111418 !important;
+  --border:#2a3038 !important;
+  --input:#222831 !important;
+  --ring:#7dd3fc !important;
+  --sidebar-bg:#14181d !important;
+  --sidebar-fg:#a3acb8 !important;
+  --sidebar-border:#23282f !important;
   color-scheme: dark !important;
 }
 
 body, body.theme-dark, body:not(.theme-light){
-  background:
-    radial-gradient(circle at 12% 0%, rgba(59,130,246,.10), transparent 42%),
-    radial-gradient(circle at 88% 100%, rgba(59,130,246,.07), transparent 45%),
-    #07101e !important;
+  background: #0d1014 !important;
   color: var(--fg) !important;
 }
 
-/* App shell — dyb navy med subtil blå kant */
+/* App shell — soft graphite, ren uden glow */
 body:not(.theme-light) .app-shell{
-  background:
-    linear-gradient(180deg, #0c1830 0%, #08111f 100%) !important;
-  border:1px solid #1a2c4d !important;
+  background: #111418 !important;
+  border:1px solid #23282f !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.03),
-    0 0 0 1px rgba(59,130,246,.05),
-    0 24px 60px rgba(0,0,0,.55) !important;
+    inset 0 1px 0 rgba(255,255,255,.02),
+    0 20px 50px rgba(0,0,0,.45) !important;
 }
 
-/* Sidebar — mørk navy, politiblå active state */
+/* Sidebar — graphite, subtil accent */
 body:not(.theme-light) .sidebar{
-  background: linear-gradient(180deg, #0b1830 0%, #08111f 100%) !important;
-  border-right:1px solid #16294a !important;
-  color:#a9bbd6 !important;
+  background: #14181d !important;
+  border-right:1px solid #23282f !important;
+  color:#a3acb8 !important;
 }
-body:not(.theme-light) .sidebar-logo{ border-bottom:1px solid #16294a !important; }
+body:not(.theme-light) .sidebar-logo{ border-bottom:1px solid #23282f !important; }
 body:not(.theme-light) .sidebar-logo-icon{
-  background: rgba(59,130,246,.12) !important;
-  border:1px solid rgba(59,130,246,.30) !important;
-  color:#60a5fa !important;
+  background: rgba(125,211,252,.10) !important;
+  border:1px solid rgba(125,211,252,.25) !important;
+  color:#7dd3fc !important;
 }
-body:not(.theme-light) .sidebar-logo-text{ color:#ffffff !important; }
+body:not(.theme-light) .sidebar-logo-text{ color:#e8ecf1 !important; }
 body:not(.theme-light) .sidebar-item{
-  color:#a9bbd6 !important;
+  color:#a3acb8 !important;
   border:1px solid transparent !important;
 }
 body:not(.theme-light) .sidebar-item:hover{
-  background: rgba(59,130,246,.08) !important;
+  background: rgba(255,255,255,.04) !important;
   color:#ffffff !important;
 }
 body:not(.theme-light) .sidebar-item.active{
