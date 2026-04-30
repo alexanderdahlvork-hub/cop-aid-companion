@@ -5211,9 +5211,9 @@ body:not(.theme-light) .tippy-box{
    - Soft 8px radii, cleaner borders, softer shadows, less glow, more air
    ===================================================================== */
 body:not(.theme-light){
-  --ap-radius: 8px;
-  --ap-radius-sm: 6px;
-  --ap-radius-lg: 12px;
+  --ap-radius: 12px;
+  --ap-radius-sm: 10px;
+  --ap-radius-lg: 16px;
   --ap-border: rgba(255,255,255,.08);
   --ap-border-strong: rgba(255,255,255,.14);
   --ap-surface: #0f1620;
@@ -5222,6 +5222,74 @@ body:not(.theme-light){
   --ap-shadow-md: 0 6px 18px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.4);
   --ap-shadow-lg: 0 18px 40px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.35);
 }
+
+/* ─── Globalt: bløde hjørner på ALLE firkanter ─── */
+body:not(.theme-light) .card,
+body:not(.theme-light) .panel,
+body:not(.theme-light) .modal,
+body:not(.theme-light) .dialog,
+body:not(.theme-light) .sheet,
+body:not(.theme-light) .popover,
+body:not(.theme-light) .dropdown,
+body:not(.theme-light) .menu,
+body:not(.theme-light) .tooltip,
+body:not(.theme-light) .alert,
+body:not(.theme-light) .toast,
+body:not(.theme-light) .tab-content,
+body:not(.theme-light) .section,
+body:not(.theme-light) .stat-card,
+body:not(.theme-light) .summary-card,
+body:not(.theme-light) .list-item,
+body:not(.theme-light) .row-card,
+body:not(.theme-light) [class*="card"],
+body:not(.theme-light) [class*="panel"],
+body:not(.theme-light) [class*="box"]{
+  border-radius: var(--ap-radius-lg) !important;
+}
+
+body:not(.theme-light) button,
+body:not(.theme-light) .btn,
+body:not(.theme-light) input:not([type="checkbox"]):not([type="radio"]),
+body:not(.theme-light) select,
+body:not(.theme-light) textarea,
+body:not(.theme-light) .chip,
+body:not(.theme-light) .pill,
+body:not(.theme-light) .tab,
+body:not(.theme-light) .tag,
+body:not(.theme-light) .menu-item,
+body:not(.theme-light) .dropdown-item{
+  border-radius: var(--ap-radius) !important;
+}
+
+body:not(.theme-light) .badge,
+body:not(.theme-light) [class*="badge"]{
+  border-radius: 999px !important;
+}
+
+body:not(.theme-light) img,
+body:not(.theme-light) .avatar,
+body:not(.theme-light) .thumb,
+body:not(.theme-light) .thumbnail,
+body:not(.theme-light) .icon-box{
+  border-radius: var(--ap-radius) !important;
+}
+
+body:not(.theme-light) table,
+body:not(.theme-light) .table-wrap,
+body:not(.theme-light) .table-container{
+  border-radius: var(--ap-radius-lg) !important;
+  overflow: hidden !important;
+}
+
+/* Catch-all: ethvert element med eksisterende lille border-radius bumpes op */
+body:not(.theme-light) *[style*="border-radius:4px"],
+body:not(.theme-light) *[style*="border-radius: 4px"],
+body:not(.theme-light) *[style*="border-radius:6px"],
+body:not(.theme-light) *[style*="border-radius: 6px"],
+body:not(.theme-light) *[style*="border-radius:0"]{
+  border-radius: var(--ap-radius) !important;
+}
+
 
 /* Cards / panels */
 body:not(.theme-light) .card,
