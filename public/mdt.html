@@ -6721,6 +6721,10 @@ async function initApp() {
     const popup = $("#sidebar-popup");
     if (userBtn && popup && !userBtn.dataset.bound) {
       userBtn.dataset.bound = "1";
+      // Portal popup to <body> so no parent stacking context can hide it
+      if (popup.parentElement !== document.body) {
+        document.body.appendChild(popup);
+      }
       userBtn.addEventListener("click", (e) => { e.stopPropagation(); popup.classList.toggle("hidden"); });
       popup.addEventListener("click", e => e.stopPropagation());
       document.addEventListener("click", e => {
