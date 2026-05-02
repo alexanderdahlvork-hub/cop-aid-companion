@@ -5844,6 +5844,125 @@ body.theme-light pre{
   color: var(--ap-text) !important;
 }
 
+/* =========================================================
+   FLAT MATTE OVERRIDE — fjerner "skinnende AI-look"
+   - Slukker glows / text-shadows / box-shadow blur
+   - Flader gradients ud til solide matte farver
+   - Dæmper accent #3B82F6 til en mere afdæmpet tone
+   ========================================================= */
+:root{
+  --accent-muted: #4a5b75;
+  --accent-muted-2: #3d4d65;
+  --surface-flat: #14171d;
+  --surface-flat-2: #1a1d24;
+  --border-flat: #2a2e38;
+}
+
+/* Kill all glows globally */
+body, body * {
+  text-shadow: none !important;
+}
+body .glow,
+body .neon,
+body [class*="glow"],
+body [class*="neon"],
+body [style*="text-shadow"]{
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* Flatten box-shadows: keep only subtle 1px definition */
+body .card,
+body .panel,
+body .modal,
+body .modal-content,
+body .dialog,
+body .sidebar-popup,
+body .pr-side-card,
+body .pr-stat-card,
+body .pr-notes-card,
+body .pr-mugshot,
+body .stat-card,
+body .dispatch-card,
+body .fleet-card,
+body .case-card,
+body .top-header,
+body .sidebar{
+  box-shadow: 0 1px 0 rgba(0,0,0,.25) !important;
+  filter: none !important;
+}
+
+/* Remove glowing borders / ring effects */
+body *:focus,
+body *:focus-visible{
+  box-shadow: 0 0 0 1px var(--accent-muted) !important;
+  outline: none !important;
+}
+
+/* Flatten gradients to solid matte surfaces (dark theme only) */
+body:not(.theme-light) .card,
+body:not(.theme-light) .panel,
+body:not(.theme-light) .modal-content,
+body:not(.theme-light) .dialog,
+body:not(.theme-light) .sidebar,
+body:not(.theme-light) .top-header,
+body:not(.theme-light) .sidebar-popup,
+body:not(.theme-light) .pr-side-card,
+body:not(.theme-light) .pr-stat-card,
+body:not(.theme-light) .pr-notes-card{
+  background-image: none !important;
+  background: var(--surface-flat) !important;
+  border-color: var(--border-flat) !important;
+}
+
+body:not(.theme-light) .app-shell,
+body:not(.theme-light){
+  background-image: none !important;
+}
+
+/* Mute strong accent blue → soft slate-blue */
+body:not(.theme-light) [style*="#3B82F6"],
+body:not(.theme-light) [style*="#3b82f6"]{
+  /* leave inline overrides but tone via filter is risky; rely on class rules below */
+}
+body:not(.theme-light) .btn-primary,
+body:not(.theme-light) .badge-primary,
+body:not(.theme-light) .tab-item.active,
+body:not(.theme-light) .pr-tab.active,
+body:not(.theme-light) .sidebar-item.active,
+body:not(.theme-light) .nav-item.active{
+  background: var(--accent-muted) !important;
+  border-color: var(--accent-muted-2) !important;
+  color: #e8ecf2 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+body:not(.theme-light) .btn-primary:hover{
+  background: var(--accent-muted-2) !important;
+}
+
+/* Mute accent text colors */
+body:not(.theme-light) .text-accent,
+body:not(.theme-light) .accent,
+body:not(.theme-light) [class*="text-blue"]{
+  color: #8aa0bf !important;
+}
+
+/* Disable pulse / shine animations */
+body .pulse,
+body [class*="pulse"],
+body [class*="shimmer"],
+body [class*="shine"]{
+  animation: none !important;
+}
+
+/* Buttons: flat */
+body button,
+body .btn{
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+}
 </style>
 </head>
 <body>
