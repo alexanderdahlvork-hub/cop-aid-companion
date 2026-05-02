@@ -5851,6 +5851,29 @@ body.theme-light pre{
    - Dæmper accent #3B82F6 til en mere afdæmpet tone
    ========================================================= */
 :root{
+  /* Brugerdefineret matte palet — overskriver basis-temaet */
+  --bg: #0F141A !important;
+  --fg: #E6E9ED !important;
+  --card: #1A212B !important;
+  --card-fg: #E6E9ED !important;
+  --primary: #1F3A5F !important;
+  --primary-fg: #E6E9ED !important;
+  --secondary: #1A212B !important;
+  --secondary-fg: #E6E9ED !important;
+  --muted: #1A212B !important;
+  --muted-fg: #9AA4AF !important;
+  --accent: #2C5282 !important;
+  --accent-fg: #E6E9ED !important;
+  --border: #232b37 !important;
+  --input: #232b37 !important;
+  --ring: #2C5282 !important;
+  --sidebar-bg: #1A212B !important;
+  --sidebar-fg: #E6E9ED !important;
+  --sidebar-border: #232b37 !important;
+  --success: #2f9e6b !important;
+  --warning: #d4a72c !important;
+  --destructive: #c0392b !important;
+
   --app-bg: #0F141A;
   --surface-flat: #1A212B;
   --surface-flat-2: #1A212B;
@@ -5862,6 +5885,12 @@ body.theme-light pre{
   --status-green: #2f9e6b;
   --status-yellow: #d4a72c;
   --status-red:   #c0392b;
+}
+
+/* Force base surfaces uanset tema */
+html, body, #app, .app-shell{
+  background: #0F141A !important;
+  color: #E6E9ED !important;
 }
 
 /* Kill all glows globally */
