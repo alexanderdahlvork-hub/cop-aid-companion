@@ -13,7 +13,7 @@ const RemeoAfdeling = ({ currentUser, isAdmin }: RemeoAfdelingProps) => {
   return (
     <AfdelingLayout
       afdelingId="remeo"
-      titel="Remeo — Redning & Medicinsk"
+      titel="Romeo — Redning & Medicinsk"
       beskrivelse="Informationstavle, udrykninger, køretøjer & vagtplanlægning"
       defaultTabs={[
         { id: "tavle", label: "Informationstavle", removable: false },

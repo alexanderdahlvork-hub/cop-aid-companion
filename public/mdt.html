@@ -6454,7 +6454,7 @@ const afdelinger = [
   { id: "faerdsel", label: "Færdsel", icon: "gauge" },
   { id: "efterforskning", label: "Efterforskning", icon: "folder" },
   { id: "sig", label: "SIG", icon: "crosshair" },
-  { id: "remeo", label: "Remeo", icon: "heart" },
+  { id: "remeo", label: "Romeo", icon: "heart" },
 ];
 
 const tabLabels = {
@@ -6462,7 +6462,7 @@ const tabLabels = {
   koeretoej:"Køretøjsregister", ejendomme:"Ejendomsregister", efterlysninger:"Efterlysninger",
   opret_sag:"Opret Sag", haendelser:"Hændelser", rapporter:"Rapporter", boeder:"Bødetakster", sagsarkiv:"Sagsarkiv", flaade:"Flådestyring", fartberegner:"Fartberegner",
   ansatte:"Ansatte", ansoegninger:"Ansøgninger", profil:"Min Profil",
-  nsk:"NSK", lima:"Lima", faerdsel:"Færdsel", efterforskning:"Efterforskning", sig:"SIG", remeo:"Remeo",
+  nsk:"NSK", lima:"Lima", faerdsel:"Færdsel", efterforskning:"Efterforskning", sig:"SIG", remeo:"Romeo",
 };
 
 const afdelingDefaultTabs = {
@@ -10543,7 +10543,7 @@ window.behandlAnsoegSvar = async function(id, svarId, status) {
 
 // ═══ AFDELINGER (MED SUB-TABS) ═══
 async function renderAfdeling(container, afdId) {
-  const titler = {nsk:"NSK — Tilhørsforhold & Efterretning",lima:"Lima — Aktionsstyrken",faerdsel:"Færdsel — Færdselsafdelingen",efterforskning:"Efterforskning",sig:"SIG — Særlig Indsatsgruppe",remeo:"Remeo"};
+  const titler = {nsk:"NSK — Tilhørsforhold & Efterretning",lima:"Lima — Aktionsstyrken",faerdsel:"Færdsel — Færdselsafdelingen",efterforskning:"Efterforskning",sig:"SIG — Særlig Indsatsgruppe",remeo:"Romeo"};
   const isLeder = isAdmin || (currentUser.afdeling||"").toLowerCase().includes(afdId);
   
   // Load tabs from localStorage or use defaults

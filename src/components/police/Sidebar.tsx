@@ -64,7 +64,7 @@ const AFDELINGER = [
   { id: "Færdsel", label: "Færdsel", icon: Gauge, tab: "faerdsel" },
   { id: "Efterforskning", label: "Efterforskning", icon: FolderOpen, tab: "efterforskning" },
   { id: "SIG", label: "SIG", icon: Crosshair, tab: "sig" },
-  { id: "Remeo", label: "Remeo", icon: Heart, tab: "remeo" },
+  { id: "Romeo", label: "Romeo", icon: Heart, tab: "remeo" },
 ];
 
 const bottomLinks = [
