@@ -28,25 +28,25 @@ input, textarea, select, button { font-family: inherit; }
 /* ── Layout ── */
 #app { width: 100vw; height: 100vh; padding: 0; }
 .app-shell { width: 100%; height: 100%; border-radius: 0; background: var(--bg); overflow: hidden; border: none; display: flex; position: relative; box-shadow: none; }
-.app-shell::before { content:""; position:absolute; top:0; left:0; width:64px; height:1px; background:linear-gradient(to right,rgba(59,130,246,.6),transparent); z-index:10; }
-.app-shell::after { content:""; position:absolute; top:0; left:0; width:1px; height:64px; background:linear-gradient(to bottom,rgba(59,130,246,.6),transparent); z-index:10; }
+.app-shell::before { content:""; position:absolute; top:0; left:0; width:64px; height:1px; background:linear-gradient(to right,rgba(31,58,95,.6),transparent); z-index:10; }
+.app-shell::after { content:""; position:absolute; top:0; left:0; width:1px; height:64px; background:linear-gradient(to bottom,rgba(31,58,95,.6),transparent); z-index:10; }
 
 /* ── Login ── */
 #login-page { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; }
 #login-page .bg-img { position: absolute; inset: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); }
 #login-page .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
 .login-card { position: relative; z-index: 1; width: 100%; max-width: 360px; padding: 32px; }
-.login-logo { width: 80px; height: 80px; border: 1px solid rgba(59,130,246,.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; cursor: pointer; border-radius: 12px; background: rgba(59,130,246,.05); }
+.login-logo { width: 80px; height: 80px; border: 1px solid rgba(31,58,95,.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; cursor: pointer; border-radius: 12px; background: rgba(31,58,95,.05); }
 .login-logo svg { width: 40px; height: 40px; color: var(--primary); }
 .login-title { text-align: center; color: #fff; font-size: 20px; font-weight: 700; letter-spacing: .05em; }
 .login-sub { text-align: center; color: var(--primary); font-size: 10px; letter-spacing: .3em; margin-top: 4px; }
 .login-matched { text-align: center; margin: 12px 0; color: rgba(255,255,255,.8); font-size: 14px; }
-.login-matched small { display: block; color: rgba(59,130,246,.6); font-size: 11px; }
+.login-matched small { display: block; color: rgba(31,58,95,.6); font-size: 11px; }
 .login-field { position: relative; margin-bottom: 12px; }
-.login-field svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: rgba(59,130,246,.4); }
+.login-field svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: rgba(31,58,95,.4); }
 .login-field input { width: 100%; height: 44px; background: transparent; border: 1px solid rgba(255,255,255,.15); color: #fff; padding: 0 12px 0 40px; border-radius: 12px; font-size: 13px; text-align: center; outline: none; }
 .login-field input::placeholder { color: rgba(255,255,255,.3); }
-.login-field input:focus { border-color: rgba(59,130,246,.5); }
+.login-field input:focus { border-color: rgba(31,58,95,.5); }
 .login-btn { width: 100%; height: 44px; border-radius: 12px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; letter-spacing: .1em; margin-top: 20px; }
 .login-btn:hover { background: #4b90f7; }
 .login-btn:disabled { opacity: .5; cursor: default; }
@@ -56,21 +56,21 @@ input, textarea, select, button { font-family: inherit; }
 /* ── Sidebar ── */
 .sidebar { width: 224px; background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); display: flex; flex-direction: column; height: 100%; flex-shrink: 0; }
 .sidebar-logo { padding: 14px 16px; border-bottom: 1px solid var(--sidebar-border); display: flex; align-items: center; gap: 10px; }
-.sidebar-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.2); display: flex; align-items: center; justify-content: center; color: var(--primary); }
+.sidebar-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(31,58,95,.1); border: 1px solid rgba(31,58,95,.2); display: flex; align-items: center; justify-content: center; color: var(--primary); }
 .sidebar-logo-text { font-size: 13px; font-weight: 700; color: var(--fg); line-height: 1; }
 .sidebar-logo-text small { display: block; font-size: 9px; color: var(--primary); letter-spacing: .2em; font-weight: 500; }
 .sidebar-nav { flex: 1; padding: 8px; overflow-y: auto; }
-.sidebar-section-label { font-size: 9px; font-weight: 600; color: rgba(59,130,246,.6); text-transform: uppercase; letter-spacing: .2em; padding: 0 8px; margin-bottom: 6px; margin-top: 8px; }
-.sidebar-divider { margin: 10px 8px; height: 1px; background: linear-gradient(to right, rgba(59,130,246,.2), var(--sidebar-border), transparent); }
+.sidebar-section-label { font-size: 9px; font-weight: 600; color: rgba(31,58,95,.6); text-transform: uppercase; letter-spacing: .2em; padding: 0 8px; margin-bottom: 6px; margin-top: 8px; }
+.sidebar-divider { margin: 10px 8px; height: 1px; background: linear-gradient(to right, rgba(31,58,95,.2), var(--sidebar-border), transparent); }
 .sidebar-item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 8px; font-size: 12px; color: var(--muted-fg); background: transparent; border: 1px solid transparent; cursor: pointer; transition: all .15s; text-align: left; }
 .sidebar-item:hover { color: var(--fg); background: var(--secondary); }
-.sidebar-item.active { background: rgba(59,130,246,.1); color: var(--primary); font-weight: 600; border-color: rgba(59,130,246,.15); }
+.sidebar-item.active { background: rgba(31,58,95,.1); color: var(--primary); font-weight: 600; border-color: rgba(31,58,95,.15); }
 .sidebar-item.active::after { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--primary); margin-left: auto; }
 .sidebar-item svg { width: 14px; height: 14px; flex-shrink: 0; }
 .sidebar-bottom { border-top: 1px solid var(--sidebar-border); padding: 8px; }
 .sidebar-user { padding: 10px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-radius: 8px; transition: background .15s; }
 .sidebar-user:hover { background: var(--secondary); }
-.sidebar-user-avatar { width: 32px; height: 32px; border-radius: 8px; background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.2); display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; overflow: hidden; }
+.sidebar-user-avatar { width: 32px; height: 32px; border-radius: 8px; background: rgba(31,58,95,.1); border: 1px solid rgba(31,58,95,.2); display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; overflow: hidden; }
 .sidebar-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .sidebar-user-info { flex: 1; min-width: 0; }
 .sidebar-user-name { font-size: 11px; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -78,7 +78,7 @@ input, textarea, select, button { font-family: inherit; }
 .sidebar-user-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
-.sidebar-popup { position: fixed; bottom: 72px; left: 12px; width: 248px; background: var(--card); border: 1px solid rgba(59,130,246,.18); border-radius: 14px; padding: 10px; z-index: 2147483000; box-shadow: 0 20px 50px rgba(0,0,0,.55); }
+.sidebar-popup { position: fixed; bottom: 72px; left: 12px; width: 248px; background: var(--card); border: 1px solid rgba(31,58,95,.18); border-radius: 14px; padding: 10px; z-index: 2147483000; box-shadow: 0 20px 50px rgba(0,0,0,.55); }
 .sidebar-popup-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 12px; color: var(--fg); cursor: pointer; width: 100%; background: transparent; border: none; text-align: left; }
 .sidebar-popup-item:hover { background: var(--muted); }
 .sidebar-popup-item.logout:hover { color: var(--destructive); }
@@ -92,7 +92,7 @@ input, textarea, select, button { font-family: inherit; }
 .top-header-search input:focus { border-color: var(--primary); }
 .top-header-search svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--muted-fg); }
 .top-header-spacer { flex: 1; }
-.top-header-badge { font-size: 10px; color: var(--primary); padding: 2px 8px; background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.1); border-radius: 4px; font-weight: 500; }
+.top-header-badge { font-size: 10px; color: var(--primary); padding: 2px 8px; background: rgba(31,58,95,.08); border: 1px solid rgba(31,58,95,.1); border-radius: 4px; font-weight: 500; }
 .top-header-status { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted-fg); }
 .top-header-status svg { width: 12px; height: 12px; color: var(--success); }
 .top-header-time { display: flex; align-items: center; gap: 8px; }
@@ -103,7 +103,7 @@ input, textarea, select, button { font-family: inherit; }
 .tabs-bar { height: 32px; display: flex; align-items: center; gap: 2px; padding: 0 4px; background: rgba(28,32,41,.3); border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; }
 .tab-btn { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; color: var(--muted-fg); background: transparent; border: 1px solid transparent; cursor: pointer; white-space: nowrap; transition: all .15s; }
 .tab-btn:hover { color: var(--fg); background: var(--muted); }
-.tab-btn.active { color: var(--primary); background: rgba(59,130,246,.15); font-weight: 600; border-color: rgba(59,130,246,.2); }
+.tab-btn.active { color: var(--primary); background: rgba(31,58,95,.15); font-weight: 600; border-color: rgba(31,58,95,.2); }
 .tab-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
 .tab-close { margin-left: 4px; width: 14px; height: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted-fg); cursor: pointer; background: transparent; border: none; opacity: 0; transition: opacity .15s; }
 .tab-btn:hover .tab-close, .tab-btn.active .tab-close { opacity: 1; }
@@ -145,7 +145,7 @@ input, textarea, select, button { font-family: inherit; }
 
 /* ── Badges ── */
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 500; }
-.badge-primary { background: rgba(59,130,246,.15); color: var(--primary); }
+.badge-primary { background: rgba(31,58,95,.15); color: var(--primary); }
 .badge-warning { background: rgba(224,100,42,.15); color: var(--warning); }
 .badge-destructive { background: rgba(214,54,75,.15); color: var(--destructive); }
 .badge-success { background: rgba(51,160,106,.15); color: var(--success); }
@@ -192,7 +192,7 @@ input, textarea, select, button { font-family: inherit; }
 /* ── List Items ── */
 .list-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(42,47,58,.5); cursor: pointer; transition: background .1s; }
 .list-item:hover { background: rgba(255,255,255,.03); }
-.list-item.active { background: rgba(59,130,246,.08); border-left: 2px solid var(--primary); }
+.list-item.active { background: rgba(31,58,95,.08); border-left: 2px solid var(--primary); }
 .list-item-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
 .list-item-content { flex: 1; min-width: 0; }
 .list-item-title { font-size: 12px; font-weight: 500; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -238,8 +238,8 @@ input, textarea, select, button { font-family: inherit; }
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(59,130,246,.15); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,.3); }
+::-webkit-scrollbar-thumb { background: rgba(31,58,95,.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(31,58,95,.3); }
   
 @media (max-width: 1200px) {
   .grid-4 { grid-template-columns: 1fr 1fr; }
@@ -269,7 +269,7 @@ input, textarea, select, button { font-family: inherit; }
   max-width:248px !important;
   padding:8px !important;
   border-radius:14px !important;
-  border:1px solid rgba(59,130,246,.18) !important;
+  border:1px solid rgba(31,58,95,.18) !important;
   background: linear-gradient(180deg, rgba(15,21,33,.98), rgba(10,14,24,.98)) !important;
   box-shadow: 0 20px 50px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.02) inset !important;
   backdrop-filter: blur(12px);
@@ -283,8 +283,8 @@ input, textarea, select, button { font-family: inherit; }
 }
 .sidebar-popup-avatar{
   width:40px;height:40px;border-radius:11px;
-  background: linear-gradient(135deg, rgba(59,130,246,.28), rgba(59,130,246,.08));
-  border:1px solid rgba(59,130,246,.22);
+  background: linear-gradient(135deg, rgba(31,58,95,.28), rgba(31,58,95,.08));
+  border:1px solid rgba(31,58,95,.22);
   display:flex;align-items:center;justify-content:center;
   color:#9cc4ff;
   font-weight:700;font-size:14px;
@@ -310,7 +310,7 @@ input, textarea, select, button { font-family: inherit; }
   text-align:left;
 }
 .sidebar-popup-item:hover{
-  background: rgba(59,130,246,.10) !important;
+  background: rgba(31,58,95,.10) !important;
 }
 .sidebar-popup-item .spi-icon{
   width:16px;height:16px;flex-shrink:0;
@@ -374,7 +374,7 @@ body.theme-light .list-item:hover{
 .app-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .app-chip-row{display:flex;gap:8px;flex-wrap:wrap}
 .app-chip{padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:11px}
-.app-chip.active{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.28)}
+.app-chip.active{background:rgba(31,58,95,.14);border-color:rgba(31,58,95,.28)}
 @media (max-width:900px){.app-form-grid{grid-template-columns:1fr}}
 
 
@@ -398,8 +398,8 @@ body.theme-light .list-item:hover{
   cursor:pointer;
 }
 .app-dep-btn.active{
-  background:rgba(59,130,246,.12);
-  border-color:rgba(59,130,246,.22);
+  background:rgba(31,58,95,.12);
+  border-color:rgba(31,58,95,.22);
 }
 .app-app-card{
   border:1px solid rgba(255,255,255,.06);
@@ -440,7 +440,7 @@ body.theme-light .list-item:hover{
   cursor:pointer;
 }
 .app-table-row:last-child{border-bottom:none}
-.app-table-row:hover{background:rgba(59,130,246,.06)}
+.app-table-row:hover{background:rgba(31,58,95,.06)}
 .app-filters{
   display:flex;
   gap:10px;
@@ -510,8 +510,8 @@ body.theme-light .list-item:hover{
   cursor:pointer;
 }
 .app-simple-dep.active{
-  background:rgba(59,130,246,.12);
-  border-color:rgba(59,130,246,.22);
+  background:rgba(31,58,95,.12);
+  border-color:rgba(31,58,95,.22);
 }
 .app-simple-dep-name{
   font-size:13px;
@@ -763,7 +763,7 @@ body.theme-light .list-item:hover{
   font-size:20px;
   font-weight:700;
 }
-.staff-admin-icon.blue{background:rgba(59,130,246,.14);color:#93c5fd}
+.staff-admin-icon.blue{background:rgba(31,58,95,.14);color:#93c5fd}
 .staff-admin-icon.red{background:rgba(239,68,68,.14);color:#fca5a5}
 
 .staff-rank-group{
@@ -909,10 +909,10 @@ body.theme-light .list-item:hover{
   padding:12px;
   cursor:pointer;
 }
-.pr-item.active{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.22)}
+.pr-item.active{background:rgba(31,58,95,.12);border-color:rgba(31,58,95,.22)}
 .pr-top-tabs{display:flex;gap:14px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:10px;margin-bottom:16px}
 .pr-tab{font-size:13px;color:var(--muted-fg);padding-bottom:8px;border-bottom:2px solid transparent;cursor:pointer}
-.pr-tab.active{color:var(--fg);border-color:#3b82f6}
+.pr-tab.active{color:var(--fg);border-color:#1F3A5F}
 .pr-profile-top{display:grid;grid-template-columns:180px minmax(0,1fr);gap:22px;margin-bottom:20px}
 .pr-mugshot{
   width:180px;height:180px;border-radius:18px;overflow:hidden;
@@ -983,8 +983,8 @@ body.theme-light .list-item:hover{
   white-space:nowrap;
 }
 .tab-item.active{
-  background:rgba(59,130,246,.14);
-  border-color:rgba(59,130,246,.28);
+  background:rgba(31,58,95,.14);
+  border-color:rgba(31,58,95,.28);
 }
 .tab-close{
   opacity:.7;
@@ -1032,7 +1032,7 @@ body.theme-light .pr-tab{
 }
 body.theme-light .pr-tab.active{
   color:#0f172a !important;
-  border-color:#2563eb !important;
+  border-color:#2C5282 !important;
 }
 body.theme-light .tab-item{
   background:#ffffff !important;
@@ -1062,7 +1062,7 @@ body.theme-light .tab-item.active{
   border-color:rgba(37,99,235,.24) !important;
 }
 body.theme-light .tabs-plus{
-  background:linear-gradient(180deg, rgba(59,130,246,.98), rgba(37,99,235,.98)) !important;
+  background:linear-gradient(180deg, rgba(31,58,95,.98), rgba(37,99,235,.98)) !important;
 }
 body.theme-light .tabs-dropdown{
   background:linear-gradient(180deg,#ffffff,#f7faff) !important;
@@ -1094,8 +1094,8 @@ body.theme-light .tabs-dropdown-item:hover{background:rgba(37,99,235,.08)}
   white-space:nowrap !important;
 }
 .tab-item.active{
-  background:rgba(59,130,246,.14) !important;
-  border-color:rgba(59,130,246,.28) !important;
+  background:rgba(31,58,95,.14) !important;
+  border-color:rgba(31,58,95,.28) !important;
 }
 .tab-close{opacity:.7;cursor:pointer}
 .tabs-plus{
@@ -1201,8 +1201,8 @@ body.theme-light .top-header{
   background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)) !important;
 }
 #tabs-bar .tab-item.active{
-  border-color:rgba(59,130,246,.22) !important;
-  background:linear-gradient(180deg, rgba(59,130,246,.16), rgba(59,130,246,.08)) !important;
+  border-color:rgba(31,58,95,.22) !important;
+  background:linear-gradient(180deg, rgba(31,58,95,.16), rgba(31,58,95,.08)) !important;
   box-shadow: inset 0 -2px 0 rgba(96,165,250,.8);
 }
 #tabs-bar .tab-close{
@@ -1227,7 +1227,7 @@ body.theme-light .top-header{
 }
 #tabs-bar .tabs-plus:hover{
   background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)) !important;
-  border-color:rgba(59,130,246,.18) !important;
+  border-color:rgba(31,58,95,.18) !important;
   transform:translateY(-1px);
 }
 #tabs-bar .tabs-plus svg{
@@ -1311,13 +1311,13 @@ body.theme-light #tabs-bar .tabs-plus:hover{
 }
 .pr-item:hover{
   transform:translateY(-1px);
-  border-color:rgba(59,130,246,.18);
-  background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(255,255,255,.02));
+  border-color:rgba(31,58,95,.18);
+  background:linear-gradient(180deg, rgba(31,58,95,.06), rgba(255,255,255,.02));
 }
 .pr-item.active{
-  border-color:rgba(59,130,246,.28);
-  background:linear-gradient(180deg, rgba(59,130,246,.14), rgba(59,130,246,.06));
-  box-shadow:inset 0 0 0 1px rgba(59,130,246,.12);
+  border-color:rgba(31,58,95,.28);
+  background:linear-gradient(180deg, rgba(31,58,95,.14), rgba(31,58,95,.06));
+  box-shadow:inset 0 0 0 1px rgba(31,58,95,.12);
 }
 .pr-item-name{font-size:15px;font-weight:700;}
 .pr-item-sub{font-size:11px;color:var(--muted-fg);margin-top:6px;}
@@ -1344,8 +1344,8 @@ body.theme-light #tabs-bar .tabs-plus:hover{
   height:68px;
   margin:0 auto 16px;
   border-radius:20px;
-  border:1px solid rgba(59,130,246,.18);
-  background:rgba(59,130,246,.10);
+  border:1px solid rgba(31,58,95,.18);
+  background:rgba(31,58,95,.10);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -1378,7 +1378,7 @@ body.theme-light #tabs-bar .tabs-plus:hover{
 }
 .pr-tab.active{
   color:var(--fg);
-  border-color:#3b82f6;
+  border-color:#1F3A5F;
 }
 .pr-profile-top{
   display:grid;
@@ -1461,7 +1461,7 @@ body.theme-light .pr-top-tabs{
   border-bottom:1px solid rgba(15,23,42,.08) !important;
 }
 body.theme-light .pr-tab{color:#64748b !important;}
-body.theme-light .pr-tab.active{color:#0f172a !important;border-color:#2563eb !important;}
+body.theme-light .pr-tab.active{color:#0f172a !important;border-color:#2C5282 !important;}
 body.theme-light .pr-item{
   background:linear-gradient(180deg, rgba(15,23,42,.02), rgba(15,23,42,.01)) !important;
   border-color:rgba(15,23,42,.08) !important;
@@ -1537,8 +1537,8 @@ body.theme-light .pr-item.active{
 }
 .pr-search-result:hover{
   transform:translateY(-1px);
-  border-color:rgba(59,130,246,.18);
-  background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(255,255,255,.02));
+  border-color:rgba(31,58,95,.18);
+  background:linear-gradient(180deg, rgba(31,58,95,.06), rgba(255,255,255,.02));
 }
 .pr-search-result-name{
   font-size:16px;
@@ -1761,7 +1761,7 @@ body.theme-light .pr-search-page{
 body{
   background:
     radial-gradient(circle at top right, rgba(37,99,235,0.10), transparent 24%),
-    radial-gradient(circle at bottom left, rgba(59,130,246,0.07), transparent 26%),
+    radial-gradient(circle at bottom left, rgba(31,58,95,0.07), transparent 26%),
     linear-gradient(180deg, #08111d 0%, #060d17 100%) !important;
 }
 
@@ -1820,11 +1820,11 @@ body{
 .list-item:hover,
 .mdt-unified-item:hover{
   transform: translateY(-1px);
-  border-color: rgba(59,130,246,0.20) !important;
+  border-color: rgba(31,58,95,0.20) !important;
   background:
     linear-gradient(180deg, rgba(37,99,235,0.12), rgba(255,255,255,0.02)) !important;
   box-shadow:
-    0 0 0 1px rgba(59,130,246,0.08),
+    0 0 0 1px rgba(31,58,95,0.08),
     0 16px 32px rgba(0,0,0,0.18) !important;
 }
 
@@ -1837,13 +1837,13 @@ body{
   border-color: rgba(96,165,250,0.24) !important;
   box-shadow:
     inset 0 -2px 0 rgba(96,165,250,0.85),
-    0 0 0 1px rgba(59,130,246,0.08) !important;
+    0 0 0 1px rgba(31,58,95,0.08) !important;
 }
 
 .pr-search-page{
   background:
     radial-gradient(circle at top right, rgba(37,99,235,0.08), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(59,130,246,0.05), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(31,58,95,0.05), transparent 24%),
     linear-gradient(180deg, rgba(7,12,22,0.35), rgba(7,12,22,0.20)) !important;
 }
 
@@ -1865,7 +1865,7 @@ body{
 
 .pr-tab.active{
   color: #f8fbff !important;
-  border-color: #60a5fa !important;
+  border-color: #8aa0bf !important;
 }
 
 .pr-info-label,
@@ -1963,14 +1963,14 @@ body.theme-light .pr-item{
   border-radius:50%;
   overflow:hidden;
   border:2px solid rgba(96,165,250,.25);
-  background:rgba(59,130,246,.12);
+  background:rgba(31,58,95,.12);
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:24px;
   font-weight:800;
   flex-shrink:0;
-  box-shadow:0 0 20px rgba(59,130,246,.15);
+  box-shadow:0 0 20px rgba(31,58,95,.15);
 }
 .pd-avatar img{width:100%;height:100%;object-fit:cover;}
 .pd-header-info{flex:1;min-width:0;}
@@ -2023,7 +2023,7 @@ body.theme-light .pr-item{
   color:var(--fg);
 }
 .pd-pill.active{
-  background:rgba(59,130,246,.15);
+  background:rgba(31,58,95,.15);
   border-color:rgba(96,165,250,.30);
   color:#f8fbff;
 }
@@ -2209,8 +2209,8 @@ body.theme-light .pd-avatar{
 }
 .vr-search-result:hover{
   transform:translateY(-1px);
-  border-color:rgba(59,130,246,.18);
-  background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(255,255,255,.02));
+  border-color:rgba(31,58,95,.18);
+  background:linear-gradient(180deg, rgba(31,58,95,.06), rgba(255,255,255,.02));
 }
 .vr-search-result-title{
   font-size:16px;
@@ -2242,7 +2242,7 @@ body.theme-light .pd-avatar{
 }
 .vr-tab.active{
   color:var(--fg);
-  border-color:#3b82f6;
+  border-color:#1F3A5F;
 }
 .vr-layout{
   display:grid;
@@ -2337,8 +2337,8 @@ body.theme-light .pd-avatar{
 }
 .vr-empty-icon{
   width:68px;height:68px;margin:0 auto 16px;border-radius:20px;
-  border:1px solid rgba(59,130,246,.18);
-  background:rgba(59,130,246,.10);
+  border:1px solid rgba(31,58,95,.18);
+  background:rgba(31,58,95,.10);
   display:flex;align-items:center;justify-content:center;font-size:28px;
 }
 .vr-empty-title{font-size:20px;font-weight:800;margin-bottom:8px}
@@ -2356,7 +2356,7 @@ body.theme-light .vr-top-tabs{
   border-bottom:1px solid rgba(15,23,42,.08) !important;
 }
 body.theme-light .vr-tab{color:#64748b !important}
-body.theme-light .vr-tab.active{color:#0f172a !important;border-color:#2563eb !important}
+body.theme-light .vr-tab.active{color:#0f172a !important;border-color:#2C5282 !important}
 @media (max-width:1100px){
   .vr-layout,.vr-info-grid,.vr-stats{grid-template-columns:1fr}
 }
@@ -2417,8 +2417,8 @@ body.theme-light .vr-tab.active{color:#0f172a !important;border-color:#2563eb !i
 }
 .er-search-result:hover{
   transform:translateY(-1px);
-  border-color:rgba(59,130,246,.18);
-  background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(255,255,255,.02));
+  border-color:rgba(31,58,95,.18);
+  background:linear-gradient(180deg, rgba(31,58,95,.06), rgba(255,255,255,.02));
 }
 .er-search-result-title{
   font-size:16px;
@@ -2450,7 +2450,7 @@ body.theme-light .vr-tab.active{color:#0f172a !important;border-color:#2563eb !i
 }
 .er-tab.active{
   color:var(--fg);
-  border-color:#3b82f6;
+  border-color:#1F3A5F;
 }
 .er-layout{
   display:grid;
@@ -2469,7 +2469,7 @@ body.theme-light .vr-tab.active{color:#0f172a !important;border-color:#2563eb !i
   aspect-ratio: 1.15/1;
   border-radius:18px;
   background:
-    radial-gradient(circle at 70% 30%, rgba(59,130,246,.14), transparent 24%),
+    radial-gradient(circle at 70% 30%, rgba(31,58,95,.14), transparent 24%),
     linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
   border:1px solid rgba(255,255,255,.06);
   padding:14px;
@@ -2570,8 +2570,8 @@ body.theme-light .vr-tab.active{color:#0f172a !important;border-color:#2563eb !i
 }
 .er-empty-icon{
   width:68px;height:68px;margin:0 auto 16px;border-radius:20px;
-  border:1px solid rgba(59,130,246,.18);
-  background:rgba(59,130,246,.10);
+  border:1px solid rgba(31,58,95,.18);
+  background:rgba(31,58,95,.10);
   display:flex;align-items:center;justify-content:center;font-size:28px;
 }
 .er-empty-title{font-size:20px;font-weight:800;margin-bottom:8px}
@@ -2589,7 +2589,7 @@ body.theme-light .er-top-tabs{
   border-bottom:1px solid rgba(15,23,42,.08) !important;
 }
 body.theme-light .er-tab{color:#64748b !important}
-body.theme-light .er-tab.active{color:#0f172a !important;border-color:#2563eb !important}
+body.theme-light .er-tab.active{color:#0f172a !important;border-color:#2C5282 !important}
 @media (max-width:1100px){
   .er-layout,.er-info-grid,.er-stats{grid-template-columns:1fr}
 }
@@ -2605,16 +2605,16 @@ body.theme-light .er-tab.active{color:#0f172a !important;border-color:#2563eb !i
 .wr-search-row .input{height:56px;border-radius:16px}
 .wr-segment{display:flex;gap:8px;padding:4px;border:1px solid rgba(255,255,255,.06);border-radius:14px;background:rgba(255,255,255,.03)}
 .wr-seg-btn{padding:0 14px;height:48px;border:none;border-radius:10px;background:transparent;color:var(--muted-fg);cursor:pointer;font-weight:700}
-.wr-seg-btn.active{background:linear-gradient(180deg, rgba(59,130,246,.16), rgba(59,130,246,.08));color:var(--fg)}
+.wr-seg-btn.active{background:linear-gradient(180deg, rgba(31,58,95,.16), rgba(31,58,95,.08));color:var(--fg)}
 .wr-search-results{max-width:980px;margin:0 auto;display:grid;gap:12px}
 .wr-result{border:1px solid rgba(255,255,255,.06);border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));padding:16px 18px;cursor:pointer;transition:all .16s ease}
-.wr-result:hover{transform:translateY(-1px);border-color:rgba(59,130,246,.18);background:linear-gradient(180deg, rgba(59,130,246,.06), rgba(255,255,255,.02))}
+.wr-result:hover{transform:translateY(-1px);border-color:rgba(31,58,95,.18);background:linear-gradient(180deg, rgba(31,58,95,.06), rgba(255,255,255,.02))}
 .wr-result-title{font-size:16px;font-weight:800}
 .wr-result-sub{font-size:12px;color:var(--muted-fg);margin-top:6px}
 .wr-main{padding:22px}
 .wr-top-tabs{display:flex;gap:18px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:12px;margin-bottom:20px}
 .wr-tab{font-size:14px;color:var(--muted-fg);padding-bottom:10px;border-bottom:2px solid transparent;cursor:pointer;font-weight:600}
-.wr-tab.active{color:var(--fg);border-color:#3b82f6}
+.wr-tab.active{color:var(--fg);border-color:#1F3A5F}
 .wr-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px}
 .wr-side-stack{display:grid;gap:14px}
 .wr-card,.wr-side-card,.wr-stat-card,.wr-notes-card,.wr-info{border:1px solid rgba(255,255,255,.06);border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));padding:16px}
@@ -2634,7 +2634,7 @@ body.theme-light .er-tab.active{color:#0f172a !important;border-color:#2563eb !i
 .wr-back-row{display:flex;justify-content:flex-start;margin-bottom:16px}
 .wr-empty-state{min-height:calc(100vh - 240px);display:flex;align-items:center;justify-content:center}
 .wr-empty-card{width:min(520px,100%);border:1px solid rgba(255,255,255,.06);border-radius:24px;background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));padding:34px 28px;text-align:center}
-.wr-empty-icon{width:68px;height:68px;margin:0 auto 16px;border-radius:20px;border:1px solid rgba(59,130,246,.18);background:rgba(59,130,246,.10);display:flex;align-items:center;justify-content:center;font-size:28px}
+.wr-empty-icon{width:68px;height:68px;margin:0 auto 16px;border-radius:20px;border:1px solid rgba(31,58,95,.18);background:rgba(31,58,95,.10);display:flex;align-items:center;justify-content:center;font-size:28px}
 .wr-empty-title{font-size:20px;font-weight:800;margin-bottom:8px}
 .wr-empty-text{font-size:13px;color:var(--muted-fg);line-height:1.7}
 .wr-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid rgba(239,68,68,.22);background:rgba(239,68,68,.12);color:#fca5a5}
@@ -2642,17 +2642,17 @@ body.theme-light .wr-card,body.theme-light .wr-side-card,body.theme-light .wr-st
   background:linear-gradient(180deg,#ffffff,#f8fbff)!important;border-color:rgba(15,23,42,.08)!important}
 body.theme-light .wr-top-tabs{border-bottom:1px solid rgba(15,23,42,.08)!important}
 body.theme-light .wr-tab{color:#64748b!important}
-body.theme-light .wr-tab.active{color:#0f172a!important;border-color:#2563eb!important}
+body.theme-light .wr-tab.active{color:#0f172a!important;border-color:#2C5282!important}
 body.theme-light .wr-result{background:linear-gradient(180deg,#ffffff,#f8fbff)!important;border-color:rgba(15,23,42,.08)!important}
 body.theme-light .wr-seg-btn.active{background:linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.06));color:#0f172a}
 .wr-grad-filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
 .wr-grad-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted-fg);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s ease}
-.wr-grad-chip:hover{border-color:rgba(59,130,246,.25);color:var(--fg)}
-.wr-grad-chip.active{background:linear-gradient(180deg, rgba(59,130,246,.18), rgba(59,130,246,.08));border-color:rgba(59,130,246,.35);color:var(--fg)}
+.wr-grad-chip:hover{border-color:rgba(31,58,95,.25);color:var(--fg)}
+.wr-grad-chip.active{background:linear-gradient(180deg, rgba(31,58,95,.18), rgba(31,58,95,.08));border-color:rgba(31,58,95,.35);color:var(--fg)}
 .wr-grad-chip-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted-fg);font-size:10px;font-weight:800}
-.wr-grad-chip.active .wr-grad-chip-count{background:rgba(59,130,246,.25);color:#dbeafe}
+.wr-grad-chip.active .wr-grad-chip-count{background:rgba(31,58,95,.25);color:#dbeafe}
 .wr-result-grad{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;vertical-align:middle;border:1px solid transparent}
-.wr-grad-aktiv{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.32);color:#93c5fd}
+.wr-grad-aktiv{background:rgba(31,58,95,.14);border-color:rgba(31,58,95,.32);color:#93c5fd}
 .wr-grad-højrisiko{background:rgba(234,179,8,.14);border-color:rgba(234,179,8,.32);color:#fde68a}
 .wr-grad-bevæbnet{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.36);color:#fca5a5}
 .wr-grad-farlig{background:rgba(249,115,22,.16);border-color:rgba(249,115,22,.36);color:#fdba74}
@@ -2674,7 +2674,7 @@ body.theme-light .wr-grad-chip-count{background:rgba(15,23,42,.06);color:#475569
 @keyframes wd-pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}70%{box-shadow:0 0 0 14px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 
 .wd-hero{display:grid;grid-template-columns:180px minmax(0,1fr);gap:22px;padding:22px;border-radius:22px;background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.07);margin-bottom:18px}
-.wd-mug{width:180px;height:220px;border-radius:18px;background:linear-gradient(180deg, rgba(59,130,246,.14), rgba(59,130,246,.04));border:1px solid rgba(59,130,246,.22);display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:900;color:#93c5fd;overflow:hidden;letter-spacing:-.02em;flex-shrink:0}
+.wd-mug{width:180px;height:220px;border-radius:18px;background:linear-gradient(180deg, rgba(31,58,95,.14), rgba(31,58,95,.04));border:1px solid rgba(31,58,95,.22);display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:900;color:#93c5fd;overflow:hidden;letter-spacing:-.02em;flex-shrink:0}
 .wd-mug img{width:100%;height:100%;object-fit:cover}
 .wd-hero-content{display:flex;flex-direction:column;gap:14px;min-width:0}
 .wd-name{font-size:32px;font-weight:900;letter-spacing:-.03em;line-height:1.05;margin:0}
@@ -2685,7 +2685,7 @@ body.theme-light .wr-grad-chip-count{background:rgba(15,23,42,.06);color:#475569
 
 .wd-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
 .wd-info{padding:14px 16px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
-.wd-info-icon{width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.22);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.wd-info-icon{width:36px;height:36px;border-radius:10px;background:rgba(31,58,95,.12);border:1px solid rgba(31,58,95,.22);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .wd-info-body{min-width:0;flex:1}
 .wd-info-label{font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
 .wd-info-value{font-size:14px;font-weight:700;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2693,19 +2693,19 @@ body.theme-light .wr-grad-chip-count{background:rgba(15,23,42,.06);color:#475569
 .wd-section{padding:18px;border-radius:18px;background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008));border:1px solid rgba(255,255,255,.06);margin-bottom:14px}
 .wd-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .wd-section-title{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--fg);display:flex;align-items:center;gap:8px}
-.wd-section-title::before{content:"";display:inline-block;width:3px;height:14px;background:#3b82f6;border-radius:2px}
+.wd-section-title::before{content:"";display:inline-block;width:3px;height:14px;background:#1F3A5F;border-radius:2px}
 .wd-section-count{font-size:11px;color:var(--muted-fg);font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
 
 .wd-reason{padding:14px 16px;border-radius:12px;background:linear-gradient(90deg, rgba(234,179,8,.08), rgba(234,179,8,.02));border:1px solid rgba(234,179,8,.22);font-size:13px;line-height:1.7;color:#fde68a;font-weight:500}
 
 .wd-charge{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:11px 14px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);margin-bottom:6px;transition:all .14s ease}
-.wd-charge:hover{background:rgba(59,130,246,.05);border-color:rgba(59,130,246,.18)}
-.wd-charge-para{font-family:var(--mono,monospace);font-size:11px;color:#93c5fd;background:rgba(59,130,246,.1);padding:3px 8px;border-radius:6px;font-weight:700;border:1px solid rgba(59,130,246,.18)}
+.wd-charge:hover{background:rgba(31,58,95,.05);border-color:rgba(31,58,95,.18)}
+.wd-charge-para{font-family:var(--mono,monospace);font-size:11px;color:#93c5fd;background:rgba(31,58,95,.1);padding:3px 8px;border-radius:6px;font-weight:700;border:1px solid rgba(31,58,95,.18)}
 .wd-charge-desc{font-size:13px;color:var(--fg);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wd-charge-prison{font-family:var(--mono,monospace);font-size:12px;color:#fca5a5;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)}
 .wd-charge-fine{font-family:var(--mono,monospace);font-size:12px;color:#fde68a;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);min-width:90px;text-align:right}
 .wd-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.08)}
-.wd-total{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(59,130,246,.1), rgba(59,130,246,.03));border:1px solid rgba(59,130,246,.22);text-align:center}
+.wd-total{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(31,58,95,.1), rgba(31,58,95,.03));border:1px solid rgba(31,58,95,.22);text-align:center}
 .wd-total-label{font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
 .wd-total-value{font-family:var(--mono,monospace);font-size:18px;font-weight:900;color:#dbeafe;letter-spacing:-.02em}
 .wd-total.fine .wd-total-value{color:#fde68a}
@@ -2742,8 +2742,8 @@ body.theme-light .wd-section-title{color:#0f172a!important}
   background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));
   padding:14px;cursor:pointer;transition:.16s ease;
 }
-.case-card:hover{transform:translateY(-1px);border-color:rgba(59,130,246,.18)}
-.case-card.active{border-color:rgba(59,130,246,.28);background:linear-gradient(180deg, rgba(59,130,246,.14), rgba(59,130,246,.06))}
+.case-card:hover{transform:translateY(-1px);border-color:rgba(31,58,95,.18)}
+.case-card.active{border-color:rgba(31,58,95,.28);background:linear-gradient(180deg, rgba(31,58,95,.14), rgba(31,58,95,.06))}
 .case-main{padding:18px}
 .case-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
 .case-name{font-size:24px;font-weight:900;letter-spacing:-0.03em}
@@ -2776,8 +2776,8 @@ body.theme-light .wd-section-title{color:#0f172a!important}
   background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));padding:34px 28px;text-align:center
 }
 .case-empty-icon{
-  width:68px;height:68px;margin:0 auto 16px;border-radius:20px;border:1px solid rgba(59,130,246,.18);
-  background:rgba(59,130,246,.10);display:flex;align-items:center;justify-content:center;font-size:28px
+  width:68px;height:68px;margin:0 auto 16px;border-radius:20px;border:1px solid rgba(31,58,95,.18);
+  background:rgba(31,58,95,.10);display:flex;align-items:center;justify-content:center;font-size:28px
 }
 body.theme-light .case-sidebar,body.theme-light .case-main,body.theme-light .case-panel,body.theme-light .case-card,body.theme-light .case-stat,body.theme-light .case-list-item,body.theme-light .case-empty-card{
   background:linear-gradient(180deg,#ffffff,#f8fbff)!important;border-color:rgba(15,23,42,.08)!important;box-shadow:0 10px 24px rgba(15,23,42,.05)!important
@@ -3037,8 +3037,8 @@ body.theme-light .case-table thead th{
   transition:.16s ease;
 }
 .case-template-card:hover{
-  border-color:rgba(59,130,246,.18);
-  background:rgba(59,130,246,.06);
+  border-color:rgba(31,58,95,.18);
+  background:rgba(31,58,95,.06);
   transform:translateY(-1px);
 }
 .case-template-title{
@@ -3085,8 +3085,8 @@ body.theme-light .case-help-box{
   text-align:left;
 }
 .case-template-card:hover{
-  border-color:rgba(59,130,246,.18);
-  background:rgba(59,130,246,.06);
+  border-color:rgba(31,58,95,.18);
+  background:rgba(31,58,95,.06);
   transform:translateY(-1px);
 }
 .case-template-title{
@@ -3179,7 +3179,7 @@ body.theme-light .case-editor-section{
 .sag-clean-panel-title{font-size:13px;font-weight:800;margin-bottom:10px}
 .sag-template-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .sag-template-btn{border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.02);padding:11px 12px;font-size:12px;font-weight:700;text-align:left;cursor:pointer}
-.sag-template-btn:hover{border-color:rgba(59,130,246,.18);background:rgba(59,130,246,.06)}
+.sag-template-btn:hover{border-color:rgba(31,58,95,.18);background:rgba(31,58,95,.06)}
 .sag-section{margin-bottom:16px}
 .sag-section:last-child{margin-bottom:0}
 .sag-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -3221,7 +3221,7 @@ body.theme-light .sag-clean-panel,body.theme-light .sag-template-btn{border-colo
   border:1px solid rgba(255,255,255,.055) !important;
   border-radius:20px !important;
   background:
-    radial-gradient(circle at top right, rgba(59,130,246,.05), transparent 26%),
+    radial-gradient(circle at top right, rgba(31,58,95,.05), transparent 26%),
     linear-gradient(180deg, rgba(255,255,255,.026), rgba(255,255,255,.012)) !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.02),
@@ -3272,7 +3272,7 @@ body.theme-light .sag-clean-panel,body.theme-light .sag-template-btn{border-colo
 .sag-template-btn:hover{
   border-color:rgba(96,165,250,.22) !important;
   background:
-    linear-gradient(180deg, rgba(59,130,246,.12), rgba(255,255,255,.02)) !important;
+    linear-gradient(180deg, rgba(31,58,95,.12), rgba(255,255,255,.02)) !important;
   transform:translateY(-1px);
 }
 .sag-help{
@@ -3325,7 +3325,7 @@ body.theme-light .sag-clean-panel,body.theme-light .sag-template-btn{border-colo
 }
 #sag-person-results .list-item:hover,
 #sag-kt-results .list-item:hover{
-  background:rgba(59,130,246,.08);
+  background:rgba(31,58,95,.08);
 }
 body.theme-light .sag-clean-head,
 body.theme-light .sag-clean-panel{
@@ -3376,7 +3376,7 @@ body.theme-light .case-list-item{
   border-radius:22px;
   overflow:hidden;
   background:
-    radial-gradient(circle at top right, rgba(59,130,246,.04), transparent 24%),
+    radial-gradient(circle at top right, rgba(31,58,95,.04), transparent 24%),
     linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.02),
@@ -3421,7 +3421,7 @@ body.theme-light .case-list-item{
 .sag-clean-panel textarea.textarea:focus,
 .sag-clean-panel select.select:focus{
   border-color:rgba(96,165,250,.28) !important;
-  box-shadow:0 0 0 3px rgba(59,130,246,.10);
+  box-shadow:0 0 0 3px rgba(31,58,95,.10);
 }
 .sag-quick-row{
   display:grid;
@@ -3483,7 +3483,7 @@ body.theme-light .case-list-item{
   font-weight:700 !important;
 }
 .btn.btn-primary{
-  background:linear-gradient(180deg, rgba(59,130,246,.95), rgba(37,99,235,.92)) !important;
+  background:linear-gradient(180deg, rgba(31,58,95,.95), rgba(37,99,235,.92)) !important;
   border:1px solid rgba(96,165,250,.18) !important;
   box-shadow:0 12px 24px rgba(37,99,235,.16), inset 0 1px 0 rgba(255,255,255,.12);
 }
@@ -3494,7 +3494,7 @@ body.theme-light .case-list-item{
 }
 .btn.btn-outline:hover,
 .case-mini-btn:hover{
-  background:rgba(59,130,246,.08) !important;
+  background:rgba(31,58,95,.08) !important;
   border-color:rgba(96,165,250,.16) !important;
 }
 .case-list-item{
@@ -3555,7 +3555,7 @@ body.theme-light .sag-template-select{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:10px 12px;border-radius:10px;cursor:pointer
 }
-.sag-picker-item:hover{background:rgba(59,130,246,.08)}
+.sag-picker-item:hover{background:rgba(31,58,95,.08)}
 .sag-selected-list{display:grid;gap:8px;margin-top:10px}
 .sag-selected-chip{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -3630,7 +3630,7 @@ body.theme-light .sag-charge-item{
 .penalty-box{width:min(1060px,96vw);max-height:90vh;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:20px;background:linear-gradient(180deg, rgba(14,20,32,.99), rgba(8,12,22,.99));box-shadow:0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04);display:flex;flex-direction:column}
 .penalty-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.015);flex-shrink:0}
 .penalty-head-left{display:flex;align-items:center;gap:14px}
-.penalty-head-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.12));display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+.penalty-head-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(31,58,95,.15),rgba(139,92,246,.12));display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
 .penalty-title{font-size:18px;font-weight:900;letter-spacing:-0.03em}
 .penalty-sub{font-size:11px;color:var(--muted-fg);margin-top:3px;letter-spacing:.01em}
 .penalty-head-stats{display:flex;gap:16px;align-items:center;margin-right:12px}
@@ -3649,12 +3649,12 @@ body.theme-light .sag-charge-item{
 .penalty-group-head:hover{background:rgba(255,255,255,.05)}
 .penalty-group-head .pg-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:transform .2s}
 .penalty-group-head .pg-icon.open{transform:rotate(180deg)}
-.penalty-group-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(59,130,246,.12);color:var(--primary)}
+.penalty-group-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(31,58,95,.12);color:var(--primary)}
 .penalty-group-body{display:none;border-top:1px solid rgba(255,255,255,.04)}
 .penalty-group-body.open{display:block}
 .penalty-row{display:grid;grid-template-columns:minmax(0,1fr) 100px 80px 70px auto;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .12s}
 .penalty-row:last-child{border-bottom:none}
-.penalty-row:hover{background:rgba(59,130,246,.04)}
+.penalty-row:hover{background:rgba(31,58,95,.04)}
 .penalty-row-name{font-size:13px;font-weight:700;line-height:1.3}
 .penalty-row-para{font-size:10px;color:var(--muted-fg);margin-top:2px;font-family:var(--font-mono)}
 .penalty-row-info{font-size:10px;color:var(--muted-fg);margin-top:1px;font-style:italic}
@@ -3665,10 +3665,10 @@ body.theme-light .sag-charge-item{
 .penalty-cell-info{color:var(--primary)}
 .penalty-actions{display:flex;align-items:center;gap:4px;justify-content:flex-end}
 .penalty-qty-btn{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--fg);cursor:pointer;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .12s}
-.penalty-qty-btn:hover{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.2);color:var(--primary)}
+.penalty-qty-btn:hover{background:rgba(31,58,95,.12);border-color:rgba(31,58,95,.2);color:var(--primary)}
 .penalty-qty-input{width:42px;height:30px;text-align:center;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--fg);font-size:13px;font-weight:700;font-family:var(--font-mono)}
-.penalty-add-btn{height:30px;padding:0 14px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;border:none;background:linear-gradient(135deg,var(--primary),rgba(59,130,246,.8));color:#fff;transition:all .15s;white-space:nowrap}
-.penalty-add-btn:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.25)}
+.penalty-add-btn{height:30px;padding:0 14px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;border:none;background:linear-gradient(135deg,var(--primary),rgba(31,58,95,.8));color:#fff;transition:all .15s;white-space:nowrap}
+.penalty-add-btn:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 12px rgba(31,58,95,.25)}
 .penalty-empty{padding:40px;text-align:center;color:var(--muted-fg)}
 .penalty-empty svg{margin:0 auto 12px;opacity:.4}
 .penalty-speed-btn{height:38px;padding:0 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:linear-gradient(135deg,rgba(214,54,75,.12),rgba(214,54,75,.06));color:var(--destructive);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0}
@@ -3685,7 +3685,7 @@ body.theme-light .sag-charge-item{
 .speed-vejtype-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .speed-vejtype-btn{padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted-fg);transition:all .12s;text-align:center}
 .speed-vejtype-btn:hover{background:rgba(255,255,255,.06)}
-.speed-vejtype-btn.active{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.3);color:var(--primary)}
+.speed-vejtype-btn.active{background:rgba(31,58,95,.12);border-color:rgba(31,58,95,.3);color:var(--primary)}
 .speed-limit-grid{display:flex;gap:6px;flex-wrap:wrap}
 .speed-limit-btn{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.1);background:transparent;color:var(--muted-fg);font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
 .speed-limit-btn:hover{border-color:var(--muted-fg)}
@@ -3708,7 +3708,7 @@ body.theme-light .penalty-group{border-color:rgba(15,23,42,.08)!important;backgr
 body.theme-light .penalty-group-head{background:rgba(15,23,42,.03)!important}
 body.theme-light .penalty-group-head:hover{background:rgba(15,23,42,.06)!important}
 body.theme-light .penalty-row{border-color:rgba(15,23,42,.06)!important}
-body.theme-light .penalty-row:hover{background:rgba(59,130,246,.04)!important}
+body.theme-light .penalty-row:hover{background:rgba(31,58,95,.04)!important}
 body.theme-light .penalty-qty-btn,body.theme-light .penalty-qty-input{border-color:rgba(15,23,42,.1)!important;background:#fff!important}
 body.theme-light .penalty-toolbar .input,body.theme-light .penalty-toolbar .select{background:#fff!important;border-color:rgba(15,23,42,.1)!important}
 body.theme-light .penalty-head{background:rgba(15,23,42,.02)!important;border-color:rgba(15,23,42,.08)!important}
@@ -3728,7 +3728,7 @@ body.theme-light .penalty-head{background:rgba(15,23,42,.02)!important;border-co
    GLOBAL DARK THEME POLISH — DEEP OCEAN
    Bruger den nye palet og overrider gamle hardcoded mørke
    overlays (rgba(255,255,255,.02-.08) baggrunde, gamle blå
-   #3b82f6 highlights osv.) så alle moduler matcher.
+   #1F3A5F highlights osv.) så alle moduler matcher.
    Anvendes når body IKKE har .theme-light.
    ========================================================== */
 body{
@@ -4156,8 +4156,8 @@ body.theme-light .textarea::placeholder{ color:#94a3b8 !important; }
 body.theme-light .input:focus,
 body.theme-light .select:focus,
 body.theme-light .textarea:focus{
-  border-color:#3b82f6 !important;
-  box-shadow:0 0 0 3px rgba(59,130,246,.15) !important;
+  border-color:#1F3A5F !important;
+  box-shadow:0 0 0 3px rgba(31,58,95,.15) !important;
 }
 
 /* Knapper */
@@ -4195,7 +4195,7 @@ body.theme-light .toast{
   border:1px solid #e2e8f0 !important;
   box-shadow:0 10px 30px rgba(15,23,42,.12) !important;
 }
-body.theme-light .spinner{ border-color:#e2e8f0 !important; border-top-color:#3b82f6 !important; }
+body.theme-light .spinner{ border-color:#e2e8f0 !important; border-top-color:#1F3A5F !important; }
 body.theme-light .loading-center{ color:#64748b !important; }
 
 /* ===== Modul-specifikke flader: vend hvide overlays til mørke ===== */
@@ -4244,7 +4244,7 @@ body.theme-light .app-chip.active{
 body.theme-light .pr-search-page,
 body.theme-light .pr-main{
   background:
-    radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(31,58,95,.08), transparent 28%),
     #ffffff !important;
 }
 body.theme-light .pr-search-row-big .input{
@@ -4283,7 +4283,7 @@ body.theme-light .tab-item.active{
 /* Profil tabs */
 body.theme-light .pr-top-tabs{ border-bottom:1px solid #e2e8f0 !important; }
 body.theme-light .pr-tab{ color:#64748b !important; }
-body.theme-light .pr-tab.active{ color:#0f172a !important; border-color:#2563eb !important; }
+body.theme-light .pr-tab.active{ color:#0f172a !important; border-color:#2C5282 !important; }
 body.theme-light .pr-info-label,
 body.theme-light .pr-stat-label{ color:#64748b !important; }
 
@@ -4690,8 +4690,8 @@ body .top-header-search input{
 }
 body .top-header-search input::placeholder{ color:#6b7480 !important; }
 body .top-header-search input:focus{
-  border-color:#3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.18) !important;
+  border-color:#1F3A5F !important;
+  box-shadow: 0 0 0 3px rgba(31,58,95,.18) !important;
 }
 body .top-header-search svg{ color:#7d93b0 !important; }
 body .top-header-status,
@@ -4707,15 +4707,15 @@ body .tab-btn,
 body .tab-item{ color:#8a9bb5 !important; }
 body .tab-btn:hover,
 body .tab-item:hover{
-  background: rgba(59,130,246,.08) !important;
+  background: rgba(31,58,95,.08) !important;
   color:#ffffff !important;
 }
 body .tab-btn.active,
 body .tab-item.active{
   background: #11203a !important;
   color:#ffffff !important;
-  border-color: rgba(59,130,246,.35) !important;
-  box-shadow: inset 0 -2px 0 #3b82f6 !important;
+  border-color: rgba(31,58,95,.35) !important;
+  box-shadow: inset 0 -2px 0 #1F3A5F !important;
 }
 body .tab-close:hover{
   background: rgba(239,68,68,.18) !important;
@@ -4781,25 +4781,25 @@ body .textarea::placeholder{ color:#5d7493 !important; }
 body .input:focus,
 body .select:focus,
 body .textarea:focus{
-  border-color:#3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.18) !important;
+  border-color:#1F3A5F !important;
+  box-shadow: 0 0 0 3px rgba(31,58,95,.18) !important;
   outline: none !important;
 }
 
 /* Knapper — politiblå primary med blød glow */
 body .btn-primary{
-  background: linear-gradient(180deg, #3b82f6, #2563eb) !important;
+  background: linear-gradient(180deg, #1F3A5F, #2C5282) !important;
   color:#ffffff !important;
   border:1px solid #1d4ed8 !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.18),
-    0 4px 14px rgba(59,130,246,.30) !important;
+    0 4px 14px rgba(31,58,95,.30) !important;
 }
 body .btn-primary:hover{
-  background: linear-gradient(180deg, #4f8ff7, #3b82f6) !important;
+  background: linear-gradient(180deg, #4f8ff7, #1F3A5F) !important;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.22),
-    0 6px 18px rgba(59,130,246,.42) !important;
+    0 6px 18px rgba(31,58,95,.42) !important;
 }
 body .btn-secondary,
 body .btn-outline{
@@ -4810,8 +4810,8 @@ body .btn-outline{
 }
 body .btn-secondary:hover,
 body .btn-outline:hover{
-  background: rgba(59,130,246,.10) !important;
-  border-color: rgba(59,130,246,.40) !important;
+  background: rgba(31,58,95,.10) !important;
+  border-color: rgba(31,58,95,.40) !important;
   color:#ffffff !important;
 }
 body .btn-destructive{
@@ -4839,27 +4839,27 @@ body .list-item:hover,
 body .pr-item:hover,
 body .pr-search-result:hover,
 body .mdt-unified-item:hover{
-  background: rgba(59,130,246,.07) !important;
-  border-color: rgba(59,130,246,.30) !important;
+  background: rgba(31,58,95,.07) !important;
+  border-color: rgba(31,58,95,.30) !important;
 }
 body .list-item.active,
 body .pr-item.active{
-  background: rgba(59,130,246,.14) !important;
-  border-color: rgba(59,130,246,.45) !important;
+  background: rgba(31,58,95,.14) !important;
+  border-color: rgba(31,58,95,.45) !important;
   color:#ffffff !important;
 }
 
 /* Badges — fuldt farvekodet */
 body .badge,
 body .badge-default{
-  background: rgba(59,130,246,.14) !important;
+  background: rgba(31,58,95,.14) !important;
   color:#93c5fd !important;
-  border:1px solid rgba(59,130,246,.30) !important;
+  border:1px solid rgba(31,58,95,.30) !important;
 }
 body .badge-primary{
-  background: rgba(59,130,246,.18) !important;
+  background: rgba(31,58,95,.18) !important;
   color:#93c5fd !important;
-  border:1px solid rgba(59,130,246,.40) !important;
+  border:1px solid rgba(31,58,95,.40) !important;
 }
 body .badge-success{
   background: rgba(34,197,94,.15) !important;
@@ -4888,23 +4888,23 @@ body .dot-success{ background:#22c55e !important; box-shadow: 0 0 6px rgba(34,19
 body .dot-warning{ background:#f59e0b !important; box-shadow: 0 0 6px rgba(245,158,11,.55) !important; }
 body .dot-danger,
 body .dot-destructive{ background:#ef4444 !important; box-shadow: 0 0 6px rgba(239,68,68,.55) !important; }
-body .dot-primary{ background:#3b82f6 !important; box-shadow: 0 0 6px rgba(59,130,246,.55) !important; }
+body .dot-primary{ background:#1F3A5F !important; box-shadow: 0 0 6px rgba(31,58,95,.55) !important; }
 body .dot-muted{ background:#64748b !important; box-shadow: none !important; }
 
 /* Avatars — solid politiblå med hvid tekst */
 body .list-item-avatar,
 body .pd-avatar,
 body .sidebar-popup-avatar{
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+  background: linear-gradient(135deg, #1F3A5F, #1d4ed8) !important;
   color:#ffffff !important;
-  border: 1px solid rgba(59,130,246,.50) !important;
-  box-shadow: 0 2px 8px rgba(59,130,246,.30) !important;
+  border: 1px solid rgba(31,58,95,.50) !important;
+  box-shadow: 0 2px 8px rgba(31,58,95,.30) !important;
 }
 
 /* Accent-bar på stat-cards */
 body .accent-bar{
-  background: linear-gradient(180deg, #3b82f6, #1d4ed8) !important;
-  box-shadow: 0 0 12px rgba(59,130,246,.40) !important;
+  background: linear-gradient(180deg, #1F3A5F, #1d4ed8) !important;
+  box-shadow: 0 0 12px rgba(31,58,95,.40) !important;
 }
 
 /* Stat-card værdier */
@@ -4927,11 +4927,11 @@ body .icon-warning{ color:#fcd34d !important; }
 body ::-webkit-scrollbar{ width:8px; height:8px; }
 body ::-webkit-scrollbar-track{ background: transparent; }
 body ::-webkit-scrollbar-thumb{
-  background: rgba(59,130,246,.20);
+  background: rgba(31,58,95,.20);
   border-radius: 4px;
 }
 body ::-webkit-scrollbar-thumb:hover{
-  background: rgba(59,130,246,.35);
+  background: rgba(31,58,95,.35);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -5139,12 +5139,12 @@ body .sidebar-user{
   border-radius: 8px !important;
 }
 body .sidebar-user:hover{
-  background: rgba(59,130,246,.10) !important;
-  border-color: rgba(59,130,246,.35) !important;
+  background: rgba(31,58,95,.10) !important;
+  border-color: rgba(31,58,95,.35) !important;
 }
 body .sidebar-user-avatar{
-  background: rgba(59,130,246,.12) !important;
-  border:1px solid rgba(59,130,246,.30) !important;
+  background: rgba(31,58,95,.12) !important;
+  border:1px solid rgba(31,58,95,.30) !important;
   color:#93c5fd !important;
 }
 body .sidebar-user-name{ color:#ffffff !important; }
@@ -5161,7 +5161,7 @@ body .sidebar-popup{
   border-radius: 12px !important;
   box-shadow:
     0 24px 60px rgba(0,0,0,.65),
-    0 0 0 1px rgba(59,130,246,.08) inset !important;
+    0 0 0 1px rgba(31,58,95,.08) inset !important;
   color:#e6edf7 !important;
   backdrop-filter: blur(12px) !important;
 }
@@ -5175,7 +5175,7 @@ body .sidebar-popup-item{
   background: transparent !important;
 }
 body .sidebar-popup-item:hover{
-  background: rgba(59,130,246,.10) !important;
+  background: rgba(31,58,95,.10) !important;
   color:#ffffff !important;
 }
 body .sidebar-popup-item:hover .spi-icon{
@@ -5192,8 +5192,8 @@ body .sidebar-popup-divider{
   border-top:1px solid #16294a !important;
 }
 body .sidebar-popup-avatar{
-  background: linear-gradient(135deg, rgba(59,130,246,.40), rgba(59,130,246,.15)) !important;
-  border:1px solid rgba(59,130,246,.40) !important;
+  background: linear-gradient(135deg, rgba(31,58,95,.40), rgba(31,58,95,.15)) !important;
+  border:1px solid rgba(31,58,95,.40) !important;
   color:#ffffff !important;
 }
 
@@ -5347,9 +5347,9 @@ body .nav-tab.active,
 body .top-nav .tab.active,
 body .nav-item.active,
 body .nav-tab[aria-selected="true"]{
-  background: rgba(59,130,246,.12) !important;
+  background: rgba(31,58,95,.12) !important;
   color: #e8f0ff !important;
-  border-color: rgba(59,130,246,.25) !important;
+  border-color: rgba(31,58,95,.25) !important;
 }
 
 /* Buttons */
@@ -5364,7 +5364,7 @@ body .button{
 body .btn-primary,
 body button.primary,
 body .btn.primary{
-  background: linear-gradient(180deg, #3b82f6, #2f6fdc) !important;
+  background: linear-gradient(180deg, #1F3A5F, #2f6fdc) !important;
   border: 1px solid rgba(255,255,255,.08) !important;
   color: #fff !important;
   box-shadow: var(--ap-shadow-sm), inset 0 1px 0 rgba(255,255,255,.18) !important;
@@ -5409,9 +5409,9 @@ body select:focus,
 body textarea:focus,
 body .input:focus{
   outline: none !important;
-  border-color: rgba(59,130,246,.55) !important;
+  border-color: rgba(31,58,95,.55) !important;
   background: rgba(255,255,255,.05) !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.15) !important;
+  box-shadow: 0 0 0 3px rgba(31,58,95,.15) !important;
 }
 body ::placeholder{ color: rgba(230,237,247,.35) !important; }
 
@@ -5497,7 +5497,7 @@ body.theme-light{
   --ap-text-faint: #64748b;
   --ap-border: #d8dee8;
   --ap-border-strong: #c2cad6;
-  --ap-accent: #2563eb;
+  --ap-accent: #2C5282;
   --ap-accent-soft: rgba(37,99,235,.10);
   background: #f4f6fa !important;
   color: #0f172a !important;
@@ -5848,7 +5848,7 @@ body.theme-light pre{
    FLAT MATTE OVERRIDE — fjerner "skinnende AI-look"
    - Slukker glows / text-shadows / box-shadow blur
    - Flader gradients ud til solide matte farver
-   - Dæmper accent #3B82F6 til en mere afdæmpet tone
+   - Dæmper accent #1F3A5F til en mere afdæmpet tone
    ========================================================= */
 :root{
   /* Brugerdefineret matte palet — overskriver basis-temaet */
@@ -6077,8 +6077,8 @@ body .btn{
 <div id="app" class="hidden">
   <div class="app-shell">
     <!-- Corner accents bottom-right -->
-    <div style="position:absolute;bottom:0;right:0;width:64px;height:1px;background:linear-gradient(to left,rgba(59,130,246,.6),transparent);z-index:10"></div>
-    <div style="position:absolute;bottom:0;right:0;width:1px;height:64px;background:linear-gradient(to top,rgba(59,130,246,.6),transparent);z-index:10"></div>
+    <div style="position:absolute;bottom:0;right:0;width:64px;height:1px;background:linear-gradient(to left,rgba(31,58,95,.6),transparent);z-index:10"></div>
+    <div style="position:absolute;bottom:0;right:0;width:1px;height:64px;background:linear-gradient(to top,rgba(31,58,95,.6),transparent);z-index:10"></div>
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-logo">
@@ -7315,7 +7315,7 @@ async function renderHaendelser(container) {
         <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em">Aktive hændelser</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           ${demoHaendelser.map(h => `
-            <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(59,130,246,.25)';this.style.background='rgba(59,130,246,.04)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.background='rgba(255,255,255,.025)'" onclick="void openTab('sag',{label:'${h.titel.replace(/'/g,"\\'")}'})" >
+            <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(31,58,95,.25)';this.style.background='rgba(31,58,95,.04)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.background='rgba(255,255,255,.025)'" onclick="void openTab('sag',{label:'${h.titel.replace(/'/g,"\\'")}'})" >
               <div style="width:6px;height:40px;border-radius:3px;background:${h.prioritet==='Høj'?'var(--destructive)':h.prioritet==='Mellem'?'var(--warning)':'var(--success)'};flex-shrink:0"></div>
               <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -7349,7 +7349,7 @@ async function renderHaendelser(container) {
         <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em">Seneste sager</div>
         <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)">
           ${sager.slice(0,6).map((s,i) => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;${i<Math.min(sager.length,6)-1?'border-bottom:1px solid rgba(255,255,255,.04);':''}cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(59,130,246,.04)'" onmouseout="this.style.background='transparent'" onclick="void openTab('sag',{sagId:'${s.id}',label:'${esc(s.titel||s.sagsnummer)}'})">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;${i<Math.min(sager.length,6)-1?'border-bottom:1px solid rgba(255,255,255,.04);':''}cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(31,58,95,.04)'" onmouseout="this.style.background='transparent'" onclick="void openTab('sag',{sagId:'${s.id}',label:'${esc(s.titel||s.sagsnummer)}'})">
               <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
                 <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--muted-fg);flex-shrink:0">${icons.folder}</div>
                 <div style="min-width:0">
@@ -7425,7 +7425,7 @@ async function renderRapporter(container) {
         <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em">Seneste rapporter</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           ${demoRapporter.map(r => `
-            <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(59,130,246,.25)';this.style.background='rgba(59,130,246,.04)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.background='rgba(255,255,255,.025)'" onclick="void openTab('sag',{label:'${r.titel.replace(/'/g, "\\'")}'})">
+            <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='rgba(31,58,95,.25)';this.style.background='rgba(31,58,95,.04)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.background='rgba(255,255,255,.025)'" onclick="void openTab('sag',{label:'${r.titel.replace(/'/g, "\\'")}'})">
               <div style="width:6px;height:40px;border-radius:3px;background:${r.status==='Kladde'?'var(--warning)':r.status==='Afleveret'?'var(--success)':'var(--primary)'};flex-shrink:0"></div>
               <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -7457,7 +7457,7 @@ async function renderRapporter(container) {
         <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em">Sager fra arkiv</div>
         <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)">
           ${sager.slice(0,5).map((s,i) => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;${i<Math.min(sager.length,5)-1?'border-bottom:1px solid rgba(255,255,255,.04);':''}cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(59,130,246,.04)'" onmouseout="this.style.background='transparent'" onclick="void openTab('sag',{sagId:'${s.id}',label:'${esc(s.titel||s.sagsnummer)}'})">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;${i<Math.min(sager.length,5)-1?'border-bottom:1px solid rgba(255,255,255,.04);':''}cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(31,58,95,.04)'" onmouseout="this.style.background='transparent'" onclick="void openTab('sag',{sagId:'${s.id}',label:'${esc(s.titel||s.sagsnummer)}'})">
               <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
                 <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--muted-fg);flex-shrink:0">${icons.folder}</div>
                 <div style="min-width:0">
@@ -7529,7 +7529,7 @@ async function renderDashboard(container) {
       <!-- Tjeneste-header (uden boks) -->
       <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:4px 2px 18px;margin-bottom:18px;border-bottom:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:14px;min-width:0">
-          <div style="width:44px;height:44px;border-radius:8px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;letter-spacing:.5px;flex-shrink:0">${initialer}</div>
+          <div style="width:44px;height:44px;border-radius:8px;background:rgba(31,58,95,.12);border:1px solid rgba(31,58,95,.25);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;letter-spacing:.5px;flex-shrink:0">${initialer}</div>
           <div style="min-width:0">
             <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted-fg);margin-bottom:2px">
               <span style="width:6px;height:6px;border-radius:50%;background:var(--success)"></span>
@@ -7741,7 +7741,7 @@ window.selectPerson = async function(id) {
   const statusColors = {aktiv:"badge-success",eftersøgt:"badge-warning",anholdt:"badge-destructive",sigtet:"badge-primary"};
   const statusLabels = {aktiv:"Aktiv",eftersøgt:"Eftersøgt",anholdt:"Anholdt",sigtet:"Sigtet"};
   const detail = document.getElementById("kr-detail");
-  let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="list-item-avatar" style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,.1);color:var(--primary);font-size:16px;display:flex;align-items:center;justify-content:center">${p.fornavn[0]}${p.efternavn[0]}</div><div><h2 style="font-size:18px;font-weight:600">${p.fornavn} ${p.efternavn}</h2><span class="mono" style="font-size:12px;color:var(--muted-fg)">${p.cpr}</span></div></div><div class="flex items-center gap-2"><button class="btn btn-outline btn-sm" onclick="editPerson('${p.id}')">${icons.pencil} Rediger</button><button class="btn btn-primary btn-sm" onclick="void openTab('sag',{label:'Ny rapport — ${p.fornavn} ${p.efternavn}',prefill:{titel:'Rapport mod ${p.fornavn} ${p.efternavn}',mistaenktPersonId:'${p.id}',sigtelser:[],kilde:'personregister'}},true)">${icons.file} Opret sigtelse</button><button class="btn btn-outline btn-sm" onclick="showEfterlysningDialog('${p.id}')">${icons.alert} ${p.status==='eftersøgt'?'Fjern efterlysning':'Efterlys'}</button><span class="badge ${statusColors[p.status]}">${statusLabels[p.status]}</span></div></div>`;
+  let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3"><div class="list-item-avatar" style="width:48px;height:48px;border-radius:12px;background:rgba(31,58,95,.1);color:var(--primary);font-size:16px;display:flex;align-items:center;justify-content:center">${p.fornavn[0]}${p.efternavn[0]}</div><div><h2 style="font-size:18px;font-weight:600">${p.fornavn} ${p.efternavn}</h2><span class="mono" style="font-size:12px;color:var(--muted-fg)">${p.cpr}</span></div></div><div class="flex items-center gap-2"><button class="btn btn-outline btn-sm" onclick="editPerson('${p.id}')">${icons.pencil} Rediger</button><button class="btn btn-primary btn-sm" onclick="void openTab('sag',{label:'Ny rapport — ${p.fornavn} ${p.efternavn}',prefill:{titel:'Rapport mod ${p.fornavn} ${p.efternavn}',mistaenktPersonId:'${p.id}',sigtelser:[],kilde:'personregister'}},true)">${icons.file} Opret sigtelse</button><button class="btn btn-outline btn-sm" onclick="showEfterlysningDialog('${p.id}')">${icons.alert} ${p.status==='eftersøgt'?'Fjern efterlysning':'Efterlys'}</button><span class="badge ${statusColors[p.status]}">${statusLabels[p.status]}</span></div></div>`;
   if (p.status==="eftersøgt") html+=`<div class="alert-banner alert-warning mb-3">${icons.alert} Denne person er aktivt eftersøgt</div>`;
   html += `<div class="grid grid-4 mb-3"><div class="card card-sm"><div class="info-label" style="font-size:10px;color:var(--muted-fg)">Adresse</div><div style="font-size:13px">${p.adresse||"—"}</div><div style="font-size:11px;color:var(--muted-fg)">${p.postnr||""} ${p.by||""}</div></div><div class="card card-sm"><div class="info-label" style="font-size:10px;color:var(--muted-fg)">Telefon</div><div style="font-size:13px">${p.telefon||"—"}</div></div><div class="card card-sm"><div class="info-label" style="font-size:10px;color:var(--muted-fg)">Sigtelser</div><div style="font-size:18px;font-weight:700" class="mono">${sigtelser.length}</div></div><div class="card card-sm"><div class="info-label" style="font-size:10px;color:var(--muted-fg)">Tilhørsforhold</div><div style="font-size:18px;font-weight:700" class="mono">${tilhoersforhold.length}</div></div></div>`;
   // Tilhørsforhold
@@ -7846,7 +7846,7 @@ window.showEfterlysningDialog = async function(personId) {
         html += `<div style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="flex:1">${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2"><div style="display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:6px;overflow:hidden"><button style="border:none;background:transparent;cursor:pointer;color:var(--fg);padding:2px 8px;font-size:13px;line-height:1" onclick="window._eftSetAntal(${i}, ${antal-1})">−</button><span class="mono" style="padding:0 8px;font-size:11px;min-width:18px;text-align:center">${antal}</span><button style="border:none;background:transparent;cursor:pointer;color:var(--fg);padding:2px 8px;font-size:13px;line-height:1" onclick="window._eftSetAntal(${i}, ${antal+1})">+</button></div><span class="mono" style="color:var(--warning);min-width:70px;text-align:right">${formatDaDK(linjeTotal)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg)" onclick="window._eftRemoveBoede(${i})">✕</button></div></div>`;
       });
       const totalNew = valgteBoeder.reduce((s,b)=>s+b.beloeb*(b.antal||1),0);
-      html += `<div style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalNew)} kr</div></div>`;
+      html += `<div style="padding:8px 12px;background:rgba(31,58,95,.05);border-top:1px solid rgba(31,58,95,.15);font-size:11px;font-weight:600">Total: ${formatDaDK(totalNew)} kr</div></div>`;
     }
     const grader = ["Aktiv","Højrisiko","Bevæbnet","Farlig","Voldelig","Eskaleret"];
     const valgtGrad = window._eftValgtGrad || "Aktiv";
@@ -7941,7 +7941,7 @@ async function renderKoeretoejsregister(container) {
     html += `<div style="margin-bottom:12px"><input class="input" id="kt-search" placeholder="Søg nummerplade, mærke, ejer..."></div>`;
     html += '<div id="kt-list">';
     koeretoejer.forEach(k => {
-      html += `<div class="card card-sm mb-2 kt-item" style="cursor:pointer" onclick="showToast('Køretøj: ${(k.nummerplade||"—").replace(/'/g,"&#39;")} — ${(k.maerke||"").replace(/'/g,"&#39;")} ${(k.model||"").replace(/'/g,"&#39;")}')"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div style="width:36px;height:36px;border-radius:8px;background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center">${icons.car}</div><div><div style="font-size:13px;font-weight:600">${k.nummerplade||"—"}</div><div style="font-size:11px;color:var(--muted-fg)">${k.maerke||""} ${k.model||""} ${k.aargang||""}</div></div></div><div class="flex items-center gap-2"><span class="badge badge-muted">${k.farve||"—"}</span><span style="font-size:11px;color:var(--muted-fg)">${k.ejer||"Ingen ejer"}</span></div></div></div>`;
+      html += `<div class="card card-sm mb-2 kt-item" style="cursor:pointer" onclick="showToast('Køretøj: ${(k.nummerplade||"—").replace(/'/g,"&#39;")} — ${(k.maerke||"").replace(/'/g,"&#39;")} ${(k.model||"").replace(/'/g,"&#39;")}')"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div style="width:36px;height:36px;border-radius:8px;background:rgba(31,58,95,.1);display:flex;align-items:center;justify-content:center">${icons.car}</div><div><div style="font-size:13px;font-weight:600">${k.nummerplade||"—"}</div><div style="font-size:11px;color:var(--muted-fg)">${k.maerke||""} ${k.model||""} ${k.aargang||""}</div></div></div><div class="flex items-center gap-2"><span class="badge badge-muted">${k.farve||"—"}</span><span style="font-size:11px;color:var(--muted-fg)">${k.ejer||"Ingen ejer"}</span></div></div></div>`;
     });
     if (koeretoejer.length === 0) html += '<div class="loading-center" style="min-height:200px"><p>Ingen køretøjer</p></div>';
     html += '</div>';
@@ -7971,7 +7971,7 @@ async function renderEjendomsregister(container) {
     const ejendomme = await ejendommeApi.getAll();
     let html = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-3">${icons.building}<h1 style="font-size:18px;font-weight:700">Ejendomsregister</h1><span style="font-size:12px;color:var(--muted-fg)">${ejendomme.length} ejendomme</span></div><button class="btn btn-primary btn-sm" onclick="showEjendomForm()">${icons.plus} Registrer</button></div>`;
     ejendomme.forEach(e => {
-      html += `<div class="card card-sm mb-2"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div style="width:36px;height:36px;border-radius:8px;background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center">${icons.building}</div><div><div style="font-size:13px;font-weight:600">${e.adresse}</div><div style="font-size:11px;color:var(--muted-fg)">${e.postnr||""} ${e.by||""}</div></div></div><div class="flex items-center gap-2"><span class="badge badge-muted">${e.type||"Bolig"}</span><span style="font-size:11px;color:var(--muted-fg)">${e.ejer||"Ingen ejer"}</span>${isAdmin?`<button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="deleteEjendom('${e.id}')">✕</button>`:''}</div></div></div>`;
+      html += `<div class="card card-sm mb-2"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div style="width:36px;height:36px;border-radius:8px;background:rgba(31,58,95,.1);display:flex;align-items:center;justify-content:center">${icons.building}</div><div><div style="font-size:13px;font-weight:600">${e.adresse}</div><div style="font-size:11px;color:var(--muted-fg)">${e.postnr||""} ${e.by||""}</div></div></div><div class="flex items-center gap-2"><span class="badge badge-muted">${e.type||"Bolig"}</span><span style="font-size:11px;color:var(--muted-fg)">${e.ejer||"Ingen ejer"}</span>${isAdmin?`<button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="deleteEjendom('${e.id}')">✕</button>`:''}</div></div></div>`;
     });
     if (ejendomme.length === 0) html += '<div class="loading-center" style="min-height:200px"><p>Ingen ejendomme</p></div>';
     container.innerHTML = html;
@@ -8118,7 +8118,7 @@ window.showOpretSigtelseDialog = function(personId, prefillBoeder, prefillHaende
         const b = items[0], count = items.length;
         html += `<div class="flex items-center justify-between" style="padding:6px 12px;border-top:1px solid rgba(42,47,58,.3);font-size:10px"><span style="flex:1">${count>1?`<span style="color:var(--primary);font-weight:600;margin-right:4px">${count}×</span>`:''}${b.paragraf?b.paragraf+' — ':''}${b.beskrivelse}</span><div class="flex items-center gap-2 shrink-0">${b.faengselMaaneder>0?`<span style="color:var(--destructive)">${b.faengselMaaneder*count}md</span>`:''}<span class="mono" style="color:var(--warning)">${formatDaDK(b.beloeb*count)} kr</span><button style="border:none;background:transparent;cursor:pointer;color:var(--muted-fg);font-size:10px" onclick="window._sigRemoveAll('${boedeId}')">✕</button></div></div>`;
       }
-      html += `<div class="flex items-center justify-between" style="padding:8px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:10px"><span style="font-weight:600">Total</span><div class="flex items-center gap-3"><span class="mono" style="font-weight:700;color:var(--warning)">${formatDaDK(totalBoede)} kr</span>${totalFaengsel>0?`<span style="font-weight:700;color:var(--destructive)">${totalFaengsel} md.</span>`:''}${totalKlip>0?`<span class="badge badge-primary">${totalKlip} klip</span>`:''}</div></div></div>`;
+      html += `<div class="flex items-center justify-between" style="padding:8px 12px;background:rgba(31,58,95,.05);border-top:1px solid rgba(31,58,95,.15);font-size:10px"><span style="font-weight:600">Total</span><div class="flex items-center gap-3"><span class="mono" style="font-weight:700;color:var(--warning)">${formatDaDK(totalBoede)} kr</span>${totalFaengsel>0?`<span style="font-weight:700;color:var(--destructive)">${totalFaengsel} md.</span>`:''}${totalKlip>0?`<span class="badge badge-primary">${totalKlip} klip</span>`:''}</div></div></div>`;
     }
     html += `<div class="label">Hændelsesforløb</div><textarea class="textarea mb-3" id="sig-haendelse" rows="3" placeholder="Beskriv hændelsesforløbet...">${haendelse}</textarea>`;
     html += `<div class="flex gap-2"><button class="btn btn-primary flex-1" onclick="window._sigSubmit()">Opret sigtelse</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
@@ -8252,14 +8252,14 @@ function exportSagerCSV(sager) {
 
 function exportSagerPDF(sager) {
   var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
-  var sColors = {aaben:"#22c55e",under_efterforskning:"#3b82f6",afventer_retten:"#eab308",lukket:"#6b7280"};
+  var sColors = {aaben:"#22c55e",under_efterforskning:"#1F3A5F",afventer_retten:"#eab308",lukket:"#6b7280"};
   var now = new Date();
   var datoStr = now.toLocaleDateString("da-DK") + " " + now.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
 
   var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sagsarkiv Rapport</title><style>';
   html += '@page{size:A4;margin:20mm}';
   html += 'body{font-family:Arial,sans-serif;font-size:11px;color:#1a1a2e;margin:0;padding:0}';
-  html += '.header{text-align:center;border-bottom:2px solid #3b82f6;padding-bottom:14px;margin-bottom:20px}';
+  html += '.header{text-align:center;border-bottom:2px solid #1F3A5F;padding-bottom:14px;margin-bottom:20px}';
   html += '.header h1{font-size:20px;margin:0 0 4px;color:#0f172a}';
   html += '.header .sub{font-size:11px;color:#64748b}';
   html += '.stats{display:flex;gap:16px;margin-bottom:18px;justify-content:center}';
@@ -8284,7 +8284,7 @@ function exportSagerPDF(sager) {
   html += '<div class="stats">';
   html += '<div class="stat"><div class="stat-val">' + sager.length + '</div><div class="stat-lbl">Total</div></div>';
   html += '<div class="stat"><div class="stat-val" style="color:#22c55e">' + aaben + '</div><div class="stat-lbl">Åbne</div></div>';
-  html += '<div class="stat"><div class="stat-val" style="color:#3b82f6">' + eft + '</div><div class="stat-lbl">Efterforskning</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#1F3A5F">' + eft + '</div><div class="stat-lbl">Efterforskning</div></div>';
   html += '<div class="stat"><div class="stat-val" style="color:#eab308">' + afv + '</div><div class="stat-lbl">Afventer ret</div></div>';
   html += '<div class="stat"><div class="stat-val" style="color:#6b7280">' + luk + '</div><div class="stat-lbl">Lukkede</div></div>';
   html += '</div>';
@@ -8324,7 +8324,7 @@ window.exportEnkeltSagPDF = function() {
   if (!sag) { showToast("Ingen sag åben"); return; }
   if (!sag.id || !sag.sagsnummer) { showToast("Gem sagen først for at kunne eksportere PDF"); return; }
   var sLabels = {aaben:"Åben",under_efterforskning:"Under efterforskning",afventer_retten:"Afventer retten",lukket:"Lukket"};
-  var sColors = {aaben:"#22c55e",under_efterforskning:"#3b82f6",afventer_retten:"#eab308",lukket:"#6b7280"};
+  var sColors = {aaben:"#22c55e",under_efterforskning:"#1F3A5F",afventer_retten:"#eab308",lukket:"#6b7280"};
   var now = new Date();
   var datoStr = now.toLocaleDateString("da-DK") + " " + now.toLocaleTimeString("da-DK",{hour:"2-digit",minute:"2-digit"});
   var sagDato = sag.oprettet ? new Date(sag.oprettet).toLocaleDateString("da-DK") : "";
@@ -8333,9 +8333,9 @@ window.exportEnkeltSagPDF = function() {
   var h = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (sag.sagsnummer||"Sag") + '</title><style>';
   h += '@page{size:A4;margin:18mm}';
   h += 'body{font-family:Arial,sans-serif;font-size:11px;color:#1a1a2e;margin:0;padding:0}';
-  h += '.hdr{border-bottom:3px solid #3b82f6;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}';
+  h += '.hdr{border-bottom:3px solid #1F3A5F;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}';
   h += '.hdr-left h1{font-size:18px;margin:0 0 2px;color:#0f172a}';
-  h += '.hdr-left .nr{font-size:13px;font-family:monospace;color:#3b82f6;font-weight:700}';
+  h += '.hdr-left .nr{font-size:13px;font-family:monospace;color:#1F3A5F;font-weight:700}';
   h += '.hdr-left .meta{font-size:10px;color:#64748b;margin-top:4px}';
   h += '.hdr-right{text-align:right}';
   h += '.status{display:inline-block;padding:4px 14px;border-radius:999px;font-size:10px;font-weight:700;color:#fff}';
@@ -8447,7 +8447,7 @@ window.exportEnkeltSagPDF = function() {
   if (sag.noter && sag.noter.length > 0) {
     h += '<div class="section"><div class="section-title">Noter</div>';
     sag.noter.forEach(function(n) {
-      h += '<div style="border-left:2px solid #3b82f6;padding-left:10px;margin-bottom:8px;font-size:11px">';
+      h += '<div style="border-left:2px solid #1F3A5F;padding-left:10px;margin-bottom:8px;font-size:11px">';
       h += '<div style="font-size:9px;color:#64748b">' + (n.dato||n.tid||"") + ' — ' + (n.forfatter||n.af||"") + '</div>';
       h += '<div>' + (n.tekst||n.indhold||"") + '</div></div>';
     });
@@ -8544,7 +8544,7 @@ async function renderSagsarkiv(container) {
       statusKeys.forEach(function(key) {
         var isActive = window._saFilter === key;
         var count = key === "alle" ? sager.length : sager.filter(function(s){return s.status===key;}).length;
-        html += '<button class="sa-filter-pill" data-filter="' + key + '" style="font-size:11px;font-weight:600;padding:5px 14px;border-radius:999px;border:1px solid ' + (isActive ? 'rgba(96,165,250,.35)' : 'rgba(255,255,255,.06)') + ';background:' + (isActive ? 'rgba(59,130,246,.15)' : 'transparent') + ';color:' + (isActive ? '#f8fbff' : 'var(--muted-fg)') + ';cursor:pointer;transition:all .15s">' + statusFilterLabels[key] + ' (' + count + ')</button>';
+        html += '<button class="sa-filter-pill" data-filter="' + key + '" style="font-size:11px;font-weight:600;padding:5px 14px;border-radius:999px;border:1px solid ' + (isActive ? 'rgba(96,165,250,.35)' : 'rgba(255,255,255,.06)') + ';background:' + (isActive ? 'rgba(31,58,95,.15)' : 'transparent') + ';color:' + (isActive ? '#f8fbff' : 'var(--muted-fg)') + ';cursor:pointer;transition:all .15s">' + statusFilterLabels[key] + ' (' + count + ')</button>';
       });
       html += '<div style="margin-left:auto;display:flex;gap:6px">';
       html += '<button class="btn btn-outline btn-sm" id="sa-export-csv" style="font-size:11px;padding:5px 12px;border-radius:999px">📄 CSV</button>';
@@ -8705,7 +8705,7 @@ async function renderSagEditor(container, data) {
     let html = `<div style="max-width:1180px;margin:0 auto">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-3">
-          <div style="width:42px;height:42px;border-radius:10px;background:rgba(59,130,246,.1);color:var(--primary);display:flex;align-items:center;justify-content:center">${icons.file}</div>
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(31,58,95,.1);color:var(--primary);display:flex;align-items:center;justify-content:center">${icons.file}</div>
           <div>
             <h1 style="font-size:18px;font-weight:700">${isExisting ? "Rediger sag / rapport" : "Opret sag / rapport"}</h1>
             <p class="mono" style="font-size:11px;color:var(--muted-fg)">${sag.sagsnummer}</p>
@@ -8826,7 +8826,7 @@ async function renderSagEditor(container, data) {
             <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px" onclick="removeSigtelseFromMistaenkt(${i}, ${g.indices[g.indices.length-1]})">✕</button>
           </div>`;
         });
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(59,130,246,.05);border-top:1px solid rgba(59,130,246,.15);font-size:12px;font-weight:800">
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(31,58,95,.05);border-top:1px solid rgba(31,58,95,.15);font-size:12px;font-weight:800">
           <span>Total straf</span>
           <div style="display:flex;gap:12px;align-items:center">
             <span class="mono" style="color:var(--warning)">${totalBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
@@ -9214,7 +9214,7 @@ async function renderFlaade(container) {
 
       <!-- Create patrol accordion -->
       <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--card)">
-        <button onclick="toggleFleetCreate()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(59,130,246,0.08);border:none;cursor:pointer;color:var(--fg);font-size:13px;font-weight:600">
+        <button onclick="toggleFleetCreate()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(31,58,95,0.08);border:none;cursor:pointer;color:var(--fg);font-size:13px;font-weight:600">
           <span>${window._fleetShowCreate ? 'Annuller' : 'Tilføj Nyt Køretøj/Patrulje'}</span>
           <span style="transition:transform 0.2s;display:inline-block;transform:rotate(${window._fleetShowCreate ? '180' : '0'}deg);font-size:11px">▼</span>
         </button>
@@ -9224,11 +9224,11 @@ async function renderFlaade(container) {
             <option value="">Vælg kategori</option>
             ${allCats.map(c => `<option value="${c.id}">${c.icon} ${c.label}</option>`).join('')}
           </select>
-          <select class="select" id="fleet-create-members" multiple style="height:38px;font-size:12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);color:var(--fg);display:none">
+          <select class="select" id="fleet-create-members" multiple style="height:38px;font-size:12px;background:rgba(31,58,95,0.08);border:1px solid rgba(31,58,95,0.3);color:var(--fg);display:none">
           </select>
           <div id="fleet-member-picker" style="display:none">
             <div style="position:relative">
-              <button onclick="toggleFleetMemberDropdown()" class="select" style="width:100%;height:38px;font-size:12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.3);text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+              <button onclick="toggleFleetMemberDropdown()" class="select" style="width:100%;height:38px;font-size:12px;background:rgba(31,58,95,0.08);border:1px solid rgba(31,58,95,0.3);text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
                 <span id="fleet-member-label">Vælg betjente</span>
                 <span style="font-size:10px">▼</span>
               </button>
@@ -9288,7 +9288,7 @@ function renderFleetCategory(cat, patrols) {
 
   const _statusColors = {
     ledig: { dot: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.25)', label: 'Ledig', text: '#22c55e' },
-    i_brug: { dot: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.25)', label: 'I brug', text: '#3b82f6' },
+    i_brug: { dot: '#1F3A5F', bg: 'rgba(31,58,95,0.08)', border: 'rgba(31,58,95,0.25)', label: 'I brug', text: '#1F3A5F' },
     optaget: { dot: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', label: 'Optaget', text: '#f59e0b' },
     ude_af_drift: { dot: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)', label: 'Ude af drift', text: '#ef4444' },
   };
@@ -9325,11 +9325,11 @@ function renderFleetCategory(cat, patrols) {
             <div draggable="true" ondragstart="window._fleetDragStart(event,'${p.id}','${m.badgeNr}','${(m.navn||'').replace(/'/g,"\\'")}')" class="fleet-drag-member" style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px;cursor:grab;transition:background 0.15s,opacity 0.15s" onmouseover="this.style.background='rgba(128,128,128,0.06)'" onmouseout="this.style.background='transparent'">
               <div style="display:flex;align-items:center;gap:10px">
                 <div style="width:6px;height:16px;display:flex;flex-direction:column;justify-content:center;gap:2px;opacity:0.3;margin-right:2px"><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div><div style="width:4px;height:1.5px;background:var(--muted-fg);border-radius:1px"></div></div>
-                <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--primary)">${(m.navn || '').split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(31,58,95,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--primary)">${(m.navn || '').split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
                 <span style="font-size:13px;font-weight:500;color:var(--fg)">${m.navn}</span>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:10px;font-weight:700;background:rgba(59,130,246,0.12);color:var(--primary);padding:3px 10px;border-radius:12px">${m.badgeNr ? 'PO-' + m.badgeNr : ''}</span>
+                <span style="font-size:10px;font-weight:700;background:rgba(31,58,95,0.12);color:var(--primary);padding:3px 10px;border-radius:12px">${m.badgeNr ? 'PO-' + m.badgeNr : ''}</span>
                 <button onclick="event.stopPropagation();removeFromFleet('${p.id}','${m.badgeNr}')" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);font-size:10px;opacity:0;padding:2px;transition:opacity 0.15s" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0';this.style.color='var(--muted-fg)'" title="Fjern">✕</button>
               </div>
             </div>
@@ -9355,7 +9355,7 @@ window._fleetDragStart = function(e, patrolId, badgeNr, navn) {
   document.querySelectorAll('.fleet-patrol-drop').forEach(z => {
     if (z.dataset.patrolId !== patrolId) {
       z.style.boxShadow = 'inset 0 0 0 2px var(--primary)';
-      z.style.background = 'rgba(59,130,246,0.04)';
+      z.style.background = 'rgba(31,58,95,0.04)';
       z.style.borderRadius = '6px';
     }
   });
@@ -9366,7 +9366,7 @@ window._fleetDragOver = function(e) {
   e.dataTransfer.dropEffect = 'move';
   const target = e.currentTarget;
   if (window._fleetDragData && target.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
-    target.style.background = 'rgba(59,130,246,0.12)';
+    target.style.background = 'rgba(31,58,95,0.12)';
     target.style.boxShadow = 'inset 0 0 0 2px var(--primary)';
   }
 };
@@ -9374,7 +9374,7 @@ window._fleetDragOver = function(e) {
 window._fleetDragLeave = function(e) {
   const target = e.currentTarget;
   if (window._fleetDragData && target.dataset.patrolId !== window._fleetDragData.fromPatrolId) {
-    target.style.background = 'rgba(59,130,246,0.04)';
+    target.style.background = 'rgba(31,58,95,0.04)';
   } else {
     target.style.background = 'transparent';
     target.style.boxShadow = 'none';
@@ -9465,9 +9465,9 @@ function renderFleetMemberDropdown() {
   const selected = window._fleetSelectedMembers || [];
   dd.innerHTML = betjente.map(b => {
     const isSelected = selected.some(s => s.badgeNr === b.badgeNr);
-    return `<button onclick="toggleFleetMemberSelect('${b.badgeNr}','${b.fornavn} ${b.efternavn}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:none;background:${isSelected ? 'rgba(59,130,246,0.1)' : 'none'};cursor:pointer;text-align:left;border-bottom:1px solid rgba(128,128,128,0.06)" onmouseover="this.style.background='rgba(128,128,128,0.08)'" onmouseout="this.style.background='${isSelected ? 'rgba(59,130,246,0.1)' : 'none'}'">
+    return `<button onclick="toggleFleetMemberSelect('${b.badgeNr}','${b.fornavn} ${b.efternavn}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:none;background:${isSelected ? 'rgba(31,58,95,0.1)' : 'none'};cursor:pointer;text-align:left;border-bottom:1px solid rgba(128,128,128,0.06)" onmouseover="this.style.background='rgba(128,128,128,0.08)'" onmouseout="this.style.background='${isSelected ? 'rgba(31,58,95,0.1)' : 'none'}'">
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:24px;height:24px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--primary)">${(b.fornavn||'')[0]}${(b.efternavn||'')[0]}</div>
+        <div style="width:24px;height:24px;border-radius:50%;background:rgba(31,58,95,0.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--primary)">${(b.fornavn||'')[0]}${(b.efternavn||'')[0]}</div>
         <span style="font-size:12px;color:var(--fg)">${b.fornavn} ${b.efternavn}</span>
       </div>
       <span style="font-size:10px;color:var(--primary);opacity:${isSelected?1:0.3}">${isSelected ? '✓' : '+'}</span>
@@ -9482,7 +9482,7 @@ function renderFleetMemberDropdown() {
   const chips = document.getElementById("fleet-selected-members");
   if (chips) {
     chips.innerHTML = selected.map(s => `
-      <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.1);color:var(--primary);padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600">
+      <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(31,58,95,0.1);color:var(--primary);padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600">
         ${s.navn} <button onclick="toggleFleetMemberSelect('${s.badgeNr}','${s.navn}')" style="background:none;border:none;cursor:pointer;color:var(--primary);font-size:10px;padding:0">✕</button>
       </span>
     `).join('');
@@ -9617,7 +9617,7 @@ window.showFleetAddMember = async function(patrolId) {
     if (!listEl) return;
     listEl.innerHTML = f.length === 0 ? '<p style="font-size:12px;color:var(--muted-fg);text-align:center;padding:20px">Ingen fundet</p>' :
       f.map(b => `<button onclick="addFleetMember('${patrolId}','${b.badgeNr}','${b.fornavn} ${b.efternavn}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;border:none;background:none;cursor:pointer;text-align:left" onmouseover="this.style.background='rgba(128,128,128,0.08)'" onmouseout="this.style.background='none'">
-        <div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--primary)">${(b.fornavn||'')[0]}${(b.efternavn||'')[0]}</div><div><div style="font-size:12px;font-weight:600">${b.fornavn} ${b.efternavn}</div><div style="font-size:10px;color:var(--muted-fg)">#${b.badgeNr} · ${b.rang}</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:rgba(31,58,95,0.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--primary)">${(b.fornavn||'')[0]}${(b.efternavn||'')[0]}</div><div><div style="font-size:12px;font-weight:600">${b.fornavn} ${b.efternavn}</div><div style="font-size:10px;color:var(--muted-fg)">#${b.badgeNr} · ${b.rang}</div></div></div>
         <span style="font-size:14px;color:var(--primary)">+</span>
       </button>`).join('');
   }
@@ -9779,24 +9779,24 @@ function renderFleetGroups() {
     const totalOfficers = memberPatrols.reduce((s, p) => s + p.medlemmer.length, 0);
 
     return `
-    <div style="margin-bottom:10px;border:2px solid rgba(59,130,246,0.25);border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(59,130,246,0.06) 0%, transparent 100%)">
+    <div style="margin-bottom:10px;border:2px solid rgba(31,58,95,0.25);border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(31,58,95,0.06) 0%, transparent 100%)">
       <!-- Group Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(59,130,246,0.15)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(31,58,95,0.15)">
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">👥</div>
+          <div style="width:34px;height:34px;border-radius:8px;background:rgba(31,58,95,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">👥</div>
           <div>
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:13px;font-weight:700;color:var(--fg)">${g.navn}</span>
-              <span style="font-size:9px;font-weight:600;background:rgba(59,130,246,0.12);color:var(--primary);padding:2px 8px;border-radius:10px;border:1px solid rgba(59,130,246,0.2)">${g.aktion}</span>
+              <span style="font-size:9px;font-weight:600;background:rgba(31,58,95,0.12);color:var(--primary);padding:2px 8px;border-radius:10px;border:1px solid rgba(31,58,95,0.2)">${g.aktion}</span>
             </div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
-              <span style="font-size:9px;color:var(--primary);opacity:0.8;display:flex;align-items:center;gap:3px;background:rgba(59,130,246,0.06);padding:1px 6px;border-radius:8px;border:1px solid rgba(59,130,246,0.15)">📻 ${g.radioKanal}</span>
+              <span style="font-size:9px;color:var(--primary);opacity:0.8;display:flex;align-items:center;gap:3px;background:rgba(31,58,95,0.06);padding:1px 6px;border-radius:8px;border:1px solid rgba(31,58,95,0.15)">📻 ${g.radioKanal}</span>
               <span style="font-size:10px;color:var(--muted-fg)">${g.patruljeIds.length} enheder · ${totalOfficers} betjente</span>
             </div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:4px">
-          <button onclick="showAddPatrolToGroup('${g.id}')" style="padding:4px 6px;border-radius:6px;border:none;background:none;cursor:pointer;color:rgba(59,130,246,0.6);font-size:14px" title="Tilføj patrulje" onmouseover="this.style.background='rgba(59,130,246,0.1)';this.style.color='var(--primary)'" onmouseout="this.style.background='none';this.style.color='rgba(59,130,246,0.6)'">+</button>
+          <button onclick="showAddPatrolToGroup('${g.id}')" style="padding:4px 6px;border-radius:6px;border:none;background:none;cursor:pointer;color:rgba(31,58,95,0.6);font-size:14px" title="Tilføj patrulje" onmouseover="this.style.background='rgba(31,58,95,0.1)';this.style.color='var(--primary)'" onmouseout="this.style.background='none';this.style.color='rgba(31,58,95,0.6)'">+</button>
           <button onclick="deleteFleetGroup('${g.id}')" style="padding:4px 6px;border-radius:6px;border:none;background:none;cursor:pointer;color:var(--muted-fg);opacity:0.4;font-size:12px" title="Slet gruppe" onmouseover="this.style.opacity='1';this.style.color='var(--destructive)'" onmouseout="this.style.opacity='0.4';this.style.color='var(--muted-fg)'">🗑️</button>
         </div>
       </div>
@@ -9806,10 +9806,10 @@ function renderFleetGroups() {
         ${memberPatrols.length === 0 ? `<p style="font-size:11px;color:var(--muted-fg);opacity:0.5;font-style:italic;text-align:center;padding:10px">Ingen patruljer tilknyttet</p>` : ''}
         ${memberPatrols.map(p => {
           const isLeder = p.id === g.lederId;
-          const statusColors = { ledig: '#22c55e', i_brug: '#3b82f6', optaget: '#f59e0b', ude_af_drift: '#ef4444' };
+          const statusColors = { ledig: '#22c55e', i_brug: '#1F3A5F', optaget: '#f59e0b', ude_af_drift: '#ef4444' };
           const dotColor = statusColors[p.status] || '#888';
           return `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;margin:2px 0;${isLeder ? 'background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15)' : 'border:1px solid transparent'}" onmouseover="if(!${isLeder})this.style.background='rgba(128,128,128,0.04)'" onmouseout="if(!${isLeder})this.style.background='none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;margin:2px 0;${isLeder ? 'background:rgba(31,58,95,0.06);border:1px solid rgba(31,58,95,0.15)' : 'border:1px solid transparent'}" onmouseover="if(!${isLeder})this.style.background='rgba(128,128,128,0.04)'" onmouseout="if(!${isLeder})this.style.background='none'">
             <div style="display:flex;align-items:center;gap:8px">
               ${isLeder ? '<span style="font-size:12px" title="Gruppeleder">👑</span>' : ''}
               <div style="width:7px;height:7px;border-radius:50%;background:${dotColor}"></div>
@@ -10204,8 +10204,8 @@ window.showAnsatForm = function() {
   window._naToggleKanal = function(btn) {
     const active = btn.classList.toggle("na-chip-active");
     if (active) {
-      btn.style.background = "rgba(59,130,246,.18)";
-      btn.style.borderColor = "rgba(59,130,246,.55)";
+      btn.style.background = "rgba(31,58,95,.18)";
+      btn.style.borderColor = "rgba(31,58,95,.55)";
       btn.style.color = "#9cc4ff";
     } else {
       btn.style.background = "transparent";
@@ -10298,10 +10298,10 @@ function renderProfil(container) {
   let html = `<div style="max-width:880px;margin:0 auto">
 
     <!-- HERO -->
-    <div style="position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(59,130,246,.18);margin-bottom:16px;background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(59,130,246,.04) 55%,rgba(15,23,42,.6));box-shadow:0 18px 40px rgba(0,0,0,.35)">
-      <div style="position:absolute;inset:0;background:radial-gradient(circle at 85% 0%,rgba(59,130,246,.22),transparent 55%);pointer-events:none"></div>
+    <div style="position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(31,58,95,.18);margin-bottom:16px;background:linear-gradient(135deg,rgba(31,58,95,.18),rgba(31,58,95,.04) 55%,rgba(15,23,42,.6));box-shadow:0 18px 40px rgba(0,0,0,.35)">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 85% 0%,rgba(31,58,95,.22),transparent 55%);pointer-events:none"></div>
       <div style="position:relative;display:flex;align-items:center;gap:18px;padding:22px 24px">
-        <div style="width:78px;height:78px;border-radius:18px;background:linear-gradient(135deg,rgba(59,130,246,.35),rgba(59,130,246,.08));border:1px solid rgba(59,130,246,.35);display:flex;align-items:center;justify-content:center;color:#9cc4ff;font-size:26px;font-weight:700;overflow:hidden;flex-shrink:0;box-shadow:0 8px 24px rgba(59,130,246,.25)">
+        <div style="width:78px;height:78px;border-radius:18px;background:linear-gradient(135deg,rgba(31,58,95,.35),rgba(31,58,95,.08));border:1px solid rgba(31,58,95,.35);display:flex;align-items:center;justify-content:center;color:#9cc4ff;font-size:26px;font-weight:700;overflow:hidden;flex-shrink:0;box-shadow:0 8px 24px rgba(31,58,95,.25)">
           ${u.profilBillede?'<img src="'+esc(u.profilBillede)+'" style="width:100%;height:100%;object-fit:cover">':initialer}
         </div>
         <div style="flex:1;min-width:0">
@@ -10333,7 +10333,7 @@ function renderProfil(container) {
 
       <div class="card" style="padding:16px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center;color:var(--primary)">${icons.camera}</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(31,58,95,.12);display:flex;align-items:center;justify-content:center;color:var(--primary)">${icons.camera}</div>
           <h3 style="font-size:13px;font-weight:600;margin:0">Profilbillede</h3>
         </div>
         <input class="input mb-2" id="prof-img" value="${esc(u.profilBillede||'')}" placeholder="URL til profilbillede...">
@@ -10342,7 +10342,7 @@ function renderProfil(container) {
 
       <div class="card" style="padding:16px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center;color:var(--primary)">${icons.badge}</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(31,58,95,.12);display:flex;align-items:center;justify-content:center;color:var(--primary)">${icons.badge}</div>
           <h3 style="font-size:13px;font-weight:600;margin:0">Skift kodeord</h3>
         </div>
         <input class="input mb-2" type="password" id="prof-old" placeholder="Nuværende kodeord">
@@ -10384,7 +10384,7 @@ function renderProfil(container) {
     html += '<p style="font-size:12px;color:var(--muted-fg);font-style:italic;margin:0">Ingen kanaler tildelt</p>';
   } else {
     html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
-    perms.forEach(k => { html += '<span style="padding:5px 10px;border-radius:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);color:#9cc4ff;font-size:11px">'+esc(kanalLabels[k] || k)+'</span>'; });
+    perms.forEach(k => { html += '<span style="padding:5px 10px;border-radius:8px;background:rgba(31,58,95,.08);border:1px solid rgba(31,58,95,.22);color:#9cc4ff;font-size:11px">'+esc(kanalLabels[k] || k)+'</span>'; });
     html += '</div>';
   }
   html += `</div>
@@ -10821,7 +10821,7 @@ async function renderNSKBander() {
   let html = '';
   
   // Header bar — full-width dark banner like reference
-  html += `<div style="background:linear-gradient(135deg,rgba(20,22,32,0.95),rgba(28,32,41,0.98));border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:20px 24px;margin-bottom:20px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
+  html += `<div style="background:linear-gradient(135deg,rgba(20,22,32,0.95),rgba(28,32,41,0.98));border:1px solid rgba(31,58,95,0.15);border-radius:12px;padding:20px 24px;margin-bottom:20px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
     <h2 style="font-size:20px;font-weight:800;color:#fff;letter-spacing:0.02em">NSK Bande Oversigt</h2>
     <p style="font-size:11px;color:var(--muted-fg);margin-top:6px">${bander.length} registrerede bander</p>
   </div>`;
@@ -10852,7 +10852,7 @@ async function renderNSKBander() {
       const bg = threatBg[b.trusselsniveau] || 'transparent';
       const badge = threatBadge[b.trusselsniveau] || 'badge-muted';
       
-      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.25s ease;cursor:default;position:relative" onmouseover="this.style.borderColor='rgba(59,130,246,0.3)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
+      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.25s ease;cursor:default;position:relative" onmouseover="this.style.borderColor='rgba(31,58,95,0.3)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
         <div style="height:3px;background:linear-gradient(90deg,${color},${color}88,transparent);border-radius:12px 12px 0 0"></div>
         <div style="padding:18px 20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -10922,7 +10922,7 @@ async function renderNSKBandeDetaljer(bande) {
   let html = '';
   
   // Top banner — NSK Bande Oversigt
-  html += `<div style="background:linear-gradient(135deg,rgba(20,22,32,0.95),rgba(28,32,41,0.98));border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:18px 24px;margin-bottom:12px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
+  html += `<div style="background:linear-gradient(135deg,rgba(20,22,32,0.95),rgba(28,32,41,0.98));border:1px solid rgba(31,58,95,0.15);border-radius:12px;padding:18px 24px;margin-bottom:12px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.3)">
     <h2 style="font-size:18px;font-weight:800;color:#fff">NSK Bande Oversigt</h2>
   </div>`;
   
@@ -10981,7 +10981,7 @@ async function renderNSKBandeDetaljer(bande) {
           </div>
           <div style="display:flex;align-items:center;gap:4px">
             <span class="badge ${memberSigtelser.length > 0 ? 'badge-destructive' : 'badge-muted'}" style="font-size:9px">${memberSigtelser.length} sigtelser</span>
-            <button style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);color:var(--primary);border-radius:6px;cursor:pointer;padding:3px 8px;font-size:10px;transition:all 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'" onclick="window._nskShowSigtelseDialog('${bande.id}',${i})">+ Sigtelse</button>
+            <button style="background:rgba(31,58,95,0.1);border:1px solid rgba(31,58,95,0.2);color:var(--primary);border-radius:6px;cursor:pointer;padding:3px 8px;font-size:10px;transition:all 0.15s" onmouseover="this.style.background='rgba(31,58,95,0.2)'" onmouseout="this.style.background='rgba(31,58,95,0.1)'" onclick="window._nskShowSigtelseDialog('${bande.id}',${i})">+ Sigtelse</button>
             <button style="background:none;border:none;color:var(--destructive);cursor:pointer;padding:4px 6px;font-size:13px;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'" onclick="window._nskRemoveMember('${bande.id}',${i})">🗑</button>
           </div>
         </div>`;
@@ -11134,7 +11134,7 @@ async function renderNSKBandeDetaljer(bande) {
 
       // Show involved band members and their charges
       matchedMistaenkte.forEach(mist => {
-        html += `<div style="margin-top:6px;padding:4px 8px;background:rgba(59,130,246,0.05);border-radius:6px;border-left:2px solid var(--primary)">
+        html += `<div style="margin-top:6px;padding:4px 8px;background:rgba(31,58,95,0.05);border-radius:6px;border-left:2px solid var(--primary)">
           <div style="font-size:11px;font-weight:600;color:var(--fg)">👤 ${esc(mist.navn || mist.personCpr || 'Ukendt')}</div>`;
         if (Array.isArray(mist.sigtelser) && mist.sigtelser.length > 0) {
           html += `<div style="font-size:10px;color:var(--muted-fg);margin-top:2px">${mist.sigtelser.map(b => esc(b.beskrivelse||"")).join(", ")}</div>`;
@@ -11303,7 +11303,7 @@ window._nskShowCreateBande = function() {
   if (!form) return;
   if (form.style.display !== 'none') { form.style.display = 'none'; return; }
   form.style.display = 'block';
-  form.innerHTML = `<div style="background:var(--card);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
+  form.innerHTML = `<div style="background:var(--card);border:1px solid rgba(31,58,95,0.2);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.2)">
     <span style="font-size:15px;font-weight:700;display:block;margin-bottom:14px;color:var(--fg)">Opret ny bande</span>
     <div style="display:flex;gap:12px;align-items:flex-end">
       <div style="flex:1"><div class="label">Bande Navn</div><input class="input" id="nsk-new-bande-navn" placeholder="Indtast bande navn..." style="border-radius:8px"></div>
@@ -11477,7 +11477,7 @@ document.addEventListener('input', e => {
       } else {
         results.innerHTML = matches.map(p => {
           const safeName = (p.fornavn + ' ' + p.efternavn).replace(/'/g, "\\'");
-          return `<div class="list-item" style="padding:8px 12px;cursor:pointer;font-size:12px;border-radius:6px;transition:background 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.1)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}')">
+          return `<div class="list-item" style="padding:8px 12px;cursor:pointer;font-size:12px;border-radius:6px;transition:background 0.15s" onmouseover="this.style.background='rgba(31,58,95,0.1)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}')">
           <span style="font-weight:500">${p.fornavn} ${p.efternavn}</span> <span class="mono" style="font-size:10px;color:var(--muted-fg)">${p.cpr}</span>
         </div>`;
         }).join('');
@@ -11585,7 +11585,7 @@ window._nskShowAddMemberDialog = async function(bandeId) {
   } else {
     available.forEach(p => {
       const safeName = (p.fornavn + ' ' + p.efternavn).replace(/'/g, "\\'");
-      listHtml += `<div class="list-item nsk-dlg-person" data-search="${(p.fornavn+' '+p.efternavn+' '+p.cpr).toLowerCase()}" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}');this.closest('.dialog-overlay').remove()">
+      listHtml += `<div class="list-item nsk-dlg-person" data-search="${(p.fornavn+' '+p.efternavn+' '+p.cpr).toLowerCase()}" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='rgba(31,58,95,0.08)'" onmouseout="this.style.background=''" onclick="window._nskAddMember('${bandeId}','${p.id}','${safeName}','${p.cpr}');this.closest('.dialog-overlay').remove()">
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
           <div>
             <div style="font-size:13px;font-weight:600">${p.fornavn} ${p.efternavn}</div>
@@ -11799,7 +11799,7 @@ window.showTilhoersforholdForPerson = function(personId, personCpr, personNavn) 
   const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
   overlay.innerHTML = `<div class="dialog">
     <div class="dialog-title">Tilføj tilhørsforhold</div>
-    <div class="card card-sm mb-3" style="padding:10px;background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.2)">
+    <div class="card card-sm mb-3" style="padding:10px;background:rgba(31,58,95,0.05);border-color:rgba(31,58,95,0.2)">
       <div style="font-size:12px;font-weight:500">👤 ${personNavn}</div>
       <div class="mono" style="font-size:10px;color:var(--muted-fg)">${personCpr}</div>
     </div>
@@ -11841,7 +11841,7 @@ async function renderAfdelingsIndhold(container, contentId, isLeder) {
     sorted.forEach(item => {
       const typeColors = {info:"badge-primary",mission:"badge-warning",vigtig:"badge-destructive",notat:"badge-muted",taktisk:"badge-warning",vagtplan:"badge-success",udstyr:"badge-primary",nyhed:"badge-warning"};
       const typeLabels = {info:"Information",mission:"Mission",vigtig:"Vigtig",notat:"Notat",taktisk:"Taktisk plan",vagtplan:"Vagtplan",udstyr:"Udstyr",nyhed:"Nyhed"};
-      html += `<div class="card card-sm mb-2" style="${item.pinned?'border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.03)':''}"><div class="flex items-center justify-between mb-1"><div class="flex items-center gap-2">${item.pinned?icons.pin:''}<span class="badge ${typeColors[item.type]||'badge-muted'}">${typeLabels[item.type]||item.type||"info"}</span><span style="font-size:12px;font-weight:600">${item.titel}</span></div>`;
+      html += `<div class="card card-sm mb-2" style="${item.pinned?'border-color:rgba(31,58,95,.3);background:rgba(31,58,95,.03)':''}"><div class="flex items-center justify-between mb-1"><div class="flex items-center gap-2">${item.pinned?icons.pin:''}<span class="badge ${typeColors[item.type]||'badge-muted'}">${typeLabels[item.type]||item.type||"info"}</span><span style="font-size:12px;font-weight:600">${item.titel}</span></div>`;
       if (isLeder) html += `<div class="flex gap-1"><button class="btn btn-ghost btn-sm" onclick="togglePinIndhold('${item.id}',${item.pinned?0:1},'${contentId}')">${icons.pin}</button><button class="btn btn-ghost btn-sm" onclick="editAfdelingsIndhold('${item.id}','${contentId}')">${icons.pencil}</button><button class="btn btn-ghost btn-sm" style="color:var(--destructive)" onclick="deleteAfdelingsIndhold('${item.id}','${contentId}')">✕</button></div>`;
       html += `</div><p style="font-size:12px;color:var(--muted-fg);white-space:pre-wrap;line-height:1.6">${item.indhold||""}</p><div style="font-size:9px;color:var(--muted-fg);margin-top:6px">${item.oprettetAf||"—"} — ${item.oprettetDato?new Date(item.oprettetDato).toLocaleDateString("da-DK"):"—"}${item.opdateretDato?' (redigeret)':''}</div></div>`;
     });
@@ -15407,7 +15407,7 @@ Andre relevante oplysninger:`
                     <button class="btn btn-ghost btn-sm" style="color:var(--destructive);padding:2px 6px" onclick="removeSigtelseFromMistaenkt(${originalIndex}, ${g.indices[g.indices.length-1]})">✕</button>
                   </div>`;
               }).join('')}
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(59,130,246,.05);font-size:12px;font-weight:800">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(31,58,95,.05);font-size:12px;font-weight:800">
                 <span>Total straf</span>
                 <div style="display:flex;gap:12px;align-items:center">
                   <span class="mono" style="color:var(--warning)">${totalBoede.toLocaleString('da-DK',{minimumFractionDigits:2,maximumFractionDigits:2})} kr.</span>
@@ -16232,7 +16232,7 @@ Andre relevante oplysninger:`
       <div style="font-size:14px;font-weight:700;margin-bottom:12px">Tilhørsforhold (${items.length})</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${items.map(t => `
-          <div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:rgba(59,130,246,.04);border-left:3px solid var(--destructive)">
+          <div style="padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:rgba(31,58,95,.04);border-left:3px solid var(--destructive)">
             <div class="flex items-center justify-between" style="gap:12px">
               <div class="flex items-center gap-2" style="flex-wrap:wrap">
                 <span style="font-size:13px;font-weight:600">${escTilhoer(t.bande || "Ukendt")}</span>
