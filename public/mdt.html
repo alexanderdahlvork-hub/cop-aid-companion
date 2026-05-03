@@ -10292,18 +10292,22 @@ async function renderAnsatte(container) {
             <div class="staff-admin-title">Administrer ansatte</div>
             <div class="staff-admin-actions">
               <div class="staff-admin-action">
-                <div class="staff-admin-icon blue">👤+</div>
-                <div style="flex:1">
-                  <div style="font-size:13px;font-weight:700">Ansæt betjent</div>
-                  <div class="staff-sub">Ansæt en ny betjent</div>
+                <div class="staff-admin-icon blue">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                 </div>
-                <button class="btn btn-outline btn-sm" onclick="showAnsatForm()">Åbn</button>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:700;color:var(--fg)">Ansæt betjent</div>
+                  <div class="staff-sub" style="margin:2px 0 0">Opret en ny medarbejder i systemet</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="showAnsatForm()">Ansæt</button>
               </div>
               <div class="staff-admin-action">
-                <div class="staff-admin-icon red">👤−</div>
-                <div style="flex:1">
-                  <div style="font-size:13px;font-weight:700">Rediger ansvar</div>
-                  <div class="staff-sub">Ændr afdelinger, adgang og ansvar</div>
+                <div class="staff-admin-icon red">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M16 11h6"/></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:700;color:var(--fg)">Rediger ansvar</div>
+                  <div class="staff-sub" style="margin:2px 0 0">Ændr afdelinger, adgang og ansvarsområder</div>
                 </div>
                 <button class="btn btn-outline btn-sm" onclick="showToast('Vælg en medarbejder nedenfor')">Vælg</button>
               </div>
