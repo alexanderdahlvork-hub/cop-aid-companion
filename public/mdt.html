@@ -5934,33 +5934,33 @@ body *:focus-visible{
   outline: none !important;
 }
 
-/* === DARK THEME PALETTE (matte) === */
-body{
+/* === DARK THEME PALETTE (matte) — kun når ikke light === */
+body:not(.theme-light){
   background: var(--app-bg) !important;
   background-image: none !important;
   color: var(--text-primary) !important;
 }
-body .app-shell{
+body:not(.theme-light) .app-shell{
   background: var(--app-bg) !important;
   background-image: none !important;
 }
 
-body .card,
-body .card-sm,
-body .panel,
-body .modal-content,
-body .dialog,
-body .sidebar,
-body .top-header,
-body .sidebar-popup,
-body .pr-side-card,
-body .pr-stat-card,
-body .pr-notes-card,
-body .pr-mugshot,
-body .stat-card,
-body .dispatch-card,
-body .fleet-card,
-body .case-card{
+body:not(.theme-light) .card,
+body:not(.theme-light) .card-sm,
+body:not(.theme-light) .panel,
+body:not(.theme-light) .modal-content,
+body:not(.theme-light) .dialog,
+body:not(.theme-light) .sidebar,
+body:not(.theme-light) .top-header,
+body:not(.theme-light) .sidebar-popup,
+body:not(.theme-light) .pr-side-card,
+body:not(.theme-light) .pr-stat-card,
+body:not(.theme-light) .pr-notes-card,
+body:not(.theme-light) .pr-mugshot,
+body:not(.theme-light) .stat-card,
+body:not(.theme-light) .dispatch-card,
+body:not(.theme-light) .fleet-card,
+body:not(.theme-light) .case-card{
   background-image: none !important;
   background: var(--surface-flat) !important;
   border-color: var(--border-flat) !important;
@@ -5968,32 +5968,32 @@ body .case-card{
 }
 
 /* Inputs */
-body .input,
-body .select,
-body .textarea,
-body input,
-body select,
-body textarea{
+body:not(.theme-light) .input,
+body:not(.theme-light) .select,
+body:not(.theme-light) .textarea,
+body:not(.theme-light) input,
+body:not(.theme-light) select,
+body:not(.theme-light) textarea{
   background: #141a22 !important;
   border-color: var(--border-flat) !important;
   color: var(--text-primary) !important;
 }
 
 /* Secondary text */
-body .muted,
-body .text-muted,
-body .subtitle,
-body small{
+body:not(.theme-light) .muted,
+body:not(.theme-light) .text-muted,
+body:not(.theme-light) .subtitle,
+body:not(.theme-light) small{
   color: var(--text-secondary) !important;
 }
 
 /* Primary buttons + active nav */
-body .btn-primary,
-body .badge-primary,
-body .tab-item.active,
-body .pr-tab.active,
-body .sidebar-item.active,
-body .nav-item.active{
+body:not(.theme-light) .btn-primary,
+body:not(.theme-light) .badge-primary,
+body:not(.theme-light) .tab-item.active,
+body:not(.theme-light) .pr-tab.active,
+body:not(.theme-light) .sidebar-item.active,
+body:not(.theme-light) .nav-item.active{
   background: var(--accent-muted) !important;
   border-color: var(--accent-muted-2) !important;
   color: var(--text-primary) !important;
@@ -6001,27 +6001,24 @@ body .nav-item.active{
   box-shadow: none !important;
   text-shadow: none !important;
 }
-body .btn-primary:hover,
-body .sidebar-item:hover,
-body .nav-item:hover,
-body .tab-item:hover{
+body:not(.theme-light) .btn-primary:hover,
+body:not(.theme-light) .sidebar-item:hover,
+body:not(.theme-light) .nav-item:hover,
+body:not(.theme-light) .tab-item:hover{
   background: var(--accent-muted-2) !important;
 }
 
 /* Accent text → muted */
-body .text-accent,
-body .accent,
-body [class*="text-blue"]{
+body:not(.theme-light) .text-accent,
+body:not(.theme-light) .accent,
+body:not(.theme-light) [class*="text-blue"]{
   color: #8aa0bf !important;
 }
 
 /* Status colors (semantic) */
-body .status-success, body .badge-success, body .text-success,
-body [class*="success"]{ color: var(--status-green) !important; }
-body .status-warning, body .badge-warning, body .text-warning,
-body [class*="warning"]{ color: var(--status-yellow) !important; }
-body .status-danger, body .badge-danger, body .text-danger,
-body [class*="danger"], body [class*="error"]{ color: var(--status-red) !important; }
+body .status-success, body .badge-success, body .text-success{ color: var(--status-green) !important; }
+body .status-warning, body .badge-warning, body .text-warning{ color: var(--status-yellow) !important; }
+body .status-danger, body .badge-danger, body .text-danger{ color: var(--status-red) !important; }
 
 body .badge-success{ background: rgba(47,158,107,.15) !important; border-color: rgba(47,158,107,.4) !important; }
 body .badge-warning{ background: rgba(212,167,44,.15) !important; border-color: rgba(212,167,44,.4) !important; }
@@ -6042,7 +6039,230 @@ body .btn{
   text-shadow: none !important;
   background-image: none !important;
 }
+
+/* =========================================================
+   LIGHT THEME — optimeret, klar læsbarhed, fladt look
+   ========================================================= */
+body.theme-light{
+  --bg: #F4F6FA !important;
+  --fg: #0F172A !important;
+  --card: #FFFFFF !important;
+  --card-fg: #0F172A !important;
+  --card-2: #F8FAFC !important;
+  --primary: #1F3A5F !important;
+  --primary-fg: #FFFFFF !important;
+  --secondary: #E5EAF2 !important;
+  --secondary-fg: #0F172A !important;
+  --muted: #EEF1F6 !important;
+  --muted-fg: #5A6677 !important;
+  --accent: #2C5282 !important;
+  --accent-fg: #FFFFFF !important;
+  --border: #D7DCE5 !important;
+  --input: #FFFFFF !important;
+  --ring: #2C5282 !important;
+  --sidebar-bg: #FFFFFF !important;
+  --sidebar-fg: #0F172A !important;
+  --sidebar-border: #E1E6EE !important;
+
+  --app-bg: #F4F6FA !important;
+  --surface-flat: #FFFFFF !important;
+  --surface-flat-2: #F8FAFC !important;
+  --border-flat: #D7DCE5 !important;
+  --accent-muted: #1F3A5F !important;
+  --accent-muted-2: #2C5282 !important;
+  --text-primary: #0F172A !important;
+  --text-secondary: #5A6677 !important;
+
+  background: #F4F6FA !important;
+  color: #0F172A !important;
+}
+
+body.theme-light #app,
+body.theme-light .app-shell{
+  background: #F4F6FA !important;
+  color: #0F172A !important;
+}
+
+body.theme-light .card,
+body.theme-light .card-sm,
+body.theme-light .panel,
+body.theme-light .modal-content,
+body.theme-light .dialog,
+body.theme-light .sidebar,
+body.theme-light .top-header,
+body.theme-light .sidebar-popup,
+body.theme-light .pr-side-card,
+body.theme-light .pr-stat-card,
+body.theme-light .pr-notes-card,
+body.theme-light .pr-mugshot,
+body.theme-light .stat-card,
+body.theme-light .dispatch-card,
+body.theme-light .fleet-card,
+body.theme-light .case-card{
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border-color: #E1E6EE !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 0 0 1px rgba(15,23,42,.03) !important;
+}
+
+body.theme-light .top-header,
+body.theme-light .sidebar{
+  background: #FFFFFF !important;
+  border-color: #E1E6EE !important;
+}
+
+body.theme-light .input,
+body.theme-light .select,
+body.theme-light .textarea,
+body.theme-light input,
+body.theme-light select,
+body.theme-light textarea{
+  background: #FFFFFF !important;
+  border-color: #D7DCE5 !important;
+  color: #0F172A !important;
+}
+body.theme-light .input::placeholder,
+body.theme-light input::placeholder,
+body.theme-light textarea::placeholder{
+  color: #94A3B8 !important;
+}
+
+body.theme-light .muted,
+body.theme-light .text-muted,
+body.theme-light .subtitle,
+body.theme-light small{
+  color: #5A6677 !important;
+}
+
+/* Primary buttons + active nav (light) */
+body.theme-light .btn-primary,
+body.theme-light .badge-primary,
+body.theme-light .tab-item.active,
+body.theme-light .pr-tab.active,
+body.theme-light .sidebar-item.active,
+body.theme-light .nav-item.active{
+  background: #1F3A5F !important;
+  border-color: #1F3A5F !important;
+  color: #FFFFFF !important;
+  background-image: none !important;
+}
+body.theme-light .btn-primary:hover,
+body.theme-light .sidebar-item:hover,
+body.theme-light .nav-item:hover,
+body.theme-light .tab-item:hover{
+  background: #2C5282 !important;
+  color: #FFFFFF !important;
+}
+body.theme-light .sidebar-item,
+body.theme-light .nav-item,
+body.theme-light .tab-item{
+  color: #334155 !important;
+}
+
+body.theme-light .btn,
+body.theme-light .btn-secondary,
+body.theme-light .btn-outline{
+  background: #FFFFFF !important;
+  border: 1px solid #D7DCE5 !important;
+  color: #0F172A !important;
+}
+body.theme-light .btn-secondary:hover,
+body.theme-light .btn-outline:hover{
+  background: #EEF1F6 !important;
+}
+
+body.theme-light .badge,
+body.theme-light .chip{
+  color: #0F172A;
+}
+
+/* Status badges på lyst tema — let baggrund + tydelig tekst */
+body.theme-light .badge-success,
+body.theme-light .status-success{
+  background: #E6F4EC !important; border-color: #B6E0C6 !important; color: #1B6E47 !important;
+}
+body.theme-light .badge-warning,
+body.theme-light .status-warning{
+  background: #FBF1D6 !important; border-color: #ECD79A !important; color: #8A6A0F !important;
+}
+body.theme-light .badge-danger,
+body.theme-light .status-danger{
+  background: #FBE4E1 !important; border-color: #F1B7B0 !important; color: #8C2A21 !important;
+}
+body.theme-light .text-success{ color: #1B6E47 !important; }
+body.theme-light .text-warning{ color: #8A6A0F !important; }
+body.theme-light .text-danger{  color: #8C2A21 !important; }
+
+/* Generelle tekstfarver — fix for elementer der ellers blev usynlige */
+body.theme-light h1, body.theme-light h2, body.theme-light h3,
+body.theme-light h4, body.theme-light h5, body.theme-light h6,
+body.theme-light p, body.theme-light span, body.theme-light div,
+body.theme-light label, body.theme-light li, body.theme-light td,
+body.theme-light th, body.theme-light a{
+  color: inherit;
+}
+body.theme-light .top-header *,
+body.theme-light .sidebar *{
+  color: #0F172A;
+}
+body.theme-light .top-header-clock,
+body.theme-light .top-header-badge{
+  color: #1F3A5F !important;
+}
+
+/* Scrollbar light */
+body.theme-light ::-webkit-scrollbar-thumb{
+  background: #C7CFDB !important;
+}
+body.theme-light ::-webkit-scrollbar-thumb:hover{
+  background: #9AA8BC !important;
+}
+
+/* Dialog overlay light */
+body.theme-light .modal,
+body.theme-light .dialog-overlay{
+  background: rgba(15,23,42,.45) !important;
+}
+
+/* Tabs/dropdowns light */
+body.theme-light .tabs-dropdown{
+  background: #FFFFFF !important;
+  border: 1px solid #E1E6EE !important;
+}
+body.theme-light .tabs-dropdown-item{ color: #0F172A !important; }
+body.theme-light .tabs-dropdown-item:hover{ background: #EEF1F6 !important; }
+
+/* Lists / hovers */
+body.theme-light .list-item:hover,
+body.theme-light .sidebar-popup-item:hover{
+  background: #EEF1F6 !important;
+}
+body.theme-light .list-item.active{
+  background: #E3ECF7 !important;
+  border-left-color: #1F3A5F !important;
+}
+
+/* Tabel */
+body.theme-light table{ color: #0F172A !important; }
+body.theme-light thead th{
+  background: #F1F4F9 !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #D7DCE5 !important;
+}
+body.theme-light tbody tr{
+  border-bottom: 1px solid #EEF1F6 !important;
+}
+body.theme-light tbody tr:hover{
+  background: #F6F8FB !important;
+}
+
+/* Borders fallback */
+body.theme-light [class*="border"]{
+  border-color: #E1E6EE;
+}
 </style>
+
 </head>
 <body>
 
