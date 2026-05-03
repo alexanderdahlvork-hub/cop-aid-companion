@@ -7851,34 +7851,37 @@ async function renderDashboard(container) {
 
     const efterlyste = personer.filter(p => p.status === "eftersøgt").length;
     const aabneSager = sager.filter(s => s.status !== "lukket").length;
-    const kolleger = betjente.filter(b => b.id !== currentUser.id);
+    const andreKolleger = betjente.filter(b => b.id !== currentUser.id);
+    const kollegerMedDig = [currentUser, ...andreKolleger];
 
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set("dash-efterlyste", efterlyste);
     set("dash-sager", aabneSager);
     set("dash-personer", personer.length);
-    set("dash-kol-count", kolleger.length);
-    set("dash-kol-label", `${kolleger.length} aktive`);
+    set("dash-kol-count", kollegerMedDig.length);
+    set("dash-kol-label", `${kollegerMedDig.length} aktive`);
 
     const kolDiv = document.getElementById("dash-kollegaer");
     if (kolDiv) {
-      if (kolleger.length === 0) {
-        kolDiv.innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--muted-fg);font-style:italic;font-size:12px">Ingen andre kolleger på vagt</div>';
-      } else {
-        kolDiv.innerHTML = kolleger.slice(0, 6).map(k => {
-          const ini = (k.fornavn?.[0] || "") + (k.efternavn?.[0] || "");
-          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-            <div style="width:32px;height:32px;border-radius:4px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${ini}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k.fornavn} ${k.efternavn}</div>
-              <div class="mono" style="font-size:10px;color:var(--muted-fg)">${k.rang} · ${k.badgeNr}</div>
-            </div>
-            <span style="width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0" title="I tjeneste"></span>
-          </div>`;
-        }).join("");
-        if (kolleger.length > 6) {
-          kolDiv.innerHTML += `<div style="text-align:center;padding:10px 0 0;font-size:11px;color:var(--muted-fg)">+ ${kolleger.length - 6} flere</div>`;
-        }
+      kolDiv.innerHTML = kollegerMedDig.slice(0, 7).map(k => {
+        const ini = (k.fornavn?.[0] || "") + (k.efternavn?.[0] || "");
+        const erDig = k.id === currentUser.id;
+        const avatarBg = erDig ? '#2f9e6b' : '#2C5282';
+        const rowBg = erDig ? 'background:rgba(47,158,107,.08);border:1px solid rgba(47,158,107,.35);border-radius:8px;padding:8px 10px;margin-bottom:6px' : 'padding:8px 0;border-bottom:1px solid var(--border)';
+        const digBadge = erDig ? '<span style="font-size:9px;font-weight:800;letter-spacing:.1em;padding:2px 6px;border-radius:4px;background:#2f9e6b;color:#fff;margin-left:6px">DIG</span>' : '';
+        return '<div style="display:flex;align-items:center;gap:10px;' + rowBg + '">' +
+            '<div style="width:34px;height:34px;border-radius:6px;background:' + avatarBg + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;box-shadow:0 0 0 2px rgba(47,158,107,.35)">' + ini + '</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center">' + k.fornavn + ' ' + k.efternavn + digBadge + '</div>' +
+              '<div class="mono" style="font-size:10px;color:var(--muted-fg)">' + (k.rang || '') + ' · ' + (k.badgeNr || '') + '</div>' +
+            '</div>' +
+            '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#2f9e6b;background:rgba(47,158,107,.14);border:1px solid rgba(47,158,107,.4);padding:3px 7px;border-radius:999px;flex-shrink:0">' +
+              '<span style="width:7px;height:7px;border-radius:50%;background:#2f9e6b;display:inline-block"></span>VAGT' +
+            '</span>' +
+          '</div>';
+      }).join("");
+      if (kollegerMedDig.length > 7) {
+        kolDiv.innerHTML += '<div style="text-align:center;padding:10px 0 0;font-size:11px;color:var(--muted-fg)">+ ' + (kollegerMedDig.length - 7) + ' flere</div>';
       }
     }
   } catch (err) {
