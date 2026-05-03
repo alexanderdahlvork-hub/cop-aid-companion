@@ -5887,8 +5887,8 @@ body.theme-light pre{
   --status-red:   #c0392b;
 }
 
-/* Force base surfaces uanset tema */
-html, body, #app, .app-shell{
+/* Force base surfaces — kun mørkt tema */
+html, body:not(.theme-light), body:not(.theme-light) #app, body:not(.theme-light) .app-shell{
   background: #0F141A !important;
   color: #E6E9ED !important;
 }
