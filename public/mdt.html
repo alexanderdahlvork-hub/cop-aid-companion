@@ -10504,7 +10504,14 @@ async function renderAnsatte(container) {
   }
 }
 
-
+window.toggleStaffRank = function(rang) {
+  if (!Array.isArray(window._openStaffRanks)) window._openStaffRanks = [];
+  const idx = window._openStaffRanks.indexOf(rang);
+  if (idx >= 0) window._openStaffRanks.splice(idx, 1);
+  else window._openStaffRanks.push(rang);
+  const c = document.getElementById("content-area");
+  if (c) renderAnsatte(c);
+};
 
 
 
