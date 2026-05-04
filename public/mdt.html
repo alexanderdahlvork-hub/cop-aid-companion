@@ -6375,6 +6375,55 @@ body.theme-light .dialog .btn-primary{
 body.theme-light .dialog .btn-primary:hover{
   background:#2C5282 !important;
 }
+
+/* --- Ekstra: tving sort/markant tekst i ALLE inputs i lyst tema --- */
+body.theme-light .dialog .input,
+body.theme-light .dialog .select,
+body.theme-light .dialog .textarea,
+body.theme-light .dialog input,
+body.theme-light .dialog select,
+body.theme-light .dialog textarea,
+body.theme-light .dialog .input *,
+body.theme-light .dialog .textarea *{
+  color:#000000 !important;
+  -webkit-text-fill-color:#000000 !important;
+  font-weight:500 !important;
+}
+body.theme-light .dialog .input::placeholder,
+body.theme-light .dialog .textarea::placeholder,
+body.theme-light .dialog input::placeholder,
+body.theme-light .dialog textarea::placeholder{
+  color:#94A3B8 !important;
+  -webkit-text-fill-color:#94A3B8 !important;
+  opacity:1 !important;
+}
+
+/* --- Aktiv sidebar-item i lyst tema: hvid tekst på mørk navy --- */
+body.theme-light .sidebar-item.active,
+body.theme-light .sidebar .active,
+body.theme-light .sidebar .nav-item.active,
+body.theme-light .nav-item.active{
+  background:#1F3A5F !important;
+  border-color:#1F3A5F !important;
+  color:#ffffff !important;
+  font-weight:700 !important;
+}
+body.theme-light .sidebar-item.active *,
+body.theme-light .sidebar-item.active span,
+body.theme-light .sidebar .active *,
+body.theme-light .nav-item.active *{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+body.theme-light .sidebar-item.active svg,
+body.theme-light .sidebar .active svg,
+body.theme-light .nav-item.active svg{
+  color:#ffffff !important;
+  stroke:#ffffff !important;
+}
+body.theme-light .sidebar-item.active::after{
+  background:#ffffff !important;
+}
 </style>
 
 </head>
