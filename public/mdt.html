@@ -824,6 +824,67 @@ body.theme-light .list-item:hover{
 .staff-rank-body.open{
   display:block;
 }
+.staff-mini-list{
+  list-style:none;
+  margin:0;
+  padding:4px 0 0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.staff-mini-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:12px;
+  line-height:1.2;
+  transition:background .15s;
+}
+.staff-mini-item:hover{
+  background:rgba(255,255,255,.04);
+}
+.staff-mini-name{
+  font-weight:500;
+  color:var(--ink, #e6edf7);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.staff-mini-edit{
+  background:transparent;
+  border:1px solid rgba(59,130,246,.3);
+  color:#60a5fa;
+  font-size:10px;
+  font-weight:600;
+  padding:3px 8px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all .15s;
+  flex-shrink:0;
+}
+.staff-mini-edit:hover{
+  background:rgba(59,130,246,.15);
+  border-color:#3b82f6;
+  color:#93c5fd;
+}
+body.theme-light .staff-mini-item:hover{
+  background:#f1f5f9;
+}
+body.theme-light .staff-mini-name{
+  color:#0F172A !important;
+}
+body.theme-light .staff-mini-edit{
+  background:#FFFFFF;
+  border:1px solid #1F3A5F;
+  color:#1F3A5F;
+}
+body.theme-light .staff-mini-edit:hover{
+  background:#1F3A5F;
+  color:#FFFFFF;
+}
 .staff-table{
   width:100%;
   border-collapse:separate;
@@ -10586,48 +10647,18 @@ async function renderAnsatte(container) {
               <div class="staff-rank-arrow">${open ? "▴" : "▾"}</div>
             </div>
             <div class="staff-rank-body ${open ? "open" : ""}">
-              <table class="staff-table">
-                <thead>
-                  <tr>
-                    <th>Betjent</th>
-                    <th>Rank</th>
-                    <th>Ansvarsområde</th>
-                    <th>Afdelinger</th>
-                    <th>Handlinger</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${group.ansatte.map(a => {
-                    const afdelinger = formatAfdelinger(a.afdeling);
-                    const ansvar = parseMaybeArray(a.tilladelser).filter(x => x !== "*");
-                    const initials = `${a.fornavn?.[0] || "U"}${a.efternavn?.[0] || "B"}`.toUpperCase();
-                    return `
-                      <tr>
-                        <td>
-                          <div class="staff-name-cell">
-                            <div class="staff-avatar-sm">${initials}</div>
-                            <div>
-                              <div style="font-size:13px;font-weight:700">${a.fornavn || ""} ${a.efternavn || ""}</div>
-                              <div class="staff-sub">[${a.badgeNr || "—"}]</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td><span class="rank-pill ${getRankClass(a.rang)}">${a.rang || "Ukendt rang"}</span></td>
-                        <td>
-                          ${ansvar.length ? ansvar.slice(0,2).map(item => `<div class="staff-sub" style="margin:0 0 4px 0">${item}</div>`).join("") : `<div class="staff-sub" style="margin:0">Ingen</div>`}
-                          ${ansvar.length > 2 ? `<div class="staff-sub" style="margin:0">+${ansvar.length - 2} mere</div>` : ``}
-                        </td>
-                        <td>
-                          ${afdelinger.length ? afdelinger.map(afd => `<div class="staff-sub" style="margin:0 0 4px 0">${afd}</div>`).join("") : `<div class="staff-sub" style="margin:0">Ingen</div>`}
-                        </td>
-                        <td>
-                          ${isPoliceLeadership(currentUser) ? `<button class="staff-link-btn" onclick="showAnsvarsomraadeDialog('${a.id}')">Rediger</button>` : `<span class="staff-sub" style="margin:0">Ingen adgang</span>`}
-                        </td>
-                      </tr>
-                    `;
-                  }).join("")}
-                </tbody>
-              </table>
+              <ul class="staff-mini-list">
+                ${group.ansatte.map(a => {
+                  const navn = `${a.fornavn || ""} ${a.efternavn || ""}`.trim() || "Ukendt";
+                  const canEdit = isPoliceLeadership(currentUser);
+                  return `
+                    <li class="staff-mini-item">
+                      <span class="staff-mini-name">${navn}</span>
+                      ${canEdit ? `<button class="staff-mini-edit" onclick="showAnsvarsomraadeDialog('${a.id}')" title="Rediger">Rediger</button>` : ``}
+                    </li>
+                  `;
+                }).join("")}
+              </ul>
             </div>
           </div>
         `;
