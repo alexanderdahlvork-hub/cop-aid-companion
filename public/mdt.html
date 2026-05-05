@@ -6442,6 +6442,89 @@ body.theme-light .nav-item.active svg{
 body.theme-light .sidebar-item.active::after{
   background:#ffffff !important;
 }
+
+/* --- Ansøgningsformular i lyst tema: ensartet høj kontrast på alle felter --- */
+body.theme-light .dialog label,
+body.theme-light .dialog .label,
+body.theme-light .dialog .field-label,
+body.theme-light .dialog .form-label,
+body.theme-light .dialog legend,
+body.theme-light .dialog .checkbox-label,
+body.theme-light .dialog .radio-label{
+  color:#0F172A !important;
+  -webkit-text-fill-color:#0F172A !important;
+  font-weight:700 !important;
+  opacity:1 !important;
+}
+body.theme-light .dialog label .required,
+body.theme-light .dialog label sup,
+body.theme-light .dialog .required{
+  color:#B91C1C !important;
+  -webkit-text-fill-color:#B91C1C !important;
+  font-weight:700 !important;
+}
+body.theme-light .dialog .help-text,
+body.theme-light .dialog .helper-text,
+body.theme-light .dialog .field-hint,
+body.theme-light .dialog .form-hint,
+body.theme-light .dialog small,
+body.theme-light .dialog .muted,
+body.theme-light .dialog .text-muted,
+body.theme-light .dialog .dialog-sub{
+  color:#475569 !important;
+  -webkit-text-fill-color:#475569 !important;
+  opacity:1 !important;
+}
+body.theme-light .dialog .error,
+body.theme-light .dialog .field-error,
+body.theme-light .dialog .form-error,
+body.theme-light .dialog .error-message,
+body.theme-light .dialog .invalid-feedback,
+body.theme-light .dialog [role="alert"],
+body.theme-light .dialog .text-danger,
+body.theme-light .dialog .text-error{
+  color:#B91C1C !important;
+  -webkit-text-fill-color:#B91C1C !important;
+  font-weight:600 !important;
+  opacity:1 !important;
+}
+body.theme-light .dialog .input.error,
+body.theme-light .dialog .textarea.error,
+body.theme-light .dialog input.error,
+body.theme-light .dialog textarea.error,
+body.theme-light .dialog select.error,
+body.theme-light .dialog input[aria-invalid="true"],
+body.theme-light .dialog textarea[aria-invalid="true"],
+body.theme-light .dialog select[aria-invalid="true"]{
+  border-color:#B91C1C !important;
+  background:#FEF2F2 !important;
+  box-shadow:0 0 0 3px rgba(185,28,28,.15) !important;
+}
+body.theme-light .dialog input::placeholder,
+body.theme-light .dialog textarea::placeholder,
+body.theme-light .dialog .input::placeholder,
+body.theme-light .dialog .textarea::placeholder{
+  color:#64748B !important;
+  -webkit-text-fill-color:#64748B !important;
+  opacity:1 !important;
+  font-weight:500 !important;
+}
+body.theme-light .dialog select option{
+  color:#0F172A !important;
+  background:#FFFFFF !important;
+}
+body.theme-light .dialog input:disabled,
+body.theme-light .dialog textarea:disabled,
+body.theme-light .dialog select:disabled{
+  background:#E2E8F0 !important;
+  color:#475569 !important;
+  -webkit-text-fill-color:#475569 !important;
+  cursor:not-allowed !important;
+}
+body.theme-light .dialog input[type="checkbox"],
+body.theme-light .dialog input[type="radio"]{
+  accent-color:#1F3A5F !important;
+}
 </style>
 
 </head>
