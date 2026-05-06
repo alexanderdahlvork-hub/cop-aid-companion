@@ -7912,6 +7912,11 @@ async function renderHaendelser(container) {
         <div style="font-size:14px;font-weight:600;margin-bottom:4px">Ingen sager endnu</div>
         <div style="font-size:12px">Opret en ny hændelse for at komme i gang</div>
       </div>`}
+
+      <!-- Action button at bottom -->
+      <div style="display:flex;justify-content:center;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)">
+        <button class="btn btn-primary" style="gap:6px;font-weight:700;padding:12px 24px" onclick="void openTab('sag',{label:'Ny Hændelse'})">${icons.plus} Ny hændelse</button>
+      </div>
     </div>`;
 
   container.innerHTML = html;
