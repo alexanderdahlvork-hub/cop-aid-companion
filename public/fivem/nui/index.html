@@ -3,28 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MDT Sagssystem</title>
+  <title>AVLD MDT</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="mdt-container" class="hidden">
-    <div id="mdt-frame">
-      <!-- Denne div indlæser det eksisterende MDT React-app via iframe -->
-      <iframe id="mdt-iframe" src="https://dit-mdt-url.her/"></iframe>
-
-      <!-- Alternativt: direkte NUI integration -->
-      <div id="mdt-native" class="hidden">
-        <div class="mdt-header">
-          <h1>MDT - Sagssystem</h1>
-          <button id="btn-close" onclick="closeMDT()">✕</button>
-        </div>
-        <div class="mdt-tabs" id="tabs-bar"></div>
-        <div class="mdt-content" id="main-content">
-          <div id="sager-liste"></div>
-          <div id="sag-editor" class="hidden"></div>
-        </div>
-      </div>
-    </div>
+  <div id="mdt-root" class="hidden">
+    <iframe
+      id="mdt-frame"
+      src="mdt.html"
+      frameborder="0"
+      allow="clipboard-read; clipboard-write"
+    ></iframe>
   </div>
   <script src="script.js"></script>
 </body>
