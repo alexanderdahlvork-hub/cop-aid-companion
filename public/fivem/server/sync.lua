@@ -153,46 +153,55 @@ function SyncAllPlayersFromDB(kilde, doneCb)
             return
         end
 
-        local oprettet, opdateret, fejl = 0, 0, 0
-        local total = #rows
-        local processed = 0
+        local oprettet, opdateret, flettet, fejl = 0, 0, 0, 0
 
-        if total == 0 then
-            print("[AVLD MDT][sync] users-tabellen er tom")
-            if doneCb then doneCb(0, 0, 0) end
-            return
-        end
-
+        -- Dedup input på identifier (sidste vinder) for at undgå spildte queries
+        local unique = {}
         for _, row in ipairs(rows) do
             local identifier = row[Config.IdentifierColumn] or row.identifier
             if identifier and identifier ~= "" then
-                local fn, ln  = extractName(row)
-                local telefon = extractPhone(row)
-                local cpr     = extractCpr(row, identifier)
-
-                upsertPerson(identifier, fn, ln, telefon, cpr, kilde, function(result)
-                    if result == "oprettet" then oprettet = oprettet + 1
-                    elseif result == "opdateret" then opdateret = opdateret + 1
-                    else fejl = fejl + 1 end
-
-                    processed = processed + 1
-                    if processed >= total then
-                        MySQL.Async.execute([[
-                            INSERT INTO mdt_sync_log (kilde, oprettet, opdateret, fejl, note)
-                            VALUES (@k, @o, @u, @f, @n)
-                        ]], {
-                            ['@k'] = kilde, ['@o'] = oprettet, ['@u'] = opdateret,
-                            ['@f'] = fejl, ['@n'] = ('Sync %d spillere'):format(total),
-                        })
-                        print(("[AVLD MDT][sync] Færdig: %d oprettet, %d opdateret, %d fejl (kilde=%s)"):format(
-                            oprettet, opdateret, fejl, kilde))
-                        if doneCb then doneCb(oprettet, opdateret, fejl) end
-                    end
-                end)
+                unique[identifier] = row
             else
-                processed = processed + 1
                 fejl = fejl + 1
             end
+        end
+
+        local total = 0
+        for _ in pairs(unique) do total = total + 1 end
+
+        if total == 0 then
+            print("[AVLD MDT][sync] users-tabellen er tom (eller kun ugyldige rows)")
+            if doneCb then doneCb(0, 0, fejl) end
+            return
+        end
+
+        local processed = 0
+        for identifier, row in pairs(unique) do
+            local fn, ln  = extractName(row)
+            local telefon = extractPhone(row)
+            local cpr     = extractCpr(row, identifier)
+
+            upsertPerson(identifier, fn, ln, telefon, cpr, kilde, function(result)
+                if result == "oprettet" then oprettet = oprettet + 1
+                elseif result == "opdateret" then opdateret = opdateret + 1
+                elseif result == "flettet" then flettet = flettet + 1
+                else fejl = fejl + 1 end
+
+                processed = processed + 1
+                if processed >= total then
+                    MySQL.Async.execute([[
+                        INSERT INTO mdt_sync_log (kilde, oprettet, opdateret, flettet, fejl, note)
+                        VALUES (@k, @o, @u, @fl, @f, @n)
+                    ]], {
+                        ['@k']=kilde, ['@o']=oprettet, ['@u']=opdateret,
+                        ['@fl']=flettet, ['@f']=fejl,
+                        ['@n']=('Sync %d unikke spillere (raw=%d)'):format(total, #rows),
+                    })
+                    print(("[AVLD MDT][sync] Færdig: %d oprettet, %d opdateret, %d flettet, %d fejl (kilde=%s)"):format(
+                        oprettet, opdateret, flettet, fejl, kilde))
+                    if doneCb then doneCb(oprettet, opdateret, fejl, flettet) end
+                end
+            end)
         end
     end)
 end
