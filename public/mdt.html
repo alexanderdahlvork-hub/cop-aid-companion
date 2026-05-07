@@ -10700,11 +10700,20 @@ window.toggleStaffRank = function(rang) {
 
 
 
-window.showAnsatForm = function() {
+window.showAnsatForm = async function() {
   const overlay = el("div",{className:"dialog-overlay",onclick:e=>{if(e.target===overlay)overlay.remove();}});
   const afdOptions = afdelinger.map(a=>`<option value="${a.label}">${a.label}</option>`).join("");
 
-  // Byg gruppe-baseret chip-vælger ud fra sidebarSections + afdelinger
+  // Hent personer fra personregistret
+  let personer = [];
+  try { personer = await personerApi.getAll(); } catch(e) { personer = []; }
+
+  // Hent eksisterende betjente for at filtrere folk der allerede er ansat
+  let eksisterende = [];
+  try { eksisterende = await betjenteApi.getAll(); } catch(e) {}
+  const ansatNavne = new Set(eksisterende.map(b => ((b.fornavn||"")+" "+(b.efternavn||"")).toLowerCase().trim()));
+
+  // Byg gruppe-baseret chip-vælger
   let kanalGroupsHtml = "";
   sidebarSections.forEach(sec => {
     kanalGroupsHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted-fg);margin-bottom:6px">${sec.label}</div><div class="na-chip-row" style="display:flex;flex-wrap:wrap;gap:6px">`;
@@ -10719,20 +10728,93 @@ window.showAnsatForm = function() {
   });
   kanalGroupsHtml += `</div></div>`;
 
-  overlay.innerHTML = `<div class="dialog" style="max-width:560px;max-height:88vh;overflow-y:auto"><div class="dialog-title">Opret ny betjent</div>
-    <div class="grid grid-2 gap-2 mb-2"><div><div class="label">Badge nummer</div><input class="input" id="na-badge"></div><div><div class="label">Stilling</div><select class="select w-full" id="na-rang">${rangOrder.map(r=>`<option value="${r}">${r}</option>`).join("")}</select></div></div>
-    <div class="grid grid-2 gap-2 mb-2"><div><div class="label">Fornavn</div><input class="input" id="na-fornavn"></div><div><div class="label">Efternavn</div><input class="input" id="na-efternavn"></div></div>
-    <div class="label">Primær afdeling</div><select class="select w-full mb-3" id="na-afdeling"><option value="">Ingen</option>${afdOptions}</select>
-    <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:8px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div><div style="font-size:13px;font-weight:600">Adgang til kanaler</div><div style="font-size:10px;color:var(--muted-fg)">Vælg hvilke moduler og afdelinger betjenten kan tilgå (ud over standard for rangen)</div></div>
-        <div style="display:flex;gap:6px"><button type="button" class="btn btn-outline btn-sm" onclick="window._naAllKanaler(true)">Vælg alle</button><button type="button" class="btn btn-outline btn-sm" onclick="window._naAllKanaler(false)">Ryd</button></div>
-      </div>
-      ${kanalGroupsHtml}
+  const rangOptions = rangOrder.map(r=>`<option value="${r}">${r}</option>`).join("");
+
+  overlay.innerHTML = `<div class="dialog" style="max-width:580px;max-height:90vh;overflow-y:auto">
+    <div class="dialog-title">Ansæt person fra personregister</div>
+
+    <div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:14px;background:rgba(31,58,95,.06)">
+      <div class="label">1. Søg person i personregistret</div>
+      <input class="input mb-2" id="na-person-search" placeholder="Søg på navn, CPR eller telefon...">
+      <div id="na-person-results" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;background:var(--bg)"></div>
+      <div id="na-person-selected" style="margin-top:8px;font-size:12px;color:var(--muted-fg)">Ingen person valgt</div>
     </div>
-    <p style="font-size:11px;color:var(--muted-fg);margin-bottom:12px">Standardkodeord: 1234</p>
-    <div class="flex gap-2"><button class="btn btn-primary" id="na-submit">Opret</button><button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button></div></div>`;
+
+    <div id="na-rest" style="opacity:.45;pointer-events:none">
+      <div class="label">2. Politi-rang (kræves)</div>
+      <select class="select w-full mb-3" id="na-rang">${rangOptions}</select>
+
+      <div class="grid grid-2 gap-2 mb-3">
+        <div><div class="label">Badge nummer</div><input class="input" id="na-badge" placeholder="fx 4711"></div>
+        <div><div class="label">Primær afdeling</div><select class="select w-full" id="na-afdeling"><option value="">Ingen</option>${afdOptions}</select></div>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div><div style="font-size:13px;font-weight:600">Ekstra adgang til kanaler</div><div style="font-size:10px;color:var(--muted-fg)">Ud over standard for rangen</div></div>
+          <div style="display:flex;gap:6px"><button type="button" class="btn btn-outline btn-sm" onclick="window._naAllKanaler(true)">Vælg alle</button><button type="button" class="btn btn-outline btn-sm" onclick="window._naAllKanaler(false)">Ryd</button></div>
+        </div>
+        ${kanalGroupsHtml}
+      </div>
+      <p style="font-size:11px;color:var(--muted-fg);margin-bottom:12px">Standardkodeord: 1234 (skal skiftes ved første login)</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button class="btn btn-primary" id="na-submit" disabled>Ansæt</button>
+      <button class="btn btn-outline" onclick="this.closest('.dialog-overlay').remove()">Annuller</button>
+    </div>
+  </div>`;
   document.body.appendChild(overlay);
+
+  let valgtPerson = null;
+  const resultsBox = overlay.querySelector("#na-person-results");
+  const selectedBox = overlay.querySelector("#na-person-selected");
+  const restBox = overlay.querySelector("#na-rest");
+  const submitBtn = overlay.querySelector("#na-submit");
+
+  function renderResults(q) {
+    q = (q||"").toLowerCase().trim();
+    let list = personer;
+    if (q) {
+      list = personer.filter(p =>
+        (((p.fornavn||"")+" "+(p.efternavn||"")).toLowerCase()).includes(q) ||
+        (p.cpr||"").toLowerCase().includes(q) ||
+        (p.telefon||"").toLowerCase().includes(q)
+      );
+    }
+    list = list.slice(0, 50);
+    if (list.length === 0) {
+      resultsBox.innerHTML = '<div style="padding:10px;font-size:11px;color:var(--muted-fg);text-align:center">Ingen personer fundet</div>';
+      return;
+    }
+    resultsBox.innerHTML = list.map(p => {
+      const navn = (p.fornavn||"") + " " + (p.efternavn||"");
+      const alreadyHired = ansatNavne.has(navn.toLowerCase().trim());
+      const tag = alreadyHired ? '<span class="badge" style="background:rgba(239,68,68,.15);color:#fca5a5;font-size:9px;margin-left:6px">ALLEREDE ANSAT</span>' : '';
+      return '<div class="na-person-row" data-pid="'+p.id+'" style="padding:8px 10px;border-bottom:1px solid var(--border);cursor:'+(alreadyHired?'not-allowed':'pointer')+';font-size:12px;'+(alreadyHired?'opacity:.5':'')+'">'
+        + '<div style="font-weight:600">'+esc(navn)+' '+tag+'</div>'
+        + '<div style="font-size:10px;color:var(--muted-fg)">CPR: '+esc(p.cpr||"–")+' • Tlf: '+esc(p.telefon||"–")+'</div>'
+        + '</div>';
+    }).join("");
+    resultsBox.querySelectorAll(".na-person-row").forEach(row => {
+      row.addEventListener("click", () => {
+        const pid = row.getAttribute("data-pid");
+        const p = personer.find(x => String(x.id) === String(pid));
+        if (!p) return;
+        const navn = ((p.fornavn||"")+" "+(p.efternavn||"")).toLowerCase().trim();
+        if (ansatNavne.has(navn)) { showToast("Personen er allerede ansat"); return; }
+        valgtPerson = p;
+        selectedBox.innerHTML = '<span style="color:#9cc4ff;font-weight:600">✓ Valgt:</span> '+esc(p.fornavn||"")+' '+esc(p.efternavn||"")+' (CPR: '+esc(p.cpr||"–")+')';
+        restBox.style.opacity = "1";
+        restBox.style.pointerEvents = "";
+        submitBtn.disabled = false;
+        resultsBox.querySelectorAll(".na-person-row").forEach(r => r.style.background = "");
+        row.style.background = "rgba(31,58,95,.25)";
+      });
+    });
+  }
+  renderResults("");
+  overlay.querySelector("#na-person-search").addEventListener("input", e => renderResults(e.target.value));
 
   window._naToggleKanal = function(btn) {
     const active = btn.classList.toggle("na-chip-active");
@@ -10754,11 +10836,37 @@ window.showAnsatForm = function() {
     });
   };
 
-  document.getElementById("na-submit").addEventListener("click", async ()=>{
+  submitBtn.addEventListener("click", async () => {
+    if (!valgtPerson) { showToast("Vælg en person fra personregistret"); return; }
+    const rang = document.getElementById("na-rang").value;
+    if (!rang) { showToast("Vælg en politi-rang"); return; }
+    const badge = document.getElementById("na-badge").value.trim();
+    if (!badge) { showToast("Indtast badge nummer"); return; }
     const valgteKanaler = Array.from(overlay.querySelectorAll(".na-chip-active")).map(b => b.getAttribute("data-kanal"));
-    const b = {id:String(Date.now()),badgeNr:document.getElementById("na-badge").value,fornavn:document.getElementById("na-fornavn").value,efternavn:document.getElementById("na-efternavn").value,rang:document.getElementById("na-rang").value,afdeling:document.getElementById("na-afdeling").value,uddannelser:[],tilladelser:valgteKanaler,kodeord:"1234",foersteLogin:true};
-    if(!b.badgeNr||!b.fornavn||!b.efternavn){showToast("Udfyld alle felter");return;}
-    try{await betjenteApi.create(b);showToast("Betjent oprettet med "+valgteKanaler.length+" kanaler");overlay.remove();renderPage(activeTabId);}catch(e){showToast("Fejl: "+e.message);}
+    const b = {
+      id: String(Date.now()),
+      badgeNr: badge,
+      fornavn: valgtPerson.fornavn || "",
+      efternavn: valgtPerson.efternavn || "",
+      rang: rang,
+      afdeling: document.getElementById("na-afdeling").value,
+      uddannelser: [],
+      tilladelser: valgteKanaler,
+      kodeord: "1234",
+      foersteLogin: true,
+      personId: valgtPerson.id,
+      cpr: valgtPerson.cpr || ""
+    };
+    try {
+      await betjenteApi.create(b);
+      try {
+        const noteAdd = "[Ansat som politi: "+rang+" — Badge "+badge+"]";
+        await personerApi.update(valgtPerson.id, { noter: ((valgtPerson.noter||"") + "\n" + noteAdd).trim() });
+      } catch(e){}
+      showToast(valgtPerson.fornavn+" "+valgtPerson.efternavn+" er ansat som "+rang);
+      overlay.remove();
+      renderPage(activeTabId);
+    } catch(e) { showToast("Fejl: "+e.message); }
   });
 };
 
