@@ -55,26 +55,62 @@ local function extractCpr(row, identifier)
     return string.format("%06d-%04d", hash, math.random(1000, 9999))
 end
 
--- ── Upsert én spiller ──
+-- ── Upsert én spiller med dedup + konflikt-håndtering ──
+-- Strategi:
+--   1) Match på esx_identifier  -> opdater
+--   2) Ellers match på cpr      -> claim (sæt esx_identifier) + opdater  -> "flettet"
+--   3) Ellers INSERT med ON DUPLICATE KEY UPDATE som race-safety net
 local function upsertPerson(identifier, fornavn, efternavn, telefon, cpr, kilde, cb)
-    if not identifier or identifier == "" then if cb then cb(false) end return end
+    if not identifier or identifier == "" then if cb then cb("fejl") end return end
 
-    MySQL.Async.fetchAll('SELECT id FROM personer WHERE esx_identifier = @id LIMIT 1', {
+    MySQL.Async.fetchAll('SELECT id, cpr FROM personer WHERE esx_identifier = @id LIMIT 1', {
         ['@id'] = identifier,
     }, function(rows)
         if rows and rows[1] then
-            -- Opdater
+            -- (1) Findes på identifier -> opdater (rør ikke ved cpr hvis allerede sat)
             MySQL.Async.execute([[
                 UPDATE personer
                 SET fornavn = @fn, efternavn = @ln, telefon = @tlf,
+                    cpr = CASE WHEN cpr IS NULL OR cpr = '' THEN @cpr ELSE cpr END,
                     sidst_synced = @ts, kilde = @kilde
                 WHERE esx_identifier = @id
             ]], {
-                ['@fn'] = fornavn, ['@ln'] = efternavn, ['@tlf'] = telefon,
-                ['@ts'] = nowDate(), ['@kilde'] = kilde, ['@id'] = identifier,
+                ['@fn']=fornavn, ['@ln']=efternavn, ['@tlf']=telefon, ['@cpr']=cpr,
+                ['@ts']=nowDate(), ['@kilde']=kilde, ['@id']=identifier,
             }, function() if cb then cb("opdateret") end end)
-        else
-            -- Opret
+            return
+        end
+
+        -- (2) Forsøg at finde eksisterende person på CPR (manuelt oprettet)
+        MySQL.Async.fetchAll([[
+            SELECT id, esx_identifier FROM personer
+            WHERE cpr = @cpr AND cpr <> '' LIMIT 1
+        ]], { ['@cpr'] = cpr }, function(byCpr)
+            if byCpr and byCpr[1] then
+                local existing = byCpr[1]
+                if existing.esx_identifier and existing.esx_identifier ~= ""
+                   and existing.esx_identifier ~= identifier then
+                    -- Konflikt: CPR tilhører allerede en anden ESX-spiller. Spring over.
+                    dbg(("Konflikt: CPR %s er allerede koblet til %s (ny: %s)"):format(
+                        cpr, existing.esx_identifier, identifier))
+                    if cb then cb("fejl") end
+                    return
+                end
+                -- Claim eksisterende record
+                MySQL.Async.execute([[
+                    UPDATE personer
+                    SET esx_identifier = @eid, fornavn = @fn, efternavn = @ln,
+                        telefon = @tlf, sidst_synced = @ts, kilde = @kilde
+                    WHERE id = @rid
+                ]], {
+                    ['@eid']=identifier, ['@fn']=fornavn, ['@ln']=efternavn,
+                    ['@tlf']=telefon, ['@ts']=nowDate(), ['@kilde']=kilde,
+                    ['@rid']=existing.id,
+                }, function() if cb then cb("flettet") end end)
+                return
+            end
+
+            -- (3) Helt ny record — INSERT med ON DUPLICATE KEY som sikkerhedsnet
             MySQL.Async.execute([[
                 INSERT INTO personer
                     (id, cpr, fornavn, efternavn, adresse, postnr, by, telefon, status, noter, oprettet,
@@ -82,18 +118,26 @@ local function upsertPerson(identifier, fornavn, efternavn, telefon, cpr, kilde,
                 VALUES
                     (@id, @cpr, @fn, @ln, '', '', '', @tlf, 'aktiv', '', @opr,
                      @eid, @kilde, @ts)
+                ON DUPLICATE KEY UPDATE
+                    fornavn = VALUES(fornavn),
+                    efternavn = VALUES(efternavn),
+                    telefon = VALUES(telefon),
+                    esx_identifier = COALESCE(esx_identifier, VALUES(esx_identifier)),
+                    sidst_synced = VALUES(sidst_synced),
+                    kilde = VALUES(kilde)
             ]], {
-                ['@id']  = genId(),
-                ['@cpr'] = cpr,
-                ['@fn']  = fornavn,
-                ['@ln']  = efternavn,
-                ['@tlf'] = telefon,
-                ['@opr'] = nowDate(),
-                ['@eid'] = identifier,
-                ['@kilde'] = kilde,
-                ['@ts']  = nowDate(),
-            }, function() if cb then cb("oprettet") end end)
-        end
+                ['@id']=genId(), ['@cpr']=cpr, ['@fn']=fornavn, ['@ln']=efternavn,
+                ['@tlf']=telefon, ['@opr']=nowDate(),
+                ['@eid']=identifier, ['@kilde']=kilde, ['@ts']=nowDate(),
+            }, function(affected)
+                -- affected: 1 = insert, 2 = update via ON DUPLICATE KEY
+                if affected and affected >= 2 then
+                    if cb then cb("opdateret") end
+                else
+                    if cb then cb("oprettet") end
+                end
+            end)
+        end)
     end)
 end
 
@@ -109,46 +153,55 @@ function SyncAllPlayersFromDB(kilde, doneCb)
             return
         end
 
-        local oprettet, opdateret, fejl = 0, 0, 0
-        local total = #rows
-        local processed = 0
+        local oprettet, opdateret, flettet, fejl = 0, 0, 0, 0
 
-        if total == 0 then
-            print("[AVLD MDT][sync] users-tabellen er tom")
-            if doneCb then doneCb(0, 0, 0) end
-            return
-        end
-
+        -- Dedup input på identifier (sidste vinder) for at undgå spildte queries
+        local unique = {}
         for _, row in ipairs(rows) do
             local identifier = row[Config.IdentifierColumn] or row.identifier
             if identifier and identifier ~= "" then
-                local fn, ln  = extractName(row)
-                local telefon = extractPhone(row)
-                local cpr     = extractCpr(row, identifier)
-
-                upsertPerson(identifier, fn, ln, telefon, cpr, kilde, function(result)
-                    if result == "oprettet" then oprettet = oprettet + 1
-                    elseif result == "opdateret" then opdateret = opdateret + 1
-                    else fejl = fejl + 1 end
-
-                    processed = processed + 1
-                    if processed >= total then
-                        MySQL.Async.execute([[
-                            INSERT INTO mdt_sync_log (kilde, oprettet, opdateret, fejl, note)
-                            VALUES (@k, @o, @u, @f, @n)
-                        ]], {
-                            ['@k'] = kilde, ['@o'] = oprettet, ['@u'] = opdateret,
-                            ['@f'] = fejl, ['@n'] = ('Sync %d spillere'):format(total),
-                        })
-                        print(("[AVLD MDT][sync] Færdig: %d oprettet, %d opdateret, %d fejl (kilde=%s)"):format(
-                            oprettet, opdateret, fejl, kilde))
-                        if doneCb then doneCb(oprettet, opdateret, fejl) end
-                    end
-                end)
+                unique[identifier] = row
             else
-                processed = processed + 1
                 fejl = fejl + 1
             end
+        end
+
+        local total = 0
+        for _ in pairs(unique) do total = total + 1 end
+
+        if total == 0 then
+            print("[AVLD MDT][sync] users-tabellen er tom (eller kun ugyldige rows)")
+            if doneCb then doneCb(0, 0, fejl) end
+            return
+        end
+
+        local processed = 0
+        for identifier, row in pairs(unique) do
+            local fn, ln  = extractName(row)
+            local telefon = extractPhone(row)
+            local cpr     = extractCpr(row, identifier)
+
+            upsertPerson(identifier, fn, ln, telefon, cpr, kilde, function(result)
+                if result == "oprettet" then oprettet = oprettet + 1
+                elseif result == "opdateret" then opdateret = opdateret + 1
+                elseif result == "flettet" then flettet = flettet + 1
+                else fejl = fejl + 1 end
+
+                processed = processed + 1
+                if processed >= total then
+                    MySQL.Async.execute([[
+                        INSERT INTO mdt_sync_log (kilde, oprettet, opdateret, flettet, fejl, note)
+                        VALUES (@k, @o, @u, @fl, @f, @n)
+                    ]], {
+                        ['@k']=kilde, ['@o']=oprettet, ['@u']=opdateret,
+                        ['@fl']=flettet, ['@f']=fejl,
+                        ['@n']=('Sync %d unikke spillere (raw=%d)'):format(total, #rows),
+                    })
+                    print(("[AVLD MDT][sync] Færdig: %d oprettet, %d opdateret, %d flettet, %d fejl (kilde=%s)"):format(
+                        oprettet, opdateret, flettet, fejl, kilde))
+                    if doneCb then doneCb(oprettet, opdateret, fejl, flettet) end
+                end
+            end)
         end
     end)
 end
